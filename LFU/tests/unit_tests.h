@@ -7,7 +7,7 @@
 #include <iomanip>
 #include "../LFU.h"
 
-void TestAll();
+void test_all();
 
 class page_t {
 public:
@@ -32,10 +32,11 @@ inline void Assert(bool b, const std::string& hint) {
     AssertEqual(b, true, hint);
 }
 
-class TestRunner {
+//
+class test_runner_t {
 public:
     template <class TestFunc>
-    void RunTest(TestFunc func, const std::string& test_name) {
+    void run_test(TestFunc func, const std::string& test_name) {
         try {
             func();
             std::cerr << test_name << " OK" << std::endl;
@@ -45,7 +46,7 @@ public:
         }
     }
 
-    ~TestRunner() {
+    ~test_runner_t() {
         if (fail_count > 0) {
             std::cerr << fail_count << " unit tests failed. Terminate" << std::endl;
             exit(1);

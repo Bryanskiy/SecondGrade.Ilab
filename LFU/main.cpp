@@ -5,5 +5,5 @@
 #include "tests/unit_tests.h"
 
 int main() {
-    TestAll();
+    test_all();
 }
