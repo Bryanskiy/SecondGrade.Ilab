@@ -1,8 +1,6 @@
 #include <iostream>
 
 #include "LFU.h"
-#include "LRU.h"
-#include "unit_tests.h"
 
 class page_t {
 public:
