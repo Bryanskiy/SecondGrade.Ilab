@@ -1,108 +1,70 @@
 #pragma once
 
-#include <list>
 #include <unordered_map>
-#include <chrono>
-#include <thread>
-
-#ifdef __CACHE_DEBUG__
-#include <iostream>
-#endif
-
-template <typename T, typename KeyT = int>
-class LFU_t {
-public:
-#ifdef __CACHE_DEBUG__
-    void print(std::ostream& out);
-#endif
-
-    explicit LFU_t(size_t capacity);
-    bool lookup(const T& elem);
-private:
-    size_t capacity_;
-    std::list<std::pair<T, size_t>> cache_;
-    std::unordered_map<KeyT, typename std::list<std::pair<T, size_t>>::iterator> hash_;
-
-    bool is_full() const;
-
-    /*
-     * gets access to the page if it is in the cache/not in the cache
-     * since this is an emulator functions are a delay
-     */
-    void local_access();
-    void net_access();
-};
+#include <map>
 
 /*
- * print information for debug
-*/
-#ifdef __CACHE_DEBUG__
-template <typename T, typename KeyT>
-void LFU_t<T, KeyT>::print(std::ostream &out) {
-    auto it = begin(cache_);
-    if(it != end(cache_)) {
-        out << '(' << it->first.id << ", " << it->second << ')';
-        ++it;
-    }
-    for(;it != end(cache_); ++it) {
-        out << ' ' <<'(' << it->first.id << ", " << it->second << ')';
-    }
-}
-#endif
+ * T - page
+ * KeyT - page id
+ */
+template<typename T, typename KeyT = int>
+class LFU_t {
+public:
+    LFU_t(std::size_t capacity);
+    bool is_full() const;
+    bool lookup(const T& elem);
 
-template <typename T, typename KeyT>
-LFU_t<T, KeyT>::LFU_t(size_t capacity) : capacity_(capacity) {}
-
-template <typename T, typename KeyT>
-bool LFU_t<T, KeyT>::lookup(const T& elem) {
+private:
     /*
-     * check if elem in a cache
+     * todo:
+     * solve situation when cap = 0
      */
-    auto hit = hash_.find(elem.get_id());
+    std::size_t capacity_;
+    std::multimap<size_t, T> cache_;
+    std::unordered_map<KeyT, typename std::multimap<size_t, T>::iterator> htable_;
+};
 
-    /*
-     * miss in the cache
-     */
-    if (hit == hash_.end()) {
-        if (is_full()) {
+template<typename T, typename KeyT>
+LFU_t<T, KeyT>::LFU_t(std::size_t capacity) :
+    capacity_(capacity),
+    cache_(),
+    htable_() {}
 
-            net_access();
-            /*
-             * find elem with min frequency
-             */
-            auto min_frec = begin(cache_);
-            for(auto it = begin(cache_); it != end(cache_); ++it) {
-                if(it->second <= min_frec->second) {
-                    min_frec = it;
-                }
-            }
-
-            hash_.erase(min_frec->first.get_id());
-            cache_.erase(min_frec);
-        }
-
-        cache_.push_front({elem, 1});
-        hash_[elem.get_id()] = cache_.begin();
-
-        return false;
-    }
-
-    local_access();
-    ++(hit->second->second);
-    return true;
-}
-
-template <typename T, typename KeyT>
-bool LFU_t<T, KeyT>::is_full() const {
+template<typename T, typename KeyT>
+bool LFU_t<T, KeyT>::is_full() const{
     return cache_.size() == capacity_;
 }
 
 template<typename T, typename KeyT>
-void LFU_t<T, KeyT>::local_access() {
-    std::this_thread::sleep_for(std::chrono::milliseconds(5));
-}
+bool LFU_t<T, KeyT>::lookup(const T& elem) {
+    /*
+     * check if elem in a cache
+     */
+    auto hit = htable_.find(elem.get_id());
+    /*
+     * miss in the cache
+     */
+    if(hit == htable_.end()) {
+        if(is_full()) {
+            auto it = cache_.begin();
+            cache_.erase(it);
+            htable_.erase(it->second.get_id());
+        }
 
-template<typename T, typename KeyT>
-void LFU_t<T, KeyT>::net_access() {
-    std::this_thread::sleep_for(std::chrono::milliseconds(50));
+        auto new_it = cache_.insert(std::make_pair(1, elem));
+        htable_[elem.get_id()] = new_it;
+        return false;
+    }
+
+    /*
+     * hit to the cache
+     * increment frequency deleting prev page
+     */
+    size_t new_frec = hit->second->first + 1;
+
+    cache_.erase(hit->second);
+
+    auto new_it = cache_.insert(std::make_pair(new_frec, elem));
+    htable_[elem.get_id()] = new_it;
+    return true;
 }
