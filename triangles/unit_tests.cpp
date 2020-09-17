@@ -46,6 +46,34 @@ TEST(GeometryPointTest, CompareTest) {
 
 
 /* ------------------------------------------------
+                START VECTOR_TESTS
+ -------------------------------------------------*
+*/
+TEST(GeometryVectorTest, Dot) {
+    {
+        vector3D_t a(1.0, 2.0, 3.0);
+        vector3D_t b(0.0, 4.0, 3.0);
+        ASSERT_DOUBLE_EQ(17.0, dot(a, b));
+    }
+}
+
+TEST(GeometryVectorTest, Cross) {
+    {
+        vector3D_t a(1.0, 2.0, 3.0);
+        vector3D_t b(-2.0, 0.0, 4.0);
+        vector3D_t expected(8.0, -10.0, 4.0);
+        ASSERT_EQ(expected, cross(a, b));
+    }
+}
+/* ------------------------------------------------
+                END VECTOR_TESTS
+ -------------------------------------------------*
+*/
+
+
+
+
+/* ------------------------------------------------
                 START TRIANGLE_TESTS
  -------------------------------------------------*/
 TEST(GeometryTriangleTest, IOtest) {
@@ -124,6 +152,7 @@ TEST(GeometryPlaneTest, IsParallel) {
     }
 
 }
+
 /* ------------------------------------------------
                 END PLANE_TESTS
  -------------------------------------------------*/

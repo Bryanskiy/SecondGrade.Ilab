@@ -31,9 +31,29 @@ double distance(const point3D_t& rhs, const point3D_t& lhs);
 /* ------------------------------------------------
                 START VECTOR_METHODS
  -------------------------------------------------*/
-using vector3D_t = point3D_t;
+struct vector3D_t {
+    double x, y, z;
+
+    explicit vector3D_t();
+    explicit vector3D_t(double x_, double y_, double z_);
+    explicit vector3D_t(const point3D_t& lhs, const point3D_t& rhs);
+
+    vector3D_t& operator +=(const vector3D_t& rhs);
+    vector3D_t& operator *=(double lambda);
+
+    bool valid() const;
+    double len() const;
+    bool is_zero() const;
+};
+
+bool operator==(const vector3D_t& lhs, const vector3D_t& rhs);
+const vector3D_t operator+(const vector3D_t& lhs, const vector3D_t& rhs);
+const vector3D_t operator*(double lambda, const vector3D_t& rhs);
+const vector3D_t operator*(const vector3D_t& lhs, double lambda);
+
 double dot(const vector3D_t& lhs, const vector3D_t& rhs);
-double len();
+vector3D_t cross(const vector3D_t& lhs, const vector3D_t& rhs);
+bool is_parallel(const vector3D_t& lhs, const vector3D_t& rhs);
 /* ------------------------------------------------
                 END VECTOR_METHODS
  -------------------------------------------------*/
@@ -45,9 +65,10 @@ double len();
                 START LINE_METHODS
  -------------------------------------------------*/
 struct line_t {
-    point3D_t start;
+    vector3D_t start;
     vector3D_t direction;
 
+    explicit line_t();
     explicit line_t(const point3D_t& lhs, const point3D_t& rhs);
 };
 /* ------------------------------------------------
@@ -91,7 +112,7 @@ struct plane_t {
 };
 
 bool is_parallel(const plane_t& lhs, const plane_t& rhs);
-line_t plane_intersection(const plane_t& lhs, const plane_t& rhs);
+line_t intersection_of_2planes(const plane_t& lhs, const plane_t& rhs);
 /* ------------------------------------------------
                  END PLANE_METHODS
  -------------------------------------------------*/

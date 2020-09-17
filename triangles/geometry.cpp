@@ -52,8 +52,83 @@ double distance(const point3D_t& rhs, const point3D_t& lhs) {
 /* ------------------------------------------------
                 START VECTOR_METHODS
  -------------------------------------------------*/
+vector3D_t::vector3D_t() : x(std::numeric_limits<double>::quiet_NaN()) ,
+                           y(std::numeric_limits<double>::quiet_NaN()) ,
+                           z(std::numeric_limits<double>::quiet_NaN()) {}
+
+vector3D_t::vector3D_t(double x_, double y_, double z_) : x(x_), y(y_), z(z_) {}
+
+vector3D_t::vector3D_t(const point3D_t& lhs, const point3D_t& rhs) {
+    x = rhs.x - lhs.x;
+    y = rhs.y - lhs.y;
+    z = rhs.z - lhs.z;
+}
+
+vector3D_t& vector3D_t::operator+=(const vector3D_t& rhs) {
+    x += rhs.x;
+    y += rhs.y;
+    z += rhs.z;
+}
+
+vector3D_t& vector3D_t::operator*=(double lambda) {
+    x *= lambda;
+    y *= lambda;
+    z *= lambda;
+}
+
+bool vector3D_t::valid() const {
+    point3D_t tmp(x, y, z);
+    return tmp.valid();
+}
+
+double vector3D_t::len() const{
+    return distance(point3D_t(0.0, 0.0, 0.0), point3D_t(x, y, z));
+}
+
+bool vector3D_t::is_zero() const{
+    if(std::abs(x) > TOLERANCE) return false;
+    if(std::abs(y) > TOLERANCE) return false;
+    if(std::abs(z) > TOLERANCE) return false;
+
+    return true;
+}
+
+bool operator==(const vector3D_t& lhs, const vector3D_t& rhs) {
+    return point3D_t(lhs.x, lhs.y, lhs.z) == point3D_t(rhs.x, rhs.y, rhs.z);
+}
+
+const vector3D_t operator+(const vector3D_t& lhs, const vector3D_t& rhs) {
+    vector3D_t tmp = lhs;
+    return tmp += rhs;
+}
+
+const vector3D_t operator*(double lambda, const vector3D_t& rhs)  {
+    vector3D_t tmp = rhs;
+    return tmp *= lambda;
+}
+
+const vector3D_t operator*(const vector3D_t& lhs, double lambda) {
+    return lambda * lhs;
+}
+
 double dot(const vector3D_t& lhs, const vector3D_t& rhs) {
     return lhs.x * rhs.x + lhs.y * rhs.y + lhs.z * rhs.z;
+}
+
+vector3D_t cross(const vector3D_t& lhs, const vector3D_t& rhs) {
+    double x = lhs.y * rhs.z - lhs.z * rhs.y;
+    double y = lhs.z * rhs.x - lhs.x * rhs.z;
+    double z = lhs.x * rhs.y - lhs.y * rhs.x;
+    return vector3D_t(x, y, z);
+}
+
+bool is_parallel(const vector3D_t& lhs, const vector3D_t& rhs) {
+    if((std::abs(lhs.x * rhs.y - lhs.y * rhs.x) < TOLERANCE) &&
+       (std::abs(lhs.y * rhs.z - lhs.z * rhs.y) < TOLERANCE)) {
+        return true;
+    }
+
+    return false;
 }
 /* ------------------------------------------------
                 END VECTOR_METHODS
@@ -64,9 +139,9 @@ double dot(const vector3D_t& lhs, const vector3D_t& rhs) {
 /* ------------------------------------------------
                 START LINE_METHODS
  -------------------------------------------------*/
-line_t::line_t(const point3D_t& lhs, const point3D_t& rhs) : start(lhs) {
-    direction = vector3D_t(lhs.x - rhs.x, lhs.y - rhs.y, lhs.z - rhs.z);
-}
+line_t::line_t() : start(), direction() {}
+line_t::line_t(const point3D_t& lhs, const point3D_t& rhs) : start(lhs.x, lhs.y, lhs.z),
+                                                             direction(lhs, rhs) {}
 /* ------------------------------------------------
                 END LINE_METHODS
  -------------------------------------------------*/
@@ -133,16 +208,48 @@ bool is_parallel(const plane_t& lhs, const plane_t& rhs) {
     vector3D_t n_lhs = lhs.normal();
     vector3D_t n_rhs = rhs.normal();
 
-    if((std::abs(n_lhs.x * n_rhs.y - n_lhs.y * n_rhs.x) < TOLERANCE) &&
-       (std::abs(n_lhs.y * n_rhs.z - n_lhs.z * n_rhs.y) < TOLERANCE)) {
-        return true;
-    }
-
-    return false;
+    return is_parallel(n_lhs, n_rhs);
 }
 
-line_t intersection_of_2planes(const plane_t& lhs, const plane_t& rhs) {
 
+//this function use equation:
+//          ->       ->         ->  ->
+// L = (a * n1 + b * n2) + t * [n1, n2] , where
+//            ->   ->
+//      s2 * (n1 * n2) - s1 * n2^2
+// a = ----------------------------
+//       ->   ->
+//      (n1 * n2) ^ 2 - n1^2 * n2^2
+//
+//            ->   ->
+//      s1 * (n1 * n2) - s2 * n2^2
+// b = ----------------------------
+//       ->   ->
+//      (n1 * n2) ^ 2 - n1^2 * n2^2
+line_t intersection_of_2planes(const plane_t& lhs, const plane_t& rhs) {
+    vector3D_t lhs_normal = lhs.normal();
+    vector3D_t rhs_normal = rhs.normal();
+    vector3D_t crs = cross(lhs_normal, rhs_normal);
+    if(std::abs(crs.len()) < TOLERANCE) {
+        return line_t();
+    }
+
+    line_t ret;
+    ret.direction = crs;
+    double s1, s2, a, b;
+    s1 = lhs.d;
+    s2 = rhs.d;
+
+    double n1n2dot = dot(lhs_normal, rhs_normal);
+    double n1sqr = dot(lhs_normal, lhs_normal);
+    double n2sqr = dot(rhs_normal, rhs_normal);
+
+    double denominator = -std::pow(n1n2dot, 2) + n1sqr * n2sqr;
+    a = (s2 * n1n2dot - s1 * n2sqr) / denominator;
+    b = (s1 * n1n2dot - s2 * n1sqr) / denominator;
+
+    ret.start = a * lhs_normal + b * rhs_normal;
+    return ret;
 }
 /* ------------------------------------------------
                 END PLANE_METHODS
