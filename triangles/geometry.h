@@ -74,6 +74,7 @@ struct line_t {
 
     explicit line_t();
     explicit line_t(const point3D_t& lhs, const point3D_t& rhs);
+    bool include(const point3D_t& point, double& t) const;
     bool include(const point3D_t& point) const;
 };
 
@@ -96,6 +97,7 @@ struct segment_t {
 
     explicit segment_t();
     explicit segment_t(const point3D_t& lhs, const point3D_t& rhs);
+    bool include(const point3D_t& point) const;
 };
 /* ------------------------------------------------
                 END SEGMENT_METHODS
@@ -149,7 +151,7 @@ bool is_parallel(const plane_t& lhs, const plane_t& rhs);
                 START INTERSECTION_METHODS
  ------------------------------------------------*/
 line_t intersection_of_2planes(const plane_t& lhs, const plane_t& rhs);
-double intersection_of_2lines(const line_t& lhs, const line_t& rhs, point3D_t& destination);
+point3D_t intersection_of_2lines(const line_t& lhs, const line_t& rhs);
 point3D_t intersection_line_segment(const line_t& line, const segment_t& segment);
 point3D_t intersection_line_triangle_2D(const line_t& line, const triangle_t& triangle);
 bool intersection_of_2triangles_3D(const triangle_t& lhs, const triangle_t& rhs);

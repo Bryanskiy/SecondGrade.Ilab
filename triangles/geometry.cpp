@@ -164,12 +164,11 @@ line_t::line_t() : start(), direction() {}
 line_t::line_t(const point3D_t& lhs, const point3D_t& rhs) : start(lhs.x, lhs.y, lhs.z),
                                                              direction(lhs, rhs) {}
 
-bool line_t::include(const point3D_t &point) const {
+bool line_t::include(const point3D_t &point, double& t) const {
     if(!point.valid()) {
         return false;
     }
 
-    double t = 1.0;
     if(std::abs(direction.x) > TOLERANCE) {
         t = (point.x - start.x) / direction.x;
     }
@@ -190,7 +189,13 @@ bool line_t::include(const point3D_t &point) const {
                      (std::abs(point.y - start.y + direction.y * t) < TOLERANCE) &&
                      (std::abs(point.z - start.z + direction.z * t) < TOLERANCE);
 
+
     return flag;
+}
+
+bool line_t::include(const point3D_t &point) const {
+    double tmp;
+    return include(point, tmp);
 }
 
 bool is_parallel(const line_t& lhs, const line_t& rhs) {
@@ -207,6 +212,14 @@ bool is_parallel(const line_t& lhs, const line_t& rhs) {
  -------------------------------------------------*/
 segment_t::segment_t() : start(), end() {}
 segment_t::segment_t(const point3D_t& lhs, const point3D_t& rhs) : start(lhs), end(rhs) {}
+
+bool segment_t::include(const point3D_t &point) const {
+    line_t segment_line(start, end);
+    double t = std::numeric_limits<double>::quiet_NaN();
+    bool flag = segment_line.include(point, t);
+    flag = flag && t >= 0 && t <= 1;
+    return flag;
+}
 /* ------------------------------------------------
                 END SEGMENT_METHODS
  -------------------------------------------------*/
@@ -326,9 +339,10 @@ line_t intersection_of_2planes(const plane_t& lhs, const plane_t& rhs) {
     return ret;
 }
 
-double intersection_of_2lines(const line_t& lhs, const line_t& rhs, point3D_t& destination) {
+point3D_t intersection_of_2lines(const line_t& lhs, const line_t& rhs) {
     double t = std::numeric_limits<double>::quiet_NaN();
     double x, y, z;
+    point3D_t ret;
     if(std::abs(rhs.direction.x - lhs.direction.x) > TOLERANCE) {
         t = (lhs.start.x - rhs.start.x) / (rhs.direction.x - lhs.direction.x);
     }
@@ -342,14 +356,14 @@ double intersection_of_2lines(const line_t& lhs, const line_t& rhs, point3D_t& d
     }
 
     else {
-        return t;
+        return ret;
     }
 
-    destination.x = lhs.start.x + t * lhs.direction.x;
-    destination.y = lhs.start.y + t * lhs.direction.y;
-    destination.z = lhs.start.z + t * lhs.direction.z;
+    ret.x = lhs.start.x + t * lhs.direction.x;
+    ret.y = lhs.start.y + t * lhs.direction.y;
+    ret.z = lhs.start.z + t * lhs.direction.z;
 
-    return t;
+    return ret;
 };
 
 point3D_t intersection_line_segment(const line_t& line, const segment_t& segment) {
@@ -360,8 +374,8 @@ point3D_t intersection_line_segment(const line_t& line, const segment_t& segment
 
     else {
         point3D_t destination;
-        double t = intersection_of_2lines(line, segment_line, destination);
-        return (t < 0.0 || t > 1.0) ? point3D_t() : destination;
+        point3D_t intersection = intersection_of_2lines(line, segment_line);
+        return segment.include(intersection) ? intersection : point3D_t();
     }
 }
 
