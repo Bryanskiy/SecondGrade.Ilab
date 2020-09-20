@@ -58,6 +58,8 @@ vector3D_t::vector3D_t() : x(std::numeric_limits<double>::quiet_NaN()) ,
 
 vector3D_t::vector3D_t(double x_, double y_, double z_) : x(x_), y(y_), z(z_) {}
 
+vector3D_t::vector3D_t(const point3D_t& r_vector) : x(r_vector.x), y(r_vector.y), z(r_vector.z) {}
+
 vector3D_t::vector3D_t(const point3D_t& lhs, const point3D_t& rhs) {
     x = rhs.x - lhs.x;
     y = rhs.y - lhs.y;
@@ -68,6 +70,20 @@ vector3D_t& vector3D_t::operator+=(const vector3D_t& rhs) {
     x += rhs.x;
     y += rhs.y;
     z += rhs.z;
+}
+
+const vector3D_t vector3D_t::operator-() const {
+    vector3D_t tmp = *this;
+    tmp.x = -x;
+    tmp.y = -y;
+    tmp.z = -z;
+
+    return tmp;
+}
+
+vector3D_t& vector3D_t::operator-=(const vector3D_t& rhs) {
+    vector3D_t tmp = *this;
+    return tmp += (-rhs);
 }
 
 vector3D_t& vector3D_t::operator*=(double lambda) {
@@ -100,6 +116,11 @@ bool operator==(const vector3D_t& lhs, const vector3D_t& rhs) {
 const vector3D_t operator+(const vector3D_t& lhs, const vector3D_t& rhs) {
     vector3D_t tmp = lhs;
     return tmp += rhs;
+}
+
+const vector3D_t operator-(const vector3D_t& lhs, const vector3D_t& rhs) {
+    vector3D_t tmp = lhs;
+    return tmp -= rhs;
 }
 
 const vector3D_t operator*(double lambda, const vector3D_t& rhs)  {
@@ -142,9 +163,54 @@ bool is_parallel(const vector3D_t& lhs, const vector3D_t& rhs) {
 line_t::line_t() : start(), direction() {}
 line_t::line_t(const point3D_t& lhs, const point3D_t& rhs) : start(lhs.x, lhs.y, lhs.z),
                                                              direction(lhs, rhs) {}
+
+bool line_t::include(const point3D_t &point) const {
+    if(!point.valid()) {
+        return false;
+    }
+
+    double t = 1.0;
+    if(std::abs(direction.x) > TOLERANCE) {
+        t = (point.x - start.x) / direction.x;
+    }
+
+    else if(std::abs(direction.y) > TOLERANCE) {
+        t = (point.y - start.y) / direction.y;
+    }
+
+    else if(std::abs(direction.z) > TOLERANCE) {
+        t = (point.z - start.z) / direction.z;
+    }
+
+    else {
+        return false;
+    }
+
+    bool flag = 1 && (std::abs(point.x - start.x + direction.x * t) < TOLERANCE) &&
+                     (std::abs(point.y - start.y + direction.y * t) < TOLERANCE) &&
+                     (std::abs(point.z - start.z + direction.z * t) < TOLERANCE);
+
+    return flag;
+}
+
+bool is_parallel(const line_t& lhs, const line_t& rhs) {
+    return is_parallel(lhs.direction, rhs.direction);
+}
 /* ------------------------------------------------
                 END LINE_METHODS
  -------------------------------------------------*/
+
+
+
+/* ------------------------------------------------
+                START SEGMENT_METHODS
+ -------------------------------------------------*/
+segment_t::segment_t() : start(), end() {}
+segment_t::segment_t(const point3D_t& lhs, const point3D_t& rhs) : start(lhs), end(rhs) {}
+/* ------------------------------------------------
+                END SEGMENT_METHODS
+ -------------------------------------------------*/
+
 
 
 
@@ -210,8 +276,16 @@ bool is_parallel(const plane_t& lhs, const plane_t& rhs) {
 
     return is_parallel(n_lhs, n_rhs);
 }
+/* ------------------------------------------------
+                END PLANE_METHODS
+ -------------------------------------------------*/
 
 
+
+
+/* ------------------------------------------------
+                START INTERSECTION_METHODS
+ ------------------------------------------------*/
 //this function use equation:
 //          ->       ->         ->  ->
 // L = (a * n1 + b * n2) + t * [n1, n2] , where
@@ -251,6 +325,71 @@ line_t intersection_of_2planes(const plane_t& lhs, const plane_t& rhs) {
     ret.start = a * lhs_normal + b * rhs_normal;
     return ret;
 }
+
+double intersection_of_2lines(const line_t& lhs, const line_t& rhs, point3D_t& destination) {
+    double t = std::numeric_limits<double>::quiet_NaN();
+    double x, y, z;
+    if(std::abs(rhs.direction.x - lhs.direction.x) > TOLERANCE) {
+        t = (lhs.start.x - rhs.start.x) / (rhs.direction.x - lhs.direction.x);
+    }
+
+    else if(std::abs(rhs.direction.y - lhs.direction.y) > TOLERANCE) {
+        t = (lhs.start.y - rhs.start.y) / (rhs.direction.y - lhs.direction.y);
+    }
+
+    else if(std::abs(rhs.direction.z - lhs.direction.z) > TOLERANCE) {
+        t = (lhs.start.z - rhs.start.z) / (rhs.direction.z - lhs.direction.z);
+    }
+
+    else {
+        return t;
+    }
+
+    destination.x = lhs.start.x + t * lhs.direction.x;
+    destination.y = lhs.start.y + t * lhs.direction.y;
+    destination.z = lhs.start.z + t * lhs.direction.z;
+
+    return t;
+};
+
+point3D_t intersection_line_segment(const line_t& line, const segment_t& segment) {
+    line_t segment_line(segment.start, segment.end);
+    if(is_parallel(line, segment_line)) {
+        return (line.include(segment.start)) ? segment.start : point3D_t();
+    }
+
+    else {
+        point3D_t destination;
+        double t = intersection_of_2lines(line, segment_line, destination);
+        return (t < 0.0 || t > 1.0) ? point3D_t() : destination;
+    }
+}
+
+point3D_t intersection_line_triangle_2D(const line_t& line, const triangle_t& triangle) {
+    point3D_t tmp;
+    tmp = intersection_line_segment(line, segment_t(triangle.A, triangle.B));
+    if(tmp.valid()) {
+        return tmp;
+    }
+
+    tmp = intersection_line_segment(line, segment_t(triangle.C, triangle.B));
+    return tmp;
+}
+
+bool intersection_of_2triangles_3D(const triangle_t& lhs, const triangle_t& rhs) {
+    plane_t lhs_plane(lhs.A, lhs.B, lhs.C);
+    plane_t rhs_plane(rhs.A, rhs.B, rhs.C);
+    line_t plane_intersection = intersection_of_2planes(lhs_plane, rhs_plane);
+
+    /* if(!line_t.valid()) {
+
+    } */
+
+    point3D_t lhs_line_intersection = intersection_line_triangle_2D(plane_intersection, lhs);
+    point3D_t rhs_line_intersection = intersection_line_triangle_2D(plane_intersection, rhs);
+
+    return (lhs_line_intersection.valid() && rhs_line_intersection.valid()) ? true : false;
+}
 /* ------------------------------------------------
-                END PLANE_METHODS
- -------------------------------------------------*/
+                END INTERSECTION_METHODS
+ ------------------------------------------------*/

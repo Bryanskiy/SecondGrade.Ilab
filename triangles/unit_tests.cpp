@@ -156,6 +156,27 @@ TEST(GeometryPlaneTest, IsParallel) {
 /* ------------------------------------------------
                 END PLANE_TESTS
  -------------------------------------------------*/
+
+
+
+/* ------------------------------------------------
+                START INTERSECTION_TESTS
+ ------------------------------------------------*/
+
+TEST(GeometryIntersectionTest, LineAndTriangle2D) {
+    {
+        line_t line(point3D_t(1.0, 0.0, 0.0), point3D_t(0.0, 1.0, 0.0));
+        triangle_t tr(point3D_t(1.0, 0.0, 0.0), point3D_t(2.0, 0.0, 0.0), point3D_t(1.0, 1.0, 0.0));
+        point3D_t p = intersection_line_triangle_2D(line, tr);
+        ASSERT_EQ(1.0, p.x);
+        ASSERT_EQ(0.0, p.y);
+        ASSERT_EQ(0.0, p.z);
+    }
+}
+
+/* ------------------------------------------------
+                END INTERSECTION_METHODS
+ ------------------------------------------------*/
 int main(int argc, char **argv) {
     testing::InitGoogleTest(&argc, argv);
     return RUN_ALL_TESTS();

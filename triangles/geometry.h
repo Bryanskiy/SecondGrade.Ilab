@@ -36,10 +36,13 @@ struct vector3D_t {
 
     explicit vector3D_t();
     explicit vector3D_t(double x_, double y_, double z_);
+    explicit vector3D_t(const point3D_t& r_vector);
     explicit vector3D_t(const point3D_t& lhs, const point3D_t& rhs);
 
-    vector3D_t& operator +=(const vector3D_t& rhs);
-    vector3D_t& operator *=(double lambda);
+    vector3D_t& operator+=(const vector3D_t& rhs);
+    const vector3D_t operator-() const;
+    vector3D_t& operator-=(const vector3D_t& rhs);
+    vector3D_t& operator*=(double lambda);
 
     bool valid() const;
     double len() const;
@@ -48,6 +51,7 @@ struct vector3D_t {
 
 bool operator==(const vector3D_t& lhs, const vector3D_t& rhs);
 const vector3D_t operator+(const vector3D_t& lhs, const vector3D_t& rhs);
+const vector3D_t operator-(const vector3D_t& lhs, const vector3D_t& rhs);
 const vector3D_t operator*(double lambda, const vector3D_t& rhs);
 const vector3D_t operator*(const vector3D_t& lhs, double lambda);
 
@@ -70,9 +74,31 @@ struct line_t {
 
     explicit line_t();
     explicit line_t(const point3D_t& lhs, const point3D_t& rhs);
+    bool include(const point3D_t& point) const;
 };
+
+bool is_parallel(const line_t& lhs, const line_t& rhs);
 /* ------------------------------------------------
                 END LINE_METHODS
+ -------------------------------------------------*/
+
+
+
+
+/* ------------------------------------------------
+                START SEGMENT_METHODS
+ -------------------------------------------------*/
+
+// X(t) = (1 - t)P0 + t * P1, t >= 0 && t <= 1
+struct segment_t {
+    point3D_t start;
+    point3D_t end;
+
+    explicit segment_t();
+    explicit segment_t(const point3D_t& lhs, const point3D_t& rhs);
+};
+/* ------------------------------------------------
+                END SEGMENT_METHODS
  -------------------------------------------------*/
 
 
@@ -112,8 +138,21 @@ struct plane_t {
 };
 
 bool is_parallel(const plane_t& lhs, const plane_t& rhs);
-line_t intersection_of_2planes(const plane_t& lhs, const plane_t& rhs);
 /* ------------------------------------------------
                  END PLANE_METHODS
  -------------------------------------------------*/
 
+
+
+
+/* ------------------------------------------------
+                START INTERSECTION_METHODS
+ ------------------------------------------------*/
+line_t intersection_of_2planes(const plane_t& lhs, const plane_t& rhs);
+double intersection_of_2lines(const line_t& lhs, const line_t& rhs, point3D_t& destination);
+point3D_t intersection_line_segment(const line_t& line, const segment_t& segment);
+point3D_t intersection_line_triangle_2D(const line_t& line, const triangle_t& triangle);
+bool intersection_of_2triangles_3D(const triangle_t& lhs, const triangle_t& rhs);
+/* ------------------------------------------------
+                END INTERSECTION_METHODS
+ ------------------------------------------------*/
