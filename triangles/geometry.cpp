@@ -198,9 +198,14 @@ bool line_t::include(const point3D_t &point) const {
     return include(point, tmp);
 }
 
+bool line_t::valid() const {
+    return (start.valid() && direction.valid());
+}
+
 bool is_parallel(const line_t& lhs, const line_t& rhs) {
     return is_parallel(lhs.direction, rhs.direction);
 }
+
 /* ------------------------------------------------
                 END LINE_METHODS
  -------------------------------------------------*/
@@ -281,6 +286,32 @@ plane_t::plane_t(const point3D_t& x1, const point3D_t& x2, const point3D_t& x3) 
 
 vector3D_t plane_t::normal() const{
     return vector3D_t(a, b, c);
+}
+
+bool operator==(const plane_t& lhs, const plane_t& rhs) {
+    double k = 0.0;
+    if(std::abs(lhs.a) > TOLERANCE) {
+        k = rhs.a / lhs.a;
+    }
+
+    else if((std::abs(lhs.b) > TOLERANCE)) {
+        k = rhs.b / lhs.b;
+    }
+
+    else if((std::abs(lhs.c) > TOLERANCE)) {
+        k = rhs.c / lhs.c;
+    }
+
+    else if((std::abs(lhs.c) > TOLERANCE)) {
+        k = rhs.d / lhs.d;
+    }
+
+    else {
+        return false;
+    }
+
+    return 1 && (std::abs(lhs.a * k - rhs.a) < TOLERANCE) && (std::abs(lhs.b * k - rhs.b) < TOLERANCE) &&
+                (std::abs(lhs.c * k - rhs.c) < TOLERANCE) && (std::abs(lhs.d * k - rhs.d) < TOLERANCE);
 }
 
 bool is_parallel(const plane_t& lhs, const plane_t& rhs) {
@@ -366,6 +397,12 @@ point3D_t intersection_of_2lines(const line_t& lhs, const line_t& rhs) {
     return ret;
 };
 
+point3D_t intersection_of_2segments(const segment_t& lhs, const segment_t& rhs) {
+    line_t lhs_line_segment(lhs.start, lhs.end);
+    point3D_t tmp = intersection_line_segment(lhs_line_segment, rhs);
+    return lhs.include(tmp) ? tmp : point3D_t();
+}
+
 point3D_t intersection_line_segment(const line_t& line, const segment_t& segment) {
     line_t segment_line(segment.start, segment.end);
     if(is_parallel(line, segment_line)) {
@@ -390,14 +427,41 @@ point3D_t intersection_line_triangle_2D(const line_t& line, const triangle_t& tr
     return tmp;
 }
 
+//it chek intersection of all segments
+point3D_t intersection_of_2triangles_2D(const triangle_t& lhs, const triangle_t& rhs) {
+    segment_t lhs_ab(lhs.A, lhs.B);
+    segment_t lhs_bc(lhs.B, lhs.C);
+
+    segment_t rhs_ab(rhs.A, rhs.B);
+    segment_t rhs_bc(rhs.B, rhs.C);
+
+    point3D_t ret = intersection_of_2segments(lhs_ab, rhs_ab);
+    if(ret.valid()) {
+        return ret;
+    }
+
+    ret = intersection_of_2segments(lhs_ab, rhs_bc);
+    if(ret.valid()) {
+        return ret;
+    }
+
+    ret = intersection_of_2segments(lhs_bc, rhs_ab);
+    if(ret.valid()) {
+        return ret;
+    }
+
+    ret = intersection_of_2segments(lhs_bc, rhs_bc);
+    return ret.valid() ? ret : point3D_t();
+}
+
 bool intersection_of_2triangles_3D(const triangle_t& lhs, const triangle_t& rhs) {
     plane_t lhs_plane(lhs.A, lhs.B, lhs.C);
     plane_t rhs_plane(rhs.A, rhs.B, rhs.C);
     line_t plane_intersection = intersection_of_2planes(lhs_plane, rhs_plane);
 
-    /* if(!line_t.valid()) {
-
-    } */
+    if(!plane_intersection.valid()) {
+        return (lhs_plane == rhs_plane) ? false : intersection_of_2triangles_2D(lhs, rhs).valid();
+    }
 
     point3D_t lhs_line_intersection = intersection_line_triangle_2D(plane_intersection, lhs);
     point3D_t rhs_line_intersection = intersection_line_triangle_2D(plane_intersection, rhs);
