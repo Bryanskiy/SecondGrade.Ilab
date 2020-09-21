@@ -170,6 +170,88 @@ TEST(GeometryVectorTest, Valid) {
 
 }
 
+TEST(GeometryVectorTest, Len) {
+    {
+        vector3D_t v(3.0, 4.0, 0.0);
+        ASSERT_DOUBLE_EQ(v.len(), 5.0);
+    }
+
+    {
+        vector3D_t v(0.0, 0.0, 0.0);
+        ASSERT_DOUBLE_EQ(v.len(), 0.0);
+    }
+
+    {
+        vector3D_t v(16.0, 0.0, 0.0);
+        ASSERT_DOUBLE_EQ(v.len(), 16.0);
+    }
+}
+
+TEST(GeometryVectorTest, IsZero) {
+    {
+        vector3D_t v(3.0, 4.0, 0.0);
+        ASSERT_FALSE(v.is_zero());
+    }
+
+    {
+        vector3D_t v(0.0, 0.0, 0.0);
+        ASSERT_TRUE(v.is_zero());
+    }
+
+    {
+        vector3D_t v;
+        ASSERT_FALSE(v.is_zero());
+    }
+}
+
+TEST(GeometryVectorTest, Equal) {
+    {
+        vector3D_t v1(3.0, 4.0, 0.0);
+        vector3D_t v2(3.0, 4.0, 0.0);
+        ASSERT_TRUE(v1 == v2);
+    }
+
+    {
+        vector3D_t v1(3.0, 4.0, 0.0);
+        vector3D_t v2(1.0, 4.0, 0.0);
+        ASSERT_FALSE(v1 == v2);
+    }
+
+    {
+        vector3D_t v1(3.0, 4.0, 0.0);
+        vector3D_t v2;
+        ASSERT_FALSE(v1 == v2) << "1 invalid vector";
+    }
+
+    {
+        vector3D_t v1(3.0, 4.0, 0.0);
+        point3D_t p1(1.0, 0.0, 0.0);
+        point3D_t p2(4.0, 4.0 , 0.0);
+        vector3D_t v2(p2, p1);
+        ASSERT_FALSE(v1 == v2) << "1 vector construct from points";
+    }
+}
+
+TEST(GeometryVectorTest, IsParallel) {
+    {
+        vector3D_t v1(3.0, 4.0, 0.0);
+        vector3D_t v2(6.0, 8.0, 0.0);
+        ASSERT_TRUE(is_parallel(v1, v2));
+    }
+
+    {
+        vector3D_t v1(3.0, 4.0, 0.0);
+        vector3D_t v2(1.0, 8.0, 0.0);
+        ASSERT_FALSE(is_parallel(v1, v2));
+    }
+
+    {
+        vector3D_t v1(3.0, 4.0, 0.0);
+        vector3D_t v2;
+        ASSERT_FALSE(is_parallel(v1, v2)) << "1 vector invalid";
+    }
+}
+
 TEST(GeometryVectorTest, Dot) {
     {
         vector3D_t a(1.0, 2.0, 3.0);
@@ -193,10 +275,142 @@ TEST(GeometryVectorTest, Cross) {
 
 
 
+/* ------------------------------------------------
+                START LINE_TESTS
+ -------------------------------------------------*/
+TEST(GeometryLineTest, Include) {
+    {
+        point3D_t p1(0.0, 0.0, 0.0);
+        point3D_t p2(1.0, 1.0, 0.0);
+        line_t line(p1, p2);
+        double t = -1.0;
+        point3D_t point(0.0, 0.0, 0.0);
+        ASSERT_TRUE(line.include(point, t));
+        ASSERT_DOUBLE_EQ(0.0, t);
+    }
+
+    {
+        point3D_t p1(0.0, 0.0, 0.0);
+        point3D_t p2(1.0, 1.0, 0.0);
+        line_t line(p1, p2);
+        point3D_t point(-1.0, 0.0, 0.0);
+        ASSERT_FALSE(line.include(point));
+    }
+}
+
+// todo : check if line construct from 2 equal points
+TEST(GeometryLineTest, Valid) {
+    {
+        line_t line;
+        ASSERT_FALSE(line.valid());
+    }
+
+    {
+        point3D_t p1(0.0, 1.0, 2.0);
+        point3D_t p2;
+        line_t line(p1, p2);
+        ASSERT_FALSE(line.valid()) << "construct from 2 points, 1 point invalid";
+    }
+
+    {
+        point3D_t p1(0.0, 1.0, 2.0);
+        point3D_t p2(1.0, 3.0, 4.0);
+        line_t line(p1, p2);
+        ASSERT_TRUE(line.valid());
+    }
+}
+
+TEST(GeometryLineTest, Isparallel) {
+    {
+        point3D_t p1(0.0, 0.0, 0.0);
+        point3D_t p2(1.0, 2.0, 0.0);
+        line_t l1(p1, p2);
+
+        point3D_t p3(0.0, 0.0, 0.0);
+        point3D_t p4(2.0, 4.0, 0.0);
+        line_t l2(p3, p4);
+
+        ASSERT_TRUE(is_parallel(l1, l2));
+    }
+
+    {
+        point3D_t p1(0.0, 0.0, 0.0);
+        point3D_t p2(1.0, 2.0, 0.0);
+        line_t l1(p1, p2);
+
+        point3D_t p3(0.0, 0.0, 0.0);
+        point3D_t p4(2.0, 5.0, 0.0);
+        line_t l2(p3, p4);
+
+        ASSERT_FALSE(is_parallel(l1, l2));
+    }
+
+    {
+        point3D_t p1(0.0, 0.0, 0.0);
+        point3D_t p2(1.0, 2.0, 0.0);
+        line_t l1(p1, p2);
+
+        line_t l2;
+
+        ASSERT_FALSE(is_parallel(l1, l2)) << "one line is invalid";
+    }
+}
+/* ------------------------------------------------
+                END LINE_TESTS
+ -------------------------------------------------*/
+
+
+
+
+/* ------------------------------------------------
+                START SEGMENT_TESTS
+ -------------------------------------------------*/
+TEST(GeometrySegmentTest, Include) {
+    {
+        point3D_t p1(0.0, 0.0, 0.0);
+        point3D_t p2(3.0, 4.0, 5.0);
+        segment_t s(p1, p2);
+
+        point3D_t point(0.0, 0.0, 0.0);
+        ASSERT_TRUE(s.include(point));
+    }
+
+    {
+        point3D_t p1(0.0, 0.0, 0.0);
+        point3D_t p2(3.0, 4.0, 5.0);
+        segment_t s(p1, p2);
+
+        point3D_t point(-1.0, 0.0, 0.0);
+        ASSERT_FALSE(s.include(point));
+    }
+}
+/* ------------------------------------------------
+                END SEGMENT_TESTS
+ -------------------------------------------------*/
+
+
+
 
 /* ------------------------------------------------
                 START TRIANGLE_TESTS
  -------------------------------------------------*/
+
+// todo: 3 point on 1 line
+TEST(GeometryTriangleTest, Valid) {
+    {
+        triangle_t x;
+        ASSERT_FALSE(x.valid());
+    }
+
+    {
+        point3D_t a(0.0, 0.0, 0.0);
+        point3D_t b(2.0, 5.0, 1.0);
+        point3D_t c(2.0, 5.0, 2.0);
+        triangle_t x(a, b, c);
+        ASSERT_TRUE(x.valid());
+    }
+}
+
 TEST(GeometryTriangleTest, IOtest) {
     {
         std::istringstream in("1.0 0.0 0.0"
@@ -257,6 +471,20 @@ TEST(GeometryPlaneTest, ConstructFromPoints) {
         ASSERT_DOUBLE_EQ(-73.0, p.d);
     }
 
+}
+
+TEST(GeometryPlaneTest, Equal) {
+    {
+        plane_t p1(1.0, 2.0, 0.0, 3.0);
+        plane_t p2(2.0, 4.0, 0.0, 6.0);
+        ASSERT_TRUE(p1 == p2);
+    }
+
+    {
+        plane_t p1(1.0, 2.0, 0.0, 2.0);
+        plane_t p2(2.0, 4.0, 0.0, 6.0);
+        ASSERT_FALSE(p1 == p2);
+    }
 }
 
 TEST(GeometryPlaneTest, IsParallel) {
