@@ -511,6 +511,60 @@ TEST(GeometryPlaneTest, IsParallel) {
 /* ------------------------------------------------
                 START INTERSECTION_TESTS
  ------------------------------------------------*/
+//todo : if lines are equal
+TEST(GeometryIntersectionTest, Intersection2Lines) {
+    {
+        point3D_t p1(0.0, 0.0, 0.0);
+        point3D_t p2(1.0, 1.0, 0.0);
+        line_t l1(p1, p2);
+
+        point3D_t p3(-1.0, 1.0, 0.0);
+        line_t l2(p1, p3);
+
+        point3D_t intersection = intersection_of_2lines(l1, l2);
+        ASSERT_TRUE(intersection == p1);
+    }
+
+    {
+        point3D_t p1(0.0, 0.0, 0.0);
+        point3D_t p2(1.0, 1.0, 0.0);
+        line_t l1(p1, p2);
+
+        point3D_t p3(-1.0, 1.0, 5.0);
+        point3D_t p4(1.0, 2.0, 5.0);
+        line_t l2(p3, p4);
+
+        point3D_t intersection = intersection_of_2lines(l1, l2);
+        ASSERT_FALSE(intersection.valid());
+    }
+}
+
+TEST(GeometryIntersectionTest, Intersection2Segments) {
+    {
+        point3D_t p1(0.0, 0.0, 0.0);
+        point3D_t p2(1.0, 1.0, 0.0);
+        segment_t l1(p1, p2);
+
+        point3D_t p3(-1.0, 1.0, 0.0);
+        segment_t l2(p1, p3);
+
+        point3D_t intersection = intersection_of_2segments(l1, l2);
+        ASSERT_TRUE(intersection == p1);
+    }
+
+    {
+        point3D_t p1(0.0, 0.0, 0.0);
+        point3D_t p2(1.0, 1.0, 0.0);
+        segment_t l1(p1, p2);
+
+        point3D_t p3(-1.0, 1.0, 5.0);
+        point3D_t p4(1.0, 2.0, 5.0);
+        segment_t l2(p3, p4);
+
+        point3D_t intersection = intersection_of_2segments(l1, l2);
+        ASSERT_FALSE(intersection.valid());
+    }
+}
 
 TEST(GeometryIntersectionTest, LineAndTriangle2D) {
     {
