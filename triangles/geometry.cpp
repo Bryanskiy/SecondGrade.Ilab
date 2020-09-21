@@ -176,15 +176,15 @@ bool line_t::include(const point3D_t &point, double& t) const {
         return false;
     }
 
-    if(std::abs(direction.x) > TOLERANCE) {
+    if(!is_doubles_equal(direction.x, 0.0)) {
         t = (point.x - start.x) / direction.x;
     }
 
-    else if(std::abs(direction.y) > TOLERANCE) {
+    else if(!is_doubles_equal(direction.y, 0.0)) {
         t = (point.y - start.y) / direction.y;
     }
 
-    else if(std::abs(direction.z) > TOLERANCE) {
+    else if(!is_doubles_equal(direction.x, 0.0)) {
         t = (point.z - start.z) / direction.z;
     }
 
@@ -192,9 +192,9 @@ bool line_t::include(const point3D_t &point, double& t) const {
         return false;
     }
 
-    bool flag =  (std::abs(point.x - start.x + direction.x * t) < TOLERANCE) &&
-                 (std::abs(point.y - start.y + direction.y * t) < TOLERANCE) &&
-                 (std::abs(point.z - start.z + direction.z * t) < TOLERANCE);
+    bool flag =  is_doubles_equal(point.x, start.x + direction.x * t) &&
+                 is_doubles_equal(point.y, start.y + direction.y * t) &&
+                 is_doubles_equal(point.z, start.z + direction.z * t);
 
 
     return flag;
@@ -296,7 +296,7 @@ vector3D_t plane_t::normal() const{
 }
 
 bool operator==(const plane_t& lhs, const plane_t& rhs) {
-    bool flag = is_parallel(lhs.normal(), rhs.normal()) && lhs.a * rhs.d == lhs.d * rhs.a;
+    return is_parallel(lhs.normal(), rhs.normal()) && (is_doubles_equal(lhs.a * rhs.d, lhs.d * rhs.a));
 }
 
 bool is_parallel(const plane_t& lhs, const plane_t& rhs) {
@@ -333,7 +333,7 @@ line_t intersection_of_2planes(const plane_t& lhs, const plane_t& rhs) {
     vector3D_t lhs_normal = lhs.normal();
     vector3D_t rhs_normal = rhs.normal();
     vector3D_t crs = cross(lhs_normal, rhs_normal);
-    if(std::abs(crs.len()) < TOLERANCE) {
+    if(is_doubles_equal(crs.len(), 0.0)) {
         return line_t();
     }
 
@@ -359,15 +359,15 @@ point3D_t intersection_of_2lines(const line_t& lhs, const line_t& rhs) {
     double t = std::numeric_limits<double>::quiet_NaN();
     double x, y, z;
     point3D_t ret;
-    if(std::abs(rhs.direction.x - lhs.direction.x) > TOLERANCE) {
+    if(!is_doubles_equal(rhs.direction.x, lhs.direction.y)) {
         t = (lhs.start.x - rhs.start.x) / (rhs.direction.x - lhs.direction.x);
     }
 
-    else if(std::abs(rhs.direction.y - lhs.direction.y) > TOLERANCE) {
+    else if(!is_doubles_equal(rhs.direction.y, lhs.direction.y)) {
         t = (lhs.start.y - rhs.start.y) / (rhs.direction.y - lhs.direction.y);
     }
 
-    else if(std::abs(rhs.direction.z - lhs.direction.z) > TOLERANCE) {
+    else if(!is_doubles_equal(rhs.direction.z, lhs.direction.z)) {
         t = (lhs.start.z - rhs.start.z) / (rhs.direction.z - lhs.direction.z);
     }
 
@@ -380,9 +380,9 @@ point3D_t intersection_of_2lines(const line_t& lhs, const line_t& rhs) {
     ret.y = lhs.start.y + t * lhs.direction.y;
     ret.z = lhs.start.z + t * lhs.direction.z;
 
-    bool flag = 1 && (ret.x == rhs.start.x + t * rhs.direction.x) &&
-                     (ret.y == rhs.start.y + t * rhs.direction.y) &&
-                     (ret.z == rhs.start.z + t * rhs.direction.z);
+    bool flag = (ret.x == rhs.start.x + t * rhs.direction.x) &&
+                (ret.y == rhs.start.y + t * rhs.direction.y) &&
+                (ret.z == rhs.start.z + t * rhs.direction.z);
 
     return (flag == true) ? ret : point3D_t();
 };
