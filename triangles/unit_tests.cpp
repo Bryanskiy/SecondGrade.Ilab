@@ -7,6 +7,38 @@
 /* ------------------------------------------------
                 START POINT_TESTS
  -------------------------------------------------*/
+TEST(GeometryPointTest, ValidTest) {
+    {
+        point3D_t x1;
+        ASSERT_FALSE(x1.valid());
+    }
+
+    {
+        point3D_t x(1.0, 2.0, 3.0);
+        ASSERT_TRUE(x.valid());
+    }
+}
+
+TEST(GeometryPointTest, CompareTest) {
+    {
+        point3D_t x1(1, 2, 3);
+        point3D_t x2(1, 2, 3);
+        ASSERT_TRUE(x1 == x2);
+    }
+
+    {
+        point3D_t x1(1.0, 2.0, 3.0);
+        point3D_t x2(0.0, 0.0, 0.0);
+        ASSERT_FALSE(x1 == x2);
+    }
+
+    {
+        point3D_t x1(1.0, 2.0, 3.0);
+        point3D_t x2;
+        ASSERT_FALSE(x1 == x2) << "x2 - invalid point";
+    }
+}
+
 TEST(GeometryPointTest, IOtest) {
     {
         std::istringstream in("1.0 2.0 3.0");
@@ -25,18 +57,23 @@ TEST(GeometryPointTest, IOtest) {
     }
 }
 
-TEST(GeometryPointTest, ValidTest) {
+TEST(GeometryPointTest, DistanceTest) {
     {
-        point3D_t x1;
-        ASSERT_FALSE(x1.valid());
+        point3D_t x1(0.0, 0.0, 0.0);
+        point3D_t x2(0.0, 0.0, 0.0);
+        ASSERT_DOUBLE_EQ(distance(x1, x2), 0.0) << "zero distance";
     }
-}
 
-TEST(GeometryPointTest, CompareTest) {
     {
-        point3D_t x1(1, 2, 3);
-        point3D_t x2(1, 2, 3);
-        ASSERT_TRUE(x1 == x2);
+        point3D_t x1(0.0, 0.0, 0.0);
+        point3D_t x2(3.0, 0.0, 0.0);
+        ASSERT_DOUBLE_EQ(distance(x1, x2), 3.0);
+    }
+
+    {
+        point3D_t x1(0.0, 0.0, 0.0);
+        point3D_t x2(3.0, 4.0, 0.0);
+        ASSERT_DOUBLE_EQ(distance(x1, x2), 5.0);
     }
 }
 /* ------------------------------------------------
@@ -49,6 +86,90 @@ TEST(GeometryPointTest, CompareTest) {
                 START VECTOR_TESTS
  -------------------------------------------------*
 */
+TEST(GeometryVectorTest, Arithmetic) {
+    {
+        vector3D_t a(1.0, 2.0, 3.0);
+        vector3D_t b(0.0, 4.0, 3.0);
+        vector3D_t expected(1.0, 6.0, 6.0);
+        ASSERT_EQ(a + b, expected);
+        ASSERT_EQ(a += b, expected);
+    }
+
+    {
+        vector3D_t a(1.0, 2.0, 3.0);
+        vector3D_t b(0.0, 4.0, 3.0);
+        vector3D_t expected(1.0, -2.0, 0.0);
+        ASSERT_EQ(a - b, expected);
+        ASSERT_EQ(a -= b, expected);
+    }
+
+    {
+        vector3D_t a(1.0, 2.0, 3.0);
+        vector3D_t a_copy(1.0, 2.0, 3.0);
+        vector3D_t expected(-1.0, -2.0, -3.0);
+        ASSERT_EQ(-a, expected);
+        ASSERT_EQ(a, a_copy) << "unary sub modify vector";
+    }
+
+    {
+        vector3D_t a(1.0, 2.0, 3.0);
+        double lambda = 4.0;
+        vector3D_t expected(4.0, 8.0, 12.0);
+        ASSERT_EQ(a * lambda, expected) << "mult by positive lambda";
+        ASSERT_EQ(a *= lambda, expected) << "mult by positive lambda";
+    }
+
+    {
+        vector3D_t a(1.0, 2.0, 0.0);
+        double lambda = 0.0;
+        vector3D_t expected(0.0, 0.0, 0.0);
+        ASSERT_EQ(a * lambda, expected) << "mult by zero lambda";
+        ASSERT_EQ(a *= lambda, expected) << "mult by zero lambda";
+    }
+
+    {
+        vector3D_t a(1.0, 2.0, 0.0);
+        double lambda = -1.0;
+        vector3D_t expected(-1.0, -2.0, 0.0);
+        ASSERT_EQ(a * lambda, expected) << "mult by negative lambda";
+        ASSERT_EQ(a *= lambda, expected) << "mult by negative lambda";
+    }
+}
+
+TEST(GeometryVectorTest, Valid) {
+    {
+        vector3D_t x;
+        ASSERT_FALSE(x.valid()) << "default construct";
+    }
+
+    {
+        point3D_t x1(1.0, 2.0, 3.0);
+        point3D_t x2(1.0, 3.0, 5.0);
+        vector3D_t x(x1, x2);
+        ASSERT_TRUE(x.valid()) << "construct from 2 valid points";
+    }
+
+    {
+        point3D_t x1;
+        point3D_t x2(1.0, 3.0, 5.0);
+        vector3D_t x(x1, x2);
+        ASSERT_FALSE(x.valid()) << "construct from 1 invalid and 1 valid points";
+    }
+
+    {
+        point3D_t x1;
+        point3D_t x2;
+        vector3D_t x(x1, x2);
+        ASSERT_FALSE(x.valid()) << "construct from 2 invalid points";
+    }
+
+    {
+        vector3D_t x(1.0, 2.0, 3.0);
+        ASSERT_TRUE(x.valid()) << "construct doubles vector";
+    }
+
+}
+
 TEST(GeometryVectorTest, Dot) {
     {
         vector3D_t a(1.0, 2.0, 3.0);

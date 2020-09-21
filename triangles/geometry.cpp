@@ -19,6 +19,8 @@ bool point3D_t::valid() const {
 }
 
 bool operator==(const point3D_t& lhs, const point3D_t& rhs) {
+    if(!lhs.valid() || !rhs.valid()) return false;
+
     if(std::abs(lhs.x - rhs.x) >= TOLERANCE) return false;
     if(std::abs(lhs.y - rhs.y) >= TOLERANCE) return false;
     if(std::abs(lhs.z - rhs.z) >= TOLERANCE) return false;
@@ -82,8 +84,7 @@ const vector3D_t vector3D_t::operator-() const {
 }
 
 vector3D_t& vector3D_t::operator-=(const vector3D_t& rhs) {
-    vector3D_t tmp = *this;
-    return tmp += (-rhs);
+    return *this += (-rhs);
 }
 
 vector3D_t& vector3D_t::operator*=(double lambda) {
