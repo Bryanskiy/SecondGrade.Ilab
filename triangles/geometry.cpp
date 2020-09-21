@@ -103,6 +103,8 @@ double vector3D_t::len() const{
 }
 
 bool vector3D_t::is_zero() const{
+    if(!this->valid()) return false;
+
     if(std::abs(x) > TOLERANCE) return false;
     if(std::abs(y) > TOLERANCE) return false;
     if(std::abs(z) > TOLERANCE) return false;
