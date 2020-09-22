@@ -285,7 +285,7 @@ TEST(GeometryLineTest, Include) {
         line_t line(p1, p2);
         double t = -1.0;
         point3D_t point(0.0, 0.0, 0.0);
-        ASSERT_TRUE(line.include(point, t));
+        t = line.intersect(point);
         ASSERT_DOUBLE_EQ(0.0, t);
     }
 
@@ -294,7 +294,7 @@ TEST(GeometryLineTest, Include) {
         point3D_t p2(1.0, 1.0, 0.0);
         line_t line(p1, p2);
         point3D_t point(-1.0, 0.0, 0.0);
-        ASSERT_FALSE(line.include(point));
+        ASSERT_TRUE(std::isnan(line.intersect(point)));
     }
 }
 
@@ -372,7 +372,8 @@ TEST(GeometrySegmentTest, Include) {
         segment_t s(p1, p2);
 
         point3D_t point(0.0, 0.0, 0.0);
-        ASSERT_TRUE(s.include(point));
+        double t = s.intersect(point);
+        ASSERT_DOUBLE_EQ(0.0, t);
     }
 
     {
@@ -381,7 +382,8 @@ TEST(GeometrySegmentTest, Include) {
         segment_t s(p1, p2);
 
         point3D_t point(-1.0, 0.0, 0.0);
-        ASSERT_FALSE(s.include(point));
+        double t = s.intersect(point);
+        ASSERT_TRUE(std::isnan(t));
     }
 }
 /* ------------------------------------------------
@@ -510,7 +512,6 @@ TEST(GeometryPlaneTest, IsParallel) {
 
 /* ------------------------------------------------
                 START INTERSECTION_TESTS
- ------------------------------------------------*/
 //todo : if lines are equal
 TEST(GeometryIntersectionTest, Intersection2Lines) {
     {
@@ -521,7 +522,7 @@ TEST(GeometryIntersectionTest, Intersection2Lines) {
         point3D_t p3(-1.0, 1.0, 0.0);
         line_t l2(p1, p3);
 
-        point3D_t intersection = intersection_of_2lines(l1, l2);
+        point3D_t intersection = l1.intersect(l2);
         ASSERT_TRUE(intersection == p1);
     }
 
@@ -534,7 +535,7 @@ TEST(GeometryIntersectionTest, Intersection2Lines) {
         point3D_t p4(1.0, 2.0, 5.0);
         line_t l2(p3, p4);
 
-        point3D_t intersection = intersection_of_2lines(l1, l2);
+        point3D_t intersection = l1.intersect(l2);
         ASSERT_FALSE(intersection.valid());
     }
 }
@@ -577,7 +578,6 @@ TEST(GeometryIntersectionTest, LineAndTriangle2D) {
     }
 }
 
-/* ------------------------------------------------
                 END INTERSECTION_METHODS
  ------------------------------------------------*/
 int main(int argc, char **argv) {

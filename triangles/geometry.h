@@ -12,7 +12,7 @@
 struct point3D_t {
     double x, y, z;
 
-    explicit point3D_t();
+    point3D_t();
     explicit point3D_t(double x_, double y_, double z_);
 
     bool valid() const;
@@ -34,7 +34,7 @@ double distance(const point3D_t& rhs, const point3D_t& lhs);
 struct vector3D_t {
     double x, y, z;
 
-    explicit vector3D_t();
+    vector3D_t();
     explicit vector3D_t(double x_, double y_, double z_);
     explicit vector3D_t(const point3D_t& r_vector);
     explicit vector3D_t(const point3D_t& lhs, const point3D_t& rhs);
@@ -66,16 +66,43 @@ bool is_parallel(const vector3D_t& lhs, const vector3D_t& rhs);
 
 
 /* ------------------------------------------------
+                START SEGMENT_METHODS
+ -------------------------------------------------*/
+
+// X(t) = (1 - t)P0 + t * P1, t >= 0 && t <= 1
+struct segment_t {
+    point3D_t start;
+    point3D_t end;
+
+    segment_t();
+    explicit segment_t(const point3D_t& lhs, const point3D_t& rhs);
+
+    point3D_t intersect(const segment_t& rhs) const;
+    double intersect(const point3D_t& point) const;
+};
+/* ------------------------------------------------
+                END SEGMENT_METHODS
+ -------------------------------------------------*/
+
+
+
+
+
+/* ------------------------------------------------
                 START LINE_METHODS
  -------------------------------------------------*/
 struct line_t {
     vector3D_t start;
     vector3D_t direction;
 
-    explicit line_t();
+    line_t();
     explicit line_t(const point3D_t& lhs, const point3D_t& rhs);
-    bool include(const point3D_t& point, double& t) const;
-    bool include(const point3D_t& point) const;
+
+    double intersect(const point3D_t& point) const;
+    point3D_t intersect(const line_t& rhs) const;
+    point3D_t intersect(const line_t& rhs, double& t) const;
+    point3D_t intersect(const segment_t& rhs) const;
+
     bool valid() const;
 };
 
@@ -88,35 +115,22 @@ bool is_parallel(const line_t& lhs, const line_t& rhs);
 
 
 /* ------------------------------------------------
-                START SEGMENT_METHODS
- -------------------------------------------------*/
-
-// X(t) = (1 - t)P0 + t * P1, t >= 0 && t <= 1
-struct segment_t {
-    point3D_t start;
-    point3D_t end;
-
-    explicit segment_t();
-    explicit segment_t(const point3D_t& lhs, const point3D_t& rhs);
-    bool include(const point3D_t& point) const;
-};
-/* ------------------------------------------------
-                END SEGMENT_METHODS
- -------------------------------------------------*/
-
-
-
-
-/* ------------------------------------------------
                 START TRIANGLE_METHODS
  -------------------------------------------------*/
 struct triangle_t {
     point3D_t A, B, C;
 
-    explicit triangle_t();
+    triangle_t();
     explicit triangle_t(const point3D_t& A_, const point3D_t& B_, const point3D_t& C_);
 
-    bool valid();
+    bool valid() const;
+    vector3D_t normal() const;
+
+    std::pair<double, double> projection_x() const;
+    std::pair<double, double> projection_y() const;
+    std::pair<double, double> projection_z() const;
+    bool intersect(const triangle_t& rhs) const;
+    bool include(const line_t& rhs) const;
 };
 
 std::istream& operator>>(std::istream& in, triangle_t& triangle);
@@ -138,6 +152,8 @@ struct plane_t {
     explicit plane_t(const point3D_t& x1, const point3D_t& x2, const point3D_t& x3);
 
     vector3D_t normal() const;
+
+    line_t intersect(const plane_t& rhs) const;
 };
 
 bool operator==(const plane_t& lhs, const plane_t& rhs);
@@ -145,20 +161,3 @@ bool is_parallel(const plane_t& lhs, const plane_t& rhs);
 /* ------------------------------------------------
                  END PLANE_METHODS
  -------------------------------------------------*/
-
-
-
-
-/* ------------------------------------------------
-                START INTERSECTION_METHODS
- ------------------------------------------------*/
-line_t intersection_of_2planes(const plane_t& lhs, const plane_t& rhs);
-point3D_t intersection_of_2lines(const line_t& lhs, const line_t& rhs);
-point3D_t intersection_of_2segments(const segment_t& lhs, const segment_t& rhs);
-point3D_t intersection_line_segment(const line_t& line, const segment_t& segment);
-point3D_t intersection_line_triangle_2D(const line_t& line, const triangle_t& triangle);
-point3D_t intersection_of_2triangles_2D(const triangle_t& lhs, const triangle_t& rhs);
-bool intersection_of_2triangles_3D(const triangle_t& lhs, const triangle_t& rhs);
-/* ------------------------------------------------
-                END INTERSECTION_METHODS
- ------------------------------------------------*/
