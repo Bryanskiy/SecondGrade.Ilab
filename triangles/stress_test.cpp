@@ -53,7 +53,7 @@ int main(){
         triangle_t scd = generate_random_triangle(-8.0, 7.0);
 
         bool projection_metod = fst.intersect(scd);
-        bool planes_metod = fst.intersect(scd);
+        bool planes_metod = intersect_triangles(fst,scd);
         std::cout << "first: " << fst << " second: " << scd  <<
               "|" << projection_metod << ':' << planes_metod << std::endl;
         if(projection_metod != planes_metod) {
