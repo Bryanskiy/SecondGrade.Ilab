@@ -62,6 +62,7 @@ namespace ivkg {
             vector_t(const vector_t<dim_> &) = default;
             vector_t(std::initializer_list<coordinate_t> coordinates);
             vector_t(const point_t<dim_>& lhs, const point_t<dim_>& rhs);
+            vector_t(const point_t<dim_>& point);
             ~vector_t() = default;
 
             coordinate_t &operator[](std::size_t idx);
@@ -86,14 +87,18 @@ namespace ivkg {
 
     template<std::size_t DIM_>
     bool operator==(const vector_t<DIM_>& lhs, const vector_t<DIM_>& rhs);
+
     template<std::size_t DIM_>
-    const vector_t<DIM_> operator+(const vector_t<DIM_>& lhs, const vector_t<DIM_>& rhs);
+    vector_t<DIM_> operator+(const vector_t<DIM_>& lhs, const vector_t<DIM_>& rhs);
+
     template<std::size_t DIM_>
-    const vector_t<DIM_> operator-(const vector_t<DIM_>& lhs, const vector_t<DIM_>& rhs);
+    vector_t<DIM_> operator-(const vector_t<DIM_>& lhs, const vector_t<DIM_>& rhs);
+
     template<std::size_t DIM_>
-    const vector_t<DIM_> operator*(long double lambda, const vector_t<DIM_>& rhs);
+    vector_t<DIM_> operator*(long double lambda, const vector_t<DIM_>& rhs);
+
     template<std::size_t DIM_>
-    const vector_t<DIM_> operator*(const vector_t<DIM_>& lhs, long double lambda);
+    vector_t<DIM_> operator*(const vector_t<DIM_>& lhs, long double lambda);
 
     template<std::size_t DIM_>
     bool parallel(const vector_t<DIM_>& lhs, const vector_t<DIM_>& rhs);
@@ -105,6 +110,53 @@ namespace ivkg {
     template<std::size_t DIM_>
     std::ostream& operator<<(std::ostream& out, const vector_t<DIM_>& vector);
     */
+
+    /* ------------------------------------------------
+                      LINE_CLASS
+    -------------------------------------------------*/
+    template<std::size_t dim_>
+    class line_t {
+        public:
+            line_t() = default;
+            line_t(const line_t<dim_>&) = default;
+            line_t(const vector_t<dim_>& lhs, const vector_t<dim_>& rhs);
+            line_t(const point_t<dim_>& lhs, const point_t<dim_>& rhs);
+
+            vector_t<dim_> get_direction() const;
+            vector_t<dim_> get_start() const;
+
+            bool valid() const;
+        private:
+            vector_t<dim_> start_;
+            vector_t<dim_> direction_;
+    };
+
+    template<std::size_t DIM_>
+    bool operator==(const line_t<DIM_>& lhs, const line_t<DIM_>& rhs);
+
+    template<std::size_t DIM_>
+    bool parallel(const line_t<DIM_>& lhs, const line_t<DIM_>& rhs);
+
+    /* ------------------------------------------------
+                      PLANE_CLASS
+    -------------------------------------------------*/
+    class plane_t {
+        public:
+            plane_t();
+            plane_t(const plane_t &) = default;
+            plane_t(std::initializer_list<long double> coefficients);
+
+            long double& operator[](std::size_t idx);
+            const long double& operator[](std::size_t idx) const;
+
+            vector_t<3> normal() const;
+            line_t<3> intersect(const plane_t& rhs) const;
+        private:
+            std::array<long double, 4> coefficients_;
+    };
+
+    bool operator==(const plane_t& lhs, const plane_t& rhs);
+    bool parallel(const plane_t& lhs, const plane_t& rhs);
 }
 
 
@@ -310,6 +362,13 @@ const ivkg::coordinate_t &ivkg::vector_t<dim_>::operator[](std::size_t idx) cons
     return coordinates_[idx];
 }
 
+template<std::size_t dim_>
+ivkg::vector_t<dim_>::vector_t(const ivkg::point_t<dim_> &point) {
+    for(std::size_t i = 0; i < dim_; ++i) {
+        coordinates_[i] = point[i];
+    }
+}
+
 //todo: for vectors with different dimensions
 template<std::size_t DIM_>
 long double ivkg::dot(const ivkg::vector_t<DIM_>& lhs, const ivkg::vector_t<DIM_>& rhs) {
@@ -349,25 +408,25 @@ bool ivkg::operator==(const ivkg::vector_t<DIM_>& lhs, const ivkg::vector_t<DIM_
 }
 
 template<std::size_t DIM_>
-const ivkg::vector_t<DIM_> ivkg::operator+(const ivkg::vector_t<DIM_>& lhs, const ivkg::vector_t<DIM_>& rhs) {
+ivkg::vector_t<DIM_> ivkg::operator+(const ivkg::vector_t<DIM_>& lhs, const ivkg::vector_t<DIM_>& rhs) {
     ivkg::vector_t<DIM_> tmp = lhs;
     return tmp += rhs;
 }
 
 template<std::size_t DIM_>
-const ivkg::vector_t<DIM_> ivkg::operator-(const ivkg::vector_t<DIM_>& lhs, const ivkg::vector_t<DIM_>& rhs) {
+ivkg::vector_t<DIM_> ivkg::operator-(const ivkg::vector_t<DIM_>& lhs, const ivkg::vector_t<DIM_>& rhs) {
     ivkg::vector_t<DIM_> tmp = lhs;
     return tmp -= rhs;
 }
 
 template<std::size_t DIM_>
-const ivkg::vector_t<DIM_> ivkg::operator*(long double lambda, const ivkg::vector_t<DIM_>& rhs) {
+ivkg::vector_t<DIM_> ivkg::operator*(long double lambda, const ivkg::vector_t<DIM_>& rhs) {
     ivkg::vector_t<DIM_> tmp = rhs;
     return tmp *= lambda;
 }
 
 template<std::size_t DIM_>
-const ivkg::vector_t<DIM_> ivkg::operator*(const ivkg::vector_t<DIM_>& lhs, long double lambda) {
+ivkg::vector_t<DIM_> ivkg::operator*(const ivkg::vector_t<DIM_>& lhs, long double lambda) {
     return lambda * lhs;
 }
 
@@ -390,6 +449,7 @@ std::istream& operator>>(std::istream& in, ivkg::vector_t<DIM_>& vector) {
 }
 
 /*
+ * todo: why it conflict with gtest?
 template<std::size_t DIM_>
 std::ostream& operator<<(std::ostream& out, const ivkg::vector_t<DIM_>& vector) {
     out << '(';
@@ -403,3 +463,103 @@ std::ostream& operator<<(std::ostream& out, const ivkg::vector_t<DIM_>& vector) 
     return out;
 }
 */
+
+/* ------------------------------------------------
+                REALIZATION_LINE_CLASS
+-------------------------------------------------*/
+
+template<std::size_t dim_>
+ivkg::line_t<dim_>::line_t(const ivkg::vector_t<dim_>& lhs, const ivkg::vector_t<dim_>& rhs) :
+    start_{lhs}, direction_{rhs} {}
+
+template<std::size_t dim_>
+ivkg::line_t<dim_>::line_t(const ivkg::point_t<dim_>& lhs, const ivkg::point_t<dim_>& rhs) : start_{lhs} {
+    for(std::size_t i = 0; i < dim_; ++i) {
+        direction_[i] = rhs[i] - lhs[i];
+    }
+}
+
+template<std::size_t dim_>
+bool ivkg::line_t<dim_>::valid() const {
+    return start_.valid() && direction_.valid();
+}
+
+template<std::size_t dim_>
+ivkg::vector_t<dim_> ivkg::line_t<dim_>::get_direction() const {
+    return direction_;
+}
+
+template<std::size_t dim_>
+ivkg::vector_t<dim_> ivkg::line_t<dim_>::get_start() const {
+    return start_;
+}
+
+template<std::size_t DIM_>
+bool ivkg::operator==(const ivkg::line_t<DIM_>& lhs, const ivkg::line_t<DIM_>& rhs) {
+    vector_t<DIM_> tmp = rhs.get_start() - lhs.get_start();
+    return parallel(tmp, lhs.get_direction());
+}
+
+template<std::size_t DIM_>
+bool ivkg::parallel(const ivkg::line_t<DIM_>& lhs, const ivkg::line_t<DIM_>& rhs) {
+    return parallel(lhs.get_direction(), rhs.get_direction());
+}
+
+/* ------------------------------------------------
+                PLANE_LINE_CLASS
+-------------------------------------------------*/
+
+ivkg::plane_t::plane_t() {
+    for(coordinate_t& elem : coefficients_) {
+        elem = std::numeric_limits<double>::quiet_NaN();
+    }
+}
+
+ivkg::plane_t::plane_t(std::initializer_list<long double> coefficients) {
+    if(coefficients.size() != coefficients_.size()) {
+        return;
+    }
+
+    typename std::array<coordinate_t, 4>::iterator obj_iter  = coefficients_.begin();
+    typename std::initializer_list<coordinate_t>::iterator init_iter = coefficients.begin();
+    while (obj_iter != coefficients_.end()) {
+        *obj_iter = *init_iter;
+        obj_iter++;
+        init_iter++;
+    }
+}
+
+long double& ivkg::plane_t::operator[](std::size_t idx) {
+    return coefficients_[idx];
+}
+
+const long double& ivkg::plane_t::operator[](std::size_t idx) const {
+    return coefficients_[idx];
+}
+
+ivkg::vector_t<3> ivkg::plane_t::normal() const {
+    return ivkg::vector_t<3>({coefficients_[0], coefficients_[1], coefficients_[3]});
+}
+
+ivkg::line_t<3> ivkg::plane_t::intersect(const ivkg::plane_t &rhs) const {
+    vector_t<3> lhs_normal = normal();
+    vector_t<3> rhs_normal = rhs.normal();
+    vector_t<3> crs = cross(lhs_normal, rhs_normal);
+    if(equal(crs.len(), 0.0)) {
+        return ivkg::line_t<3>();
+    }
+
+    long double s1, s2, a, b;
+    s1 = coefficients_[3];
+    s2 = rhs[3];
+
+    long double n1n2dot = dot(lhs_normal, rhs_normal);
+    long double n1sqr = dot(lhs_normal, lhs_normal);
+    long double n2sqr = dot(rhs_normal, rhs_normal);
+
+    long double denominator = -std::pow(n1n2dot, 2) + n1sqr * n2sqr;
+    a = (s2 * n1n2dot - s1 * n2sqr) / denominator;
+    b = (s1 * n1n2dot - s2 * n1sqr) / denominator;
+
+    return line_t<3>(a * lhs_normal + b * rhs_normal, crs);
+}
