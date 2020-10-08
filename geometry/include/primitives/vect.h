@@ -8,32 +8,24 @@ namespace ivkg {
     class vector_t {
     public:
         vector_t();
-
         vector_t(const vector_t<dim_> &) = default;
-
         vector_t(std::initializer_list<coordinate_t> coordinates);
-
         vector_t(const point_t<dim_> &lhs, const point_t<dim_> &rhs);
-
         vector_t(const point_t<dim_> &point);
-
         ~vector_t() = default;
 
         coordinate_t &operator[](std::size_t idx);
-
         const coordinate_t &operator[](std::size_t idx) const;
 
         vector_t<dim_> &operator+=(const vector_t<dim_> &rhs);
-
         vector_t<dim_> &operator-=(const vector_t<dim_> &rhs);
-
         vector_t<dim_> &operator*=(long double lambda);
-
         const vector_t<dim_> operator-();
 
         bool valid() const;
 
         long double len() const;
+        void normalize();
 
         bool zero() const;
 
@@ -193,6 +185,18 @@ template<std::size_t dim_>
 ivkg::vector_t<dim_>::vector_t(const ivkg::point_t<dim_> &point) {
     for(std::size_t i = 0; i < dim_; ++i) {
         coordinates_[i] = point[i];
+    }
+}
+
+template<std::size_t dim_>
+void ivkg::vector_t<dim_>::normalize() {
+    if(!valid()) {
+        return;
+    }
+
+    long double length = len();
+    for(std::size_t i = 0; i < dim_; ++i) {
+        coordinates_[i] /= length;
     }
 }
 

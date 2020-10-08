@@ -18,16 +18,3 @@ namespace ivkg {
         return valid(lhs) && valid(rhs) && (std::abs(lhs - rhs) < tolerance);
     }
 }
-
-namespace ivkg {
-    template<std::size_t dim_>
-    class point_t;
-
-    template<std::size_t dim_>
-    class vector_t;
-
-    template<std::size_t dim_>
-    class line_t;
-
-    class plane_t;
-}

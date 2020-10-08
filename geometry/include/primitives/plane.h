@@ -7,16 +7,17 @@ namespace ivkg {
     class plane_t {
     public:
         plane_t();
-
         plane_t(const plane_t &) = default;
-
         plane_t(std::initializer_list<long double> coefficients);
+        plane_t(const point_t<3>& x1, const point_t<3>& x2, const point_t<3>& x3);
 
         long double &operator[](std::size_t idx);
-
         const long double &operator[](std::size_t idx) const;
+        point_t<3> get_point() const;
 
         vector_t<3> normal() const;
+
+        bool valid() const;
 
         line_t<3> intersect(const plane_t &rhs) const;
 
@@ -25,7 +26,6 @@ namespace ivkg {
     };
 
     bool operator==(const plane_t &lhs, const plane_t &rhs);
-
     bool parallel(const plane_t &lhs, const plane_t &rhs);
 
 }
@@ -52,6 +52,14 @@ ivkg::plane_t::plane_t(std::initializer_list<long double> coefficients) {
         init_iter++;
     }
 }
+
+ivkg::plane_t::plane_t(const ivkg::point_t<3> &x1, const ivkg::point_t<3> &x2, const ivkg::point_t<3> &x3) {
+    coefficients_[0] = (x2[1] - x1[1]) * (x3[2] - x1[2]) - (x2[2] - x1[2]) * (x3[1] - x1[1]);
+    coefficients_[1] = -((x2[0] - x1[0]) * (x3[2] - x1[2]) - (x2[2] - x1[2]) * (x3[0] - x1[0]));
+    coefficients_[2] = ((x2[0] - x1[0]) * (x3[1] - x1[1]) - (x2[1] - x1[1]) * (x3[0] - x1[0]));
+    coefficients_[3] = -(x1[0] * coefficients_[0] + x1[1] * coefficients_[1] + x1[2] * coefficients_[2]);
+}
+
 
 long double& ivkg::plane_t::operator[](std::size_t idx) {
     return coefficients_[idx];
@@ -86,4 +94,23 @@ ivkg::line_t<3> ivkg::plane_t::intersect(const ivkg::plane_t &rhs) const {
     b = (s1 * n1n2dot - s2 * n1sqr) / denominator;
 
     return line_t<3>(a * lhs_normal + b * rhs_normal, crs);
+}
+
+bool ivkg::plane_t::valid() const {
+    return ivkg::valid(coefficients_[0]) && ivkg::valid(coefficients_[1]) &&
+           ivkg::valid(coefficients_[2]) && ivkg::valid(coefficients_[3]);
+}
+
+ivkg::point_t<3> ivkg::plane_t::get_point() const{
+    ivkg::vector_t<3> plane_normal = normal();
+    ivkg::vector_t<3> tmp = -this->coefficients_[3] / std::pow(plane_normal.len(), 2) * plane_normal;
+    return {tmp[0], tmp[1], tmp[3]};
+}
+
+bool ivkg::operator==(const plane_t &lhs, const plane_t &rhs) {
+    return vector_t<4>{lhs[0], lhs[1], lhs[2], lhs[3]} == vector_t<4>{rhs[0], rhs[1], rhs[2], rhs[3]};
+}
+
+bool ivkg::parallel(const plane_t &lhs, const plane_t &rhs) {
+    return parallel(vector_t<4>{lhs[0], lhs[1], lhs[2], lhs[3]}, vector_t<4>{rhs[0], rhs[1], rhs[2], rhs[3]});
 }

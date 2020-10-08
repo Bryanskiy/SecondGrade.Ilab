@@ -8,15 +8,11 @@ namespace ivkg {
     class line_t {
     public:
         line_t() = default;
-
         line_t(const line_t<dim_> &) = default;
-
         line_t(const vector_t<dim_> &lhs, const vector_t<dim_> &rhs);
-
         line_t(const point_t<dim_> &lhs, const point_t<dim_> &rhs);
 
         vector_t<dim_> get_direction() const;
-
         vector_t<dim_> get_start() const;
 
         bool valid() const;
