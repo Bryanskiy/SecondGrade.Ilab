@@ -142,6 +142,10 @@ bool ivkg::vector_t<dim_>::valid() const {
 
 template<std::size_t dim_>
 long double ivkg::vector_t<dim_>::len() const {
+    if(!this->valid()) {
+        return std::numeric_limits<double>::quiet_NaN();
+    }
+
     return sqrt(dot(*this, *this));
 }
 

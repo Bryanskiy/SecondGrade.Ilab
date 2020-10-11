@@ -70,7 +70,7 @@ const long double& ivkg::plane_t::operator[](std::size_t idx) const {
 }
 
 ivkg::vector_t<3> ivkg::plane_t::normal() const {
-    return ivkg::vector_t<3>({coefficients_[0], coefficients_[1], coefficients_[3]});
+    return ivkg::vector_t<3>({coefficients_[0], coefficients_[1], coefficients_[2]});
 }
 
 ivkg::line_t<3> ivkg::plane_t::intersect(const ivkg::plane_t &rhs) const {

@@ -17,4 +17,19 @@ namespace ivkg {
     bool equal(const coordinate_t& lhs, const coordinate_t& rhs) {
         return valid(lhs) && valid(rhs) && (std::abs(lhs - rhs) < tolerance);
     }
+
+    template<std::size_t dim_>
+    class point_t;
+
+    template<std::size_t dim_>
+    class vector_t;
+
+    template<std::size_t dim_>
+    class line_t;
+
+    template<std::size_t dim_>
+    class segment_t;
+
+    template<std::size_t dim_>
+    class triangle_t;
 }

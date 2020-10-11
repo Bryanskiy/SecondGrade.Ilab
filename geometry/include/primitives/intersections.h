@@ -37,7 +37,23 @@ bool ivkg::intersection(const triangle_t<3>& lhs, const triangle_t<3>& rhs) {
     ivkg::plane_t rhs_plane{rhs[0], rhs[1], rhs[2]};
     if(parallel(lhs_plane, rhs_plane)) {
         if(lhs_plane == rhs_plane) {
-            //todo
+            segment_t<3> lhs_AB{lhs[0], lhs[1]};
+            segment_t<3> lhs_BC{lhs[1], lhs[2]};
+            segment_t<3> lhs_AC(lhs[0], lhs[2]);
+
+            segment_t<3> rhs_AB{rhs[0], rhs[1]};
+            segment_t<3> rhs_BC{rhs[1], rhs[2]};
+            segment_t<3> rhs_AC(rhs[0], rhs[2]);
+
+            return equal(distance(lhs_AB, rhs_AB), 0.0) ||
+                   equal(distance(lhs_AB, rhs_BC), 0.0) ||
+                   equal(distance(lhs_AB, rhs_AC), 0.0) ||
+                   equal(distance(lhs_BC, rhs_AB), 0.0) ||
+                   equal(distance(lhs_BC, rhs_BC), 0.0) ||
+                   equal(distance(lhs_BC, rhs_AC), 0.0) ||
+                   equal(distance(lhs_AC, rhs_AB), 0.0) ||
+                   equal(distance(lhs_AC, rhs_BC), 0.0) ||
+                   equal(distance(lhs_AC, rhs_AC), 0.0);
         }
 
         return false;

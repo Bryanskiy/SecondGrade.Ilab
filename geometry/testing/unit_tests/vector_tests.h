@@ -126,12 +126,6 @@ TEST(GeometryVectorTest, IsZero) {
 
 TEST(GeometryVectorTest, Equal) {
     {
-        ivkg::vector_t<3> v1{.0, 4.0, 0.0};
-        ivkg::vector_t<3> v2{.0, 4.0, 0.0};
-        ASSERT_TRUE(v1 == v2);
-    }
-
-    {
         ivkg::vector_t<3> v1{0.0, 4.0, 0.0};
         ivkg::vector_t<3> v2{0.0, 4.0, 0.0};
         ASSERT_TRUE(v1 == v2);
@@ -141,14 +135,6 @@ TEST(GeometryVectorTest, Equal) {
         ivkg::vector_t<3> v1{0.0, 4.0, 0.0};
         ivkg::vector_t<3> v2;
         ASSERT_FALSE(v1 == v2) << "1 invalid vector";
-    }
-
-    {
-        ivkg::vector_t<3> v1{3.0, 4.0, 0.0};
-        ivkg::point_t<3> p1{1.0, 0.0, 0.0};
-        ivkg::point_t<3> p2{4.0, 4.0 , 0.0};
-        ivkg::vector_t<3> v2(p2, p1);
-        ASSERT_FALSE(v1 == v2) << "1 vector construct from points";
     }
 }
 
@@ -167,9 +153,15 @@ TEST(GeometryVectorTest, IsParallel) {
     }
 
     {
+        ivkg::vector_t<3> v2;
+        ivkg::vector_t<3> v1;
+        ASSERT_FALSE(parallel(v1, v2)) << "2 vectors invalid";
+    }
+
+    {
         ivkg::vector_t<3> v1{3.0, 4.0, 0.0};
         ivkg::vector_t<3> v2;
-        ASSERT_FALSE(parallel(v1, v2)) << "1 vector invalid";
+        ASSERT_FALSE(parallel(v1, v2)) << "v2 vector invalid";
     }
 }
 
@@ -188,5 +180,12 @@ TEST(GeometryVectorTest, Cross) {
         ivkg::vector_t<3> b{-2.0, 0.0, 4.0};
         ivkg::vector_t<3> expected{8.0, -10.0, 4.0};
         ASSERT_EQ(expected, cross(a, b));
+    }
+
+    {
+        ivkg::vector_t<3> a{1.0, 2.0, 3.0};
+        ivkg::vector_t<3> b{2.0, 4.0, 6.0};
+        ivkg::vector_t<3> expected{0.0, 0.0, 0.0};
+        ASSERT_EQ(expected, cross(a, b)) << "parallel vectors";
     }
 }

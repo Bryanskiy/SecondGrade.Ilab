@@ -18,7 +18,7 @@ namespace ivkg {
         coordinate_t &operator[](std::size_t idx);
         const coordinate_t &operator[](std::size_t idx) const;
 
-        long double distance() const;
+        long double distance(const point_t<dim_>& rhs) const;
 
     private:
         std::array <coordinate_t, dim_> coordinates_;
@@ -112,6 +112,6 @@ const ivkg::coordinate_t& ivkg::point_t<dim_>::operator[](std::size_t idx) const
 }
 
 template<std::size_t dim_>
-long double ivkg::point_t<dim_>::distance() const {
-    return ivkg::vector_t<dim_>(coordinates_).len();
+long double ivkg::point_t<dim_>::distance(const point_t<dim_>& rhs) const {
+    return ivkg::vector_t<dim_>(rhs, *this).len();
 }
