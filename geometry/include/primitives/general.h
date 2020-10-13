@@ -10,12 +10,24 @@ namespace ivkg {
 
     using coordinate_t = long double;
 
-    bool valid(const coordinate_t& coordinate) {
+    inline bool valid(const coordinate_t& coordinate) {
         return !(std::isnan(coordinate) || !std::isfinite(coordinate));
     }
 
-    bool equal(const coordinate_t& lhs, const coordinate_t& rhs) {
+    inline bool equal(const coordinate_t& lhs, const coordinate_t& rhs) {
         return valid(lhs) && valid(rhs) && (std::abs(lhs - rhs) < tolerance);
+    }
+
+    inline int sign(long double x) {
+        if(x > 0) {return 1;}
+        if(x < 0) {return -1;}
+        else {return 0;}
+    }
+
+    void swap(long double& lhs, long double& rhs) {
+        long double tmp = lhs;
+        lhs = rhs;
+        rhs = tmp;
     }
 
     template<std::size_t dim_>
@@ -32,4 +44,11 @@ namespace ivkg {
 
     template<std::size_t dim_>
     class triangle_t;
+
+    template<std::size_t dim_>
+    void swap(point_t<dim_>& lhs, point_t<dim_>& rhs) {
+        point_t<dim_> tmp = lhs;
+        lhs = rhs;
+        rhs = tmp;
+    };
 }

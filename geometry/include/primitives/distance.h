@@ -20,6 +20,7 @@ long double ivkg::signed_distance(const ivkg::point_t<3>& point, const ivkg::pla
 
     point_t<3> p = plane.get_point();
     return dot(plane_normal, vector_t<3>{p, point});
+    //return dot(plane_normal, vector_t<3>{point_t<3>{0, 0, 0}, point}) + plane[3];
 }
 
 long double ivkg::signed_distance(const plane_t& plane, const point_t<3>& point) {
@@ -57,63 +58,4 @@ long double ivkg::distance(const ivkg::line_t<3>& lhs, const ivkg::line_t<3>& rh
     }
 
     return std::sqrt(s * (a * s + b * t + 2.0 * d) + t * (b * s + c * t + 2.0 * e) + f);
-}
-
-long double ivkg::distance(const segment_t<3>& lhs, const segment_t<3>& rhs) {
-    vector_t<3> u{rhs.get_fst(), lhs.get_fst()};
-
-    long double a = dot(vector_t<3>{lhs.get_fst(), lhs.get_scd()}, vector_t<3>{lhs.get_fst(), lhs.get_scd()});
-    long double b = dot(vector_t<3>{lhs.get_fst(), lhs.get_scd()}, vector_t<3>{rhs.get_fst(), rhs.get_scd()});
-    long double c = dot(vector_t<3>{rhs.get_fst(), rhs.get_scd()}, vector_t<3>{rhs.get_fst(), rhs.get_scd()});
-    long double d = dot(vector_t<3>{lhs.get_fst(), lhs.get_scd()}, u);
-    long double e = dot(vector_t<3>{rhs.get_fst(), rhs.get_scd()}, u);
-
-    long double det = a * c - b * b;
-
-    long double snum, tnum;
-    long double sdenom, tdenom;
-
-    if(equal(det, 0.0)) {
-        snum = 0; tnum = e; tdenom = c ; sdenom = det;
-    } else {
-        snum = b * e - c * d;
-        tnum = a * e - b * d;
-    }
-
-    sdenom = det;
-    if (snum < 0) {
-        snum = 0, tnum = e, tdenom = c;
-    } else if(snum > det) {
-        snum = det, tnum = e + b, tdenom = c;
-    } else {
-        tdenom = det;
-    }
-
-    if (tnum < 0) {
-        tnum = 0;
-        if (-d < 0) {
-            snum = 0;
-        } else if (-d > a) {
-            snum = sdenom;
-        } else {
-            snum = -d, sdenom = a;
-        }
-    } else if (tnum > tdenom) {
-        tnum = tdenom;
-        if ((-d + b) < 0) {
-            snum = 0;
-        } else if ((-d + b) > a) {
-            snum = sdenom;
-        } else {
-            snum = -d + b, sdenom = a;
-        }
-    }
-
-    long double s = snum / sdenom;
-    long double t = tnum / tdenom;
-
-    vector_t<3> v = vector_t<3>{lhs.get_fst()} + s * vector_t<3>{lhs.get_fst(), lhs.get_scd()} -
-            vector_t<3>{rhs.get_fst()} + t * vector_t<3>{rhs.get_fst(), rhs.get_scd()};
-
-    return std::sqrt(dot(v, v));
 }

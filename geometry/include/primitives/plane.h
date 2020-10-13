@@ -19,6 +19,7 @@ namespace ivkg {
 
         bool valid() const;
 
+        bool intersect(const point_t<3>& point) const;
         line_t<3> intersect(const plane_t &rhs) const;
 
     private:
@@ -104,13 +105,17 @@ bool ivkg::plane_t::valid() const {
 ivkg::point_t<3> ivkg::plane_t::get_point() const{
     ivkg::vector_t<3> plane_normal = normal();
     ivkg::vector_t<3> tmp = -this->coefficients_[3] / std::pow(plane_normal.len(), 2) * plane_normal;
-    return {tmp[0], tmp[1], tmp[3]};
+    return {tmp[0], tmp[1], tmp[2]};
+}
+
+bool ivkg::plane_t::intersect(const ivkg::point_t<3>& point) const {
+    return equal(coefficients_[0] * point[0] + coefficients_[1] * point[1] + coefficients_[2] * point[2] + coefficients_[3], 0.0);
 }
 
 bool ivkg::operator==(const plane_t &lhs, const plane_t &rhs) {
-    return vector_t<4>{lhs[0], lhs[1], lhs[2], lhs[3]} == vector_t<4>{rhs[0], rhs[1], rhs[2], rhs[3]};
+    return parallel(lhs, rhs) && rhs.intersect(lhs.get_point());
 }
 
 bool ivkg::parallel(const plane_t &lhs, const plane_t &rhs) {
-    return parallel(vector_t<4>{lhs[0], lhs[1], lhs[2], lhs[3]}, vector_t<4>{rhs[0], rhs[1], rhs[2], rhs[3]});
+    return parallel(lhs.normal(), rhs.normal());
 }

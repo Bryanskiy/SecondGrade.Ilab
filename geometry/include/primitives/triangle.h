@@ -29,8 +29,8 @@ ivkg::triangle_t<dim_>::triangle_t(std::initializer_list<point_t<dim_>> points) 
         return;
     }
 
-    typename std::array<coordinate_t, 4>::iterator obj_iter  = points_.begin();
-    typename std::initializer_list<coordinate_t>::iterator init_iter = points.begin();
+    auto obj_iter  = points_.begin();
+    auto init_iter = points.begin();
     while (obj_iter != points_.end()) {
         *obj_iter = *init_iter;
         obj_iter++;

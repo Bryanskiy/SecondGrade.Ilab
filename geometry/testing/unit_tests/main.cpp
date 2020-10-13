@@ -7,6 +7,7 @@
 #include "point_tests.h"
 #include "vector_tests.h"
 #include "distance.h"
+#include "intersection.h"
 
 int main(int argc, char **argv) {
     testing::InitGoogleTest(&argc, argv);

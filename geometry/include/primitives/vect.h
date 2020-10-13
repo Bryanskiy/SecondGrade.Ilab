@@ -271,7 +271,9 @@ bool ivkg::parallel(const ivkg::vector_t<DIM_>& lhs, const ivkg::vector_t<DIM_>&
         return false;
     }
 
-    return equal(dot(lhs, rhs), lhs.len() * rhs.len());
+    long double dot_ = std::abs(dot(lhs, rhs));
+    long double mult = lhs.len() * rhs.len();
+    return equal(dot_, mult);
 }
 
 template<std::size_t DIM_>

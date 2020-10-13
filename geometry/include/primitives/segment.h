@@ -12,10 +12,14 @@ namespace ivkg {
         segment_t(const point_t<dim_>& lhs, const point_t<dim_>& rhs);
 
         point_t<dim_> get_fst();
-        const point_t<dim_> get_fst() const;
+        point_t<dim_> get_fst() const;
 
         point_t<dim_> get_scd();
-        const point_t<dim_> get_scd() const;
+        point_t<dim_> get_scd() const;
+
+        vector_t<dim_> get_start() const;
+
+        vector_t<dim_> get_direction() const;
 
         bool valid() const;
 
@@ -35,7 +39,7 @@ ivkg::point_t<dim_> ivkg::segment_t<dim_>::get_fst() {
 }
 
 template<std::size_t dim_>
-const ivkg::point_t<dim_> ivkg::segment_t<dim_>::get_fst() const{
+ivkg::point_t<dim_> ivkg::segment_t<dim_>::get_fst() const{
     return fst_;
 }
 
@@ -45,7 +49,7 @@ ivkg::point_t<dim_> ivkg::segment_t<dim_>::get_scd() {
 }
 
 template<std::size_t dim_>
-const ivkg::point_t<dim_> ivkg::segment_t<dim_>::get_scd() const{
+ivkg::point_t<dim_> ivkg::segment_t<dim_>::get_scd() const{
     return scd_;
 }
 
@@ -55,4 +59,14 @@ bool ivkg::segment_t<dim_>::valid() const {
         return false;
     }
     return fst_.valid() && scd_.valid();
+}
+
+template<std::size_t dim_>
+ivkg::vector_t<dim_> ivkg::segment_t<dim_>::get_start() const {
+    return vector_t<dim_>{get_fst()};
+}
+
+template<std::size_t dim_>
+ivkg::vector_t<dim_> ivkg::segment_t<dim_>::get_direction() const {
+    return vector_t<dim_>{get_fst(), get_scd()};
 }
