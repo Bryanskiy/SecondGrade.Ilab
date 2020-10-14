@@ -4,7 +4,7 @@
 #include <sstream>
 #include <string>
 
-#include "../../include/geometry.h"
+#include "../../src/include/geometry.h"
 
 TEST(GeometryPointTest, ValidTest) {
     {

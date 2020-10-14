@@ -4,7 +4,7 @@
 #include <sstream>
 #include <string>
 
-#include "../../include/geometry.h"
+#include "../../src/include/geometry.h"
 
 // todo : check if line construct from 2 equal points
 TEST(GeometryLineTest, Valid) {

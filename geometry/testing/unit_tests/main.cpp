@@ -2,7 +2,7 @@
 #include <sstream>
 #include <string>
 
-#include "../../include/geometry.h"
+#include "../../src/include/geometry.h"
 #include "line_tests.h"
 #include "point_tests.h"
 #include "vector_tests.h"

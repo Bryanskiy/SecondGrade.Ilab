@@ -4,7 +4,7 @@
 #include <sstream>
 #include <string>
 
-#include "../../include/geometry.h"
+#include "../../src/include/geometry.h"
 
 TEST(GeometryDistanceTest, SignedPointPlane) {
     {
@@ -63,16 +63,5 @@ TEST(GeometryDistanceTest, LineLine) {
         ivkg::line_t<3> l2{ivkg::vector_t<3>{1, 5, 2}, ivkg::vector_t<3>{1, 6, 3}};
         long double distance = ivkg::distance(l1, l2);
         ASSERT_TRUE(ivkg::equal(distance, 0.12651));
-    }
-}
-
-TEST(GeometryDistanceTest, SegmentSegment) {
-    {
-        ivkg::segment_t<3> s1{ivkg::point_t<3>{2.79, 6.44, 1.31}, ivkg::point_t<3>{1.56, 2.15, 2.45}};
-        ivkg::segment_t<3> s2{ivkg::point_t<3>{-1.76, -2.71, 5.29}, ivkg::point_t<3>{-8.48, -6.76, 4.73}};
-        long double distance = ivkg::distance(s1, s2);
-        ivkg::point_t<3> A{1.56, 2.15, 2.45};
-        ivkg::point_t<3> B{-1.76, -2.71, 5.29};
-        ASSERT_TRUE(ivkg::equal(distance, A.distance(B)));
     }
 }
