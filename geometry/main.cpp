@@ -14,8 +14,8 @@ int main() {
     octt::octtree_t<ivkg::triangle_t<3>> octtree(space);
 
     for(std::size_t i = 0; i < N; ++i) {
-        octtree.insert(triangles[i]);
+        octtree.insert(i, triangles[i]);
     }
 
-    octtree.print_intersections();
+    octtree.print_intersections(std::cout);
 }

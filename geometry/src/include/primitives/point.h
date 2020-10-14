@@ -10,6 +10,7 @@ namespace ivkg {
         point_t();
         point_t(const point_t<dim_> &) = default;
         point_t(std::initializer_list <coordinate_t> coordinates);
+        point_t(const vector_t<dim_>& vec);
         ~point_t() = default;
 
         bool valid() const;
@@ -76,6 +77,13 @@ ivkg::point_t<dim_>::point_t(std::initializer_list<coordinate_t> coordinates) {
         *obj_iter = *init_iter;
         obj_iter++;
         init_iter++;
+    }
+}
+
+template<std::size_t dim_>
+ivkg::point_t<dim_>::point_t(const ivkg::vector_t<dim_>& vec) {
+    for(std::size_t i = 0; i < dim_; ++i) {
+        coordinates_[i] = vec[i];
     }
 }
 
