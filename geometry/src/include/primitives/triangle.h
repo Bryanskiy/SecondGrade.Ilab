@@ -23,6 +23,9 @@ namespace ivkg {
     };
     template <std::size_t DIM_>
     std::istream& operator>>(std::istream& in, triangle_t<DIM_>& triangle);
+
+    template <std::size_t DIM_>
+    std::ostream& operator<<(std::ostream& in, const triangle_t<DIM_>& triangle);
 }
 
 template<std::size_t dim_>
@@ -71,6 +74,15 @@ template <std::size_t DIM_>
 std::istream& ivkg::operator>>(std::istream& in, ivkg::triangle_t<DIM_>& triangle) {
     for(std::size_t i = 0; i < DIM_; ++i) {
         in >> triangle[i];
+    }
+
+    return in;
+}
+
+template <std::size_t DIM_>
+std::ostream& ivkg::operator<<(std::ostream& in, const triangle_t<DIM_>& triangle) {
+    for(std::size_t i = 0; i < DIM_; ++i) {
+        in << triangle[i] << ' ';
     }
 
     return in;

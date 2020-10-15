@@ -132,8 +132,9 @@ namespace octt {
         void del();
 
     private:
-        bool check_elementary(const T& elem);
         bool check_intersection(const T& elem);
+
+        void insert(std::size_t i, bool intersect, const T &elem);
 
         std::array<node_t<T> *, 8> children_;
         std::vector<std::pair<bool,std::pair<std::size_t, T>>> elements_;
@@ -155,9 +156,15 @@ octt::node_t<T>::node_t(const octt::space_t &space) : node_t() {
 
 template<typename T>
 void octt::node_t<T>::insert(std::size_t i, const T &elem) {
+    insert(i, false, elem);
+}
+
+template<typename T>
+void octt::node_t<T>::insert(std::size_t i, bool intersect, const T &elem) {
     if(space_.get_Vmin() > space_.V()) {
-        bool flag = check_elementary(elem);
+        bool flag = check_intersection(elem) || intersect;
         elements_.push_back({flag, {i, elem}});
+        return;
     }
 
     std::pair<long double, long double> proj[3];
@@ -196,7 +203,7 @@ void octt::node_t<T>::insert(std::size_t i, const T &elem) {
         new_space[0] = x_mid, new_space[2] = y_mid, new_space[4] = z_mid;
         idx = 7;
     } else {
-        bool flag = check_intersection(elem);
+        bool flag = check_intersection(elem) || intersect;
         elements_.push_back({flag, {i, elem}});
         return;
     }
@@ -205,7 +212,15 @@ void octt::node_t<T>::insert(std::size_t i, const T &elem) {
         children_[idx] = new node_t<T>(new_space);
     }
 
-    children_[idx]->insert(i, elem);
+    bool flag = intersect;
+    for(std::size_t i = 0; i < elements_.size(); ++i) {
+        if(ivkg::intersection(elements_[i].second.second, elem)) {
+            elements_[i].first = true;
+            flag = true;
+        }
+    }
+
+    children_[idx]->insert(i, flag, elem);
 }
 
 template<typename T>
@@ -224,34 +239,17 @@ void octt::node_t<T>::print_intersection(std::ostream& out) const {
 }
 
 template<typename T>
-bool octt::node_t<T>::check_elementary(const T& elem){
-    if(elements_.size() == 0) {
-        return false;
-    }
-
-    bool flag = false;
-    for(std::size_t i = 0, max = elements_.size(); i < max; ++i) {
-        if(ivkg::intersection(elements_[i].second.second, elem)) {
-            elements_[i].first = true;
-            flag = true;
-        }
-    }
-
-    return flag;
-}
-
-template<typename T>
 bool octt::node_t<T>::check_intersection(const T &elem){
-    if(space_.get_Vmin() > space_.V()) {
-        return check_elementary(elem);
-    }
-
     bool flag = false;
     for(std::size_t i = 0, max = elements_.size(); i < max; ++i) {
         if(ivkg::intersection(elements_[i].second.second, elem)) {
             elements_[i].first = true;
             flag = true;
         }
+    }
+
+    if(space_.get_Vmin() > space_.V()) {
+        return flag;
     }
 
     for(std::size_t i = 0, max = children_.size(); i < max; ++i) {
@@ -329,6 +327,4 @@ template<typename T>
 void octt::octtree_t<T>::insert(std::size_t i, const T &elem) {
     root->insert(i, elem);
 }
-
-
 
