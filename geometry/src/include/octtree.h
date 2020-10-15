@@ -42,7 +42,7 @@ octt::space_t::space_t() {
 }
 
 octt::space_t::space_t(std::initializer_list<long double> init) {
-    if(init.size() != 5) {
+    if(init.size() != 6) {
         return;
     }
 
@@ -68,7 +68,7 @@ long double octt::space_t::V() const {
 }
 
 void octt::space_t::set_Vmin(long double V) {
-    space_t::V_min_ = V;
+    V_min_ = V;
 }
 
 long double octt::space_t::get_Vmin() const {
@@ -93,13 +93,13 @@ octt::space_t octt::create(const std::vector<T>& elements) {
         proj[2] = elements[i].projection_i(2);
 
         ret[0] = std::min(ret[0], proj[0].first);
-        ret[1] = std::min(ret[1], proj[0].second);
+        ret[1] = std::max(ret[1], proj[0].second);
 
         ret[2] = std::min(ret[2], proj[1].first);
-        ret[3] = std::min(ret[3], proj[1].second);
+        ret[3] = std::max(ret[3], proj[1].second);
 
         ret[4] = std::min(ret[0], proj[2].first);
-        ret[5] = std::min(ret[1], proj[2].second);
+        ret[5] = std::max(ret[1], proj[2].second);
     }
 
     ret.set_Vmin(std::pow(ret.V(), 0.33));
@@ -170,7 +170,7 @@ void octt::node_t<T>::insert(std::size_t i, const T &elem) {
     long double z_mid = (space_[4] + space_[5]) / 2.0;
 
     std::size_t idx;
-    space_t new_space;
+    space_t new_space = space_;
     if((proj[0].second < x_mid) && (proj[1].second < y_mid) && (proj[2].second < z_mid)) {
         new_space[1] = x_mid, new_space[3] = y_mid, new_space[5] = z_mid;
         idx = 0;
