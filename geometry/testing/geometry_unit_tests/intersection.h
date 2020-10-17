@@ -111,4 +111,36 @@ TEST(GeometryIntersectionTest, TriangleTriangle) {
         ASSERT_FALSE(ivkg::intersection(tr1, tr2)) << "case 6: (1) triangles don't intersect, "
                                                                        "(2) lie on 1 plane";
     }
+
+    //case 7
+    {
+        ivkg::point_t<3> A{33.3363, 91.2551, 67.8482};
+        ivkg::point_t<3> E{33.2543, 90.9706, 67.1548};
+        ivkg::point_t<3> F{33.6565, 90.6161, 67.7456};
+
+        ivkg::point_t<3> B{33.306, 91.067, 67.2561};
+        ivkg::point_t<3> C{33.9626, 91.3808, 66.8995};
+        ivkg::point_t<3> D{33.5757, 90.5551, 67.4595};
+
+        ivkg::triangle_t<3> tr1{A, E, F};
+        ivkg::triangle_t<3> tr2{B, C, D};
+
+        ASSERT_FALSE(ivkg::intersection(tr1, tr2));
+    }
+
+    //case 8
+    {
+        ivkg::point_t<3> A{24.4199, 39.3683, 88.3612};
+        ivkg::point_t<3> E{24.2155, 38.4732, 88.1412};
+        ivkg::point_t<3> F{24.1576, 38.646, 88.6942};
+
+        ivkg::point_t<3> B{24.8894, 42.4183, 87.4641};
+        ivkg::point_t<3> C{25.4858, 42.5169, 88.01};
+        ivkg::point_t<3> D{24.805, 42.0086, 87.528};
+
+        ivkg::triangle_t<3> tr1{A, E, F};
+        ivkg::triangle_t<3> tr2{B, C, D};
+
+        ASSERT_FALSE(ivkg::intersection(tr1, tr2));
+    }
 }

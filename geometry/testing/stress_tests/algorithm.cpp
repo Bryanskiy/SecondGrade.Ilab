@@ -75,21 +75,47 @@ std::vector<ivkg::triangle_t<3>> generate_random_statistic(std::size_t n, int a,
 }
 
 int main() {
-    std::vector<ivkg::triangle_t<3>> stat = generate_random_statistic(80, -20, 20);
+    for(;;) {
+        std::vector<ivkg::triangle_t<3>> stat = generate_random_statistic(1000, -100, 100);
+        {
+            std::ofstream naive("naive.txt", std::ios_base::out | std::ios_base::trunc);
+            std::ofstream fast("fast.txt", std::ios_base::out | std::ios_base::trunc);
+            std::ofstream triangles("triangles.txt", std::ios_base::out | std::ios_base::trunc);
 
-    std::ofstream naive("naive.txt", std::ios_base::out | std::ios_base::trunc);
-    std::ofstream fast("fast.txt", std::ios_base::out | std::ios_base::trunc);
-    std::ofstream triangles("triangles.txt", std::ios_base::out | std::ios_base::trunc);
+            algorithm_fast(stat, fast);
+            algorithm_naive(stat, naive);
 
-    algorithm_fast(stat, fast);
-    algorithm_naive(stat, naive);
+            for (std::size_t i = 0; i < stat.size(); ++i) {
+                triangles << stat[i] << std::endl;
+            }
 
-    for(std::size_t i = 0; i < stat.size(); ++i) {
-        triangles << stat[i] << std::endl;
+            naive.close();
+            fast.close();
+            triangles.close();
+        }
+        {
+            std::ifstream naive("naive.txt", std::ios_base::in | std::ios_base::trunc);
+            std::ifstream fast("fast.txt", std::ios_base::in | std::ios_base::trunc);
+
+            std::vector<std::size_t> naive_v;
+            std::vector<std::size_t> fast_v;
+
+            std::size_t tmp;
+            while(naive >> tmp) {
+                naive_v.push_back(tmp);
+            }
+
+            while(fast >> tmp) {
+                fast_v.push_back(tmp);
+            }
+
+            std::sort(fast_v.begin(), fast_v.end());
+            for(std::size_t i = 0, max1 = fast_v.size(), max2 = naive_v.size(); i < max1 && i < max2; ++i) {
+                if(fast_v[i] != naive_v[i]) {
+                    std::cout << i << ' ';
+                    break;
+                }
+            }
+        }
     }
-
-    naive.close();
-    fast.close();
-    triangles.close();
-
 }

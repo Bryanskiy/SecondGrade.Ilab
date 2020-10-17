@@ -130,7 +130,7 @@ bool ivkg::intersection(const triangle_t<3>& lhs, const triangle_t<3>& rhs) {
         projections[1][i] = dot(dir, vector_t<3>{start_point, rhs[i]});
     }
 
-    if((sign(dist[0][0]) != sign(dist[0][1])) && sign((dist[0][0]) != sign(dist[0][2]))) {
+    if((sign(dist[0][0]) != sign(dist[0][1])) && (sign(dist[0][0]) != sign(dist[0][2]))) {
         swap(dist[0][0], dist[0][2]);
         swap(projections[0][0], projections[0][2]);
     } else if((sign(dist[0][1]) != sign(dist[0][0])) && sign((dist[0][1]) != sign(dist[0][2]))) {
@@ -138,7 +138,7 @@ bool ivkg::intersection(const triangle_t<3>& lhs, const triangle_t<3>& rhs) {
         swap(projections[0][1], projections[0][2]);
     }
 
-    if((sign(dist[1][0]) != sign(dist[1][1])) && sign((dist[1][0]) != sign(dist[1][2]))) {
+    if((sign(dist[1][0]) != sign(dist[1][1])) && (sign(dist[1][0]) != sign(dist[1][2]))) {
         swap(dist[1][0], dist[1][2]);
         swap(projections[1][0], projections[1][2]);
     } else if((sign(dist[1][1]) != sign(dist[1][0])) && sign((dist[1][1]) != sign(dist[1][2]))) {
