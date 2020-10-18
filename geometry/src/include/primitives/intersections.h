@@ -2,18 +2,18 @@
 
 #include "general.h"
 
-namespace ivkg {
+namespace lingeo {
     line_t<3> intersection(const plane_t& lhs, const plane_t& rhs);
     bool intersection(const triangle_t<3>& lhs, const triangle_t<3>& rhs);
     bool intersection(const segment_t<3>& lhs, const segment_t<3>& rhs);
     bool intersection(const segment_t<3>& s, const point_t<3>& p);
 }
 
-ivkg::line_t<3> ivkg::intersection(const ivkg::plane_t& lhs, const ivkg::plane_t& rhs) {
+lingeo::line_t<3> lingeo::intersection(const lingeo::plane_t& lhs, const lingeo::plane_t& rhs) {
     return lhs.intersect((rhs));
 }
 
-bool ivkg::intersection(const segment_t<3>& s, const point_t<3>& p) {
+bool lingeo::intersection(const segment_t<3>& s, const point_t<3>& p) {
     long double t[3] = {0.0, 0.0, 0.0};
     for(std::size_t i = 0; i < 3lu; ++i) {
         if(!equal(s.get_scd()[i], 0.0))
@@ -28,7 +28,7 @@ bool ivkg::intersection(const segment_t<3>& s, const point_t<3>& p) {
     return flag;
 }
 
-bool ivkg::intersection(const segment_t<3>& lhs, const segment_t<3>& rhs) {
+bool lingeo::intersection(const segment_t<3>& lhs, const segment_t<3>& rhs) {
     vector_t<3> u{rhs.get_fst(), lhs.get_fst()};
 
     long double a = dot(vector_t<3>{lhs.get_fst(), lhs.get_scd()}, vector_t<3>{lhs.get_fst(), lhs.get_scd()});
@@ -68,7 +68,7 @@ bool ivkg::intersection(const segment_t<3>& lhs, const segment_t<3>& rhs) {
 }
 
 
-bool ivkg::intersection(const triangle_t<3>& lhs, const triangle_t<3>& rhs) {
+bool lingeo::intersection(const triangle_t<3>& lhs, const triangle_t<3>& rhs) {
     if(!lhs.valid() || !rhs.valid()) {
         return false;
     }

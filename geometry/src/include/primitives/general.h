@@ -6,7 +6,7 @@
 #include <cmath>
 #include <array>
 
-namespace ivkg {
+namespace lingeo {
     const long double tolerance = 1e-5;
 
     using coordinate_t = long double;

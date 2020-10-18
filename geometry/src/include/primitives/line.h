@@ -2,7 +2,7 @@
 
 #include "general.h"
 
-namespace ivkg {
+namespace lingeo {
 
     template<std::size_t dim_>
     class line_t {
@@ -35,38 +35,38 @@ namespace ivkg {
 -------------------------------------------------*/
 
 template<std::size_t dim_>
-ivkg::line_t<dim_>::line_t(const ivkg::vector_t<dim_>& lhs, const ivkg::vector_t<dim_>& rhs) :
+lingeo::line_t<dim_>::line_t(const lingeo::vector_t<dim_>& lhs, const lingeo::vector_t<dim_>& rhs) :
         start_{lhs}, direction_{rhs} {}
 
 template<std::size_t dim_>
-ivkg::line_t<dim_>::line_t(const ivkg::point_t<dim_>& lhs, const ivkg::point_t<dim_>& rhs) : start_{lhs} {
+lingeo::line_t<dim_>::line_t(const lingeo::point_t<dim_>& lhs, const lingeo::point_t<dim_>& rhs) : start_{lhs} {
     for(std::size_t i = 0; i < dim_; ++i) {
         direction_[i] = rhs[i] - lhs[i];
     }
 }
 
 template<std::size_t dim_>
-bool ivkg::line_t<dim_>::valid() const {
+bool lingeo::line_t<dim_>::valid() const {
     return start_.valid() && direction_.valid();
 }
 
 template<std::size_t dim_>
-ivkg::vector_t<dim_> ivkg::line_t<dim_>::get_direction() const {
+lingeo::vector_t<dim_> lingeo::line_t<dim_>::get_direction() const {
     return direction_;
 }
 
 template<std::size_t dim_>
-ivkg::vector_t<dim_> ivkg::line_t<dim_>::get_start() const {
+lingeo::vector_t<dim_> lingeo::line_t<dim_>::get_start() const {
     return start_;
 }
 
 template<std::size_t DIM_>
-bool ivkg::operator==(const ivkg::line_t<DIM_>& lhs, const ivkg::line_t<DIM_>& rhs) {
+bool lingeo::operator==(const lingeo::line_t<DIM_>& lhs, const lingeo::line_t<DIM_>& rhs) {
     vector_t<DIM_> tmp = rhs.get_start() - lhs.get_start();
     return parallel(tmp, lhs.get_direction());
 }
 
 template<std::size_t DIM_>
-bool ivkg::parallel(const ivkg::line_t<DIM_>& lhs, const ivkg::line_t<DIM_>& rhs) {
+bool lingeo::parallel(const lingeo::line_t<DIM_>& lhs, const lingeo::line_t<DIM_>& rhs) {
     return parallel(lhs.get_direction(), rhs.get_direction());
 }

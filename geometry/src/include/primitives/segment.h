@@ -2,7 +2,7 @@
 
 #include "general.h"
 
-namespace ivkg {
+namespace lingeo {
 
     template<std::size_t dim_>
     class segment_t {
@@ -30,31 +30,31 @@ namespace ivkg {
 }
 
 template<std::size_t dim_>
-ivkg::segment_t<dim_>::segment_t(const ivkg::point_t<dim_>& lhs, const ivkg::point_t<dim_>& rhs) :
+lingeo::segment_t<dim_>::segment_t(const lingeo::point_t<dim_>& lhs, const lingeo::point_t<dim_>& rhs) :
         fst_{lhs}, scd_{rhs} {}
 
 template<std::size_t dim_>
-ivkg::point_t<dim_> ivkg::segment_t<dim_>::get_fst() {
+lingeo::point_t<dim_> lingeo::segment_t<dim_>::get_fst() {
     return fst_;
 }
 
 template<std::size_t dim_>
-ivkg::point_t<dim_> ivkg::segment_t<dim_>::get_fst() const{
+lingeo::point_t<dim_> lingeo::segment_t<dim_>::get_fst() const{
     return fst_;
 }
 
 template<std::size_t dim_>
-ivkg::point_t<dim_> ivkg::segment_t<dim_>::get_scd() {
+lingeo::point_t<dim_> lingeo::segment_t<dim_>::get_scd() {
     return scd_;
 }
 
 template<std::size_t dim_>
-ivkg::point_t<dim_> ivkg::segment_t<dim_>::get_scd() const{
+lingeo::point_t<dim_> lingeo::segment_t<dim_>::get_scd() const{
     return scd_;
 }
 
 template<std::size_t dim_>
-bool ivkg::segment_t<dim_>::valid() const {
+bool lingeo::segment_t<dim_>::valid() const {
     if(fst_ == scd_) {
         return false;
     }
@@ -62,11 +62,11 @@ bool ivkg::segment_t<dim_>::valid() const {
 }
 
 template<std::size_t dim_>
-ivkg::vector_t<dim_> ivkg::segment_t<dim_>::get_start() const {
+lingeo::vector_t<dim_> lingeo::segment_t<dim_>::get_start() const {
     return vector_t<dim_>{get_fst()};
 }
 
 template<std::size_t dim_>
-ivkg::vector_t<dim_> ivkg::segment_t<dim_>::get_direction() const {
+lingeo::vector_t<dim_> lingeo::segment_t<dim_>::get_direction() const {
     return vector_t<dim_>{get_fst(), get_scd()};
 }

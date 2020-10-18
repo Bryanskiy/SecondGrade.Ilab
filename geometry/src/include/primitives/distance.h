@@ -2,15 +2,14 @@
 
 #include "general.h"
 
-namespace ivkg {
+namespace lingeo {
     long double signed_distance(const point_t<3>& point, const plane_t& plane);
     long double signed_distance(const plane_t& plane, const point_t<3>& point);
 
     long double distance(const line_t<3>& lhs, const line_t<3>& rhs);
-    long double distance(const segment_t<3>& lhs, const segment_t<3>& rhs);
 }
 
-long double ivkg::signed_distance(const ivkg::point_t<3>& point, const ivkg::plane_t& plane) {
+long double lingeo::signed_distance(const lingeo::point_t<3>& point, const lingeo::plane_t& plane) {
     if(!point.valid() || !plane.valid()) {
         return std::numeric_limits<double>::quiet_NaN();
     }
@@ -20,14 +19,13 @@ long double ivkg::signed_distance(const ivkg::point_t<3>& point, const ivkg::pla
 
     point_t<3> p = plane.get_point();
     return dot(plane_normal, vector_t<3>{p, point});
-    //return dot(plane_normal, vector_t<3>{point_t<3>{0, 0, 0}, point}) + plane[3];
 }
 
-long double ivkg::signed_distance(const plane_t& plane, const point_t<3>& point) {
+long double lingeo::signed_distance(const plane_t& plane, const point_t<3>& point) {
     return signed_distance(point, plane);
 }
 
-long double ivkg::distance(const ivkg::line_t<3>& lhs, const ivkg::line_t<3>& rhs) {
+long double lingeo::distance(const lingeo::line_t<3>& lhs, const lingeo::line_t<3>& rhs) {
     vector_t<3> d0 = lhs.get_direction();
     vector_t<3> d1 = rhs.get_direction();
     vector_t<3> p0 = lhs.get_start();

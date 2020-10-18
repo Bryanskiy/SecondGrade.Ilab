@@ -2,7 +2,7 @@
 
 #include "general.h"
 
-namespace ivkg {
+namespace lingeo {
 
     template<std::size_t dim_>
     class vector_t {
@@ -69,7 +69,7 @@ namespace ivkg {
                 REALIZATION_VECTOR_CLASS
 -------------------------------------------------*/
 template<std::size_t dim_>
-ivkg::vector_t<dim_>::vector_t() {
+lingeo::vector_t<dim_>::vector_t() {
     for(coordinate_t& elem : coordinates_) {
         elem = std::numeric_limits<double>::quiet_NaN();
     }
@@ -78,13 +78,13 @@ ivkg::vector_t<dim_>::vector_t() {
 
 //todo: avoid duplicate code (the same constructor in point class)
 template<std::size_t dim_>
-ivkg::vector_t<dim_>::vector_t(std::initializer_list<coordinate_t> coordinates) {
+lingeo::vector_t<dim_>::vector_t(std::initializer_list<coordinate_t> coordinates) {
     if(coordinates.size() != dim_) {
         return;
     }
 
-    typename std::array<coordinate_t, dim_>::iterator obj_iter  = coordinates_.begin();
-    typename std::initializer_list<coordinate_t>::iterator init_iter = coordinates.begin();
+    auto obj_iter  = coordinates_.begin();
+    auto init_iter = coordinates.begin();
     while (obj_iter != coordinates_.end()) {
         *obj_iter = *init_iter;
         obj_iter++;
@@ -94,16 +94,16 @@ ivkg::vector_t<dim_>::vector_t(std::initializer_list<coordinate_t> coordinates) 
 
 //todo: construct vector from points with different dimensions
 template<std::size_t dim_>
-ivkg::vector_t<dim_>::vector_t(const point_t<dim_>& lhs, const point_t<dim_>& rhs) {
+lingeo::vector_t<dim_>::vector_t(const point_t<dim_>& lhs, const point_t<dim_>& rhs) {
     for(std::size_t i = 0; i < dim_; ++i) {
         coordinates_[i] = rhs[i] - lhs[i];
     }
 }
 
 template<std::size_t dim_>
-ivkg::vector_t<dim_>& ivkg::vector_t<dim_>::operator+=(const vector_t<dim_>& rhs) {
+lingeo::vector_t<dim_>& lingeo::vector_t<dim_>::operator+=(const vector_t<dim_>& rhs) {
     for(std::size_t i = 0; i < dim_; ++i) {
-        this->coordinates_[i] += rhs[i];
+        coordinates_[i] += rhs[i];
     }
 
     return *this;
@@ -111,9 +111,9 @@ ivkg::vector_t<dim_>& ivkg::vector_t<dim_>::operator+=(const vector_t<dim_>& rhs
 
 //todo: avoid duplicate code (the same in operator +=)
 template<std::size_t dim_>
-ivkg::vector_t<dim_>& ivkg::vector_t<dim_>::operator-=(const vector_t<dim_>& rhs) {
+lingeo::vector_t<dim_>& lingeo::vector_t<dim_>::operator-=(const vector_t<dim_>& rhs) {
     for(std::size_t i = 0; i < dim_; ++i) {
-        this->coordinates_[i] -= rhs[i];
+        coordinates_[i] -= rhs[i];
     }
 
     return *this;
@@ -121,9 +121,9 @@ ivkg::vector_t<dim_>& ivkg::vector_t<dim_>::operator-=(const vector_t<dim_>& rhs
 
 //todo: overflow protection
 template<std::size_t dim_>
-ivkg::vector_t<dim_>& ivkg::vector_t<dim_>::operator*=(long double lambda) {
+lingeo::vector_t<dim_>& lingeo::vector_t<dim_>::operator*=(long double lambda) {
     for(std::size_t i = 0; i < dim_; ++i) {
-        this->coordinates_[i] *= lambda;
+        coordinates_[i] *= lambda;
     }
 
     return *this;
@@ -131,18 +131,16 @@ ivkg::vector_t<dim_>& ivkg::vector_t<dim_>::operator*=(long double lambda) {
 
 //todo: avoid duplicate code(the same in point class)
 template<std::size_t dim_>
-bool ivkg::vector_t<dim_>::valid() const {
-    bool flag = true;
-    for(const coordinate_t& elem : coordinates_) {
-        flag = flag && ivkg::valid(elem);
-    }
-
-    return flag;
+bool lingeo::vector_t<dim_>::valid() const {
+    for(const coordinate_t& elem : coordinates_)
+        if(!lingeo::valid(elem))
+            return false;
+    return true;
 }
 
 template<std::size_t dim_>
-long double ivkg::vector_t<dim_>::len() const {
-    if(!this->valid()) {
+long double lingeo::vector_t<dim_>::len() const {
+    if(!valid()) {
         return std::numeric_limits<double>::quiet_NaN();
     }
 
@@ -150,14 +148,14 @@ long double ivkg::vector_t<dim_>::len() const {
 }
 
 template<std::size_t dim_>
-bool ivkg::vector_t<dim_>::zero() const {
-    if(!this->valid()) {
+bool lingeo::vector_t<dim_>::zero() const {
+    if(!valid()) {
         return false;
     }
 
 
     for(std::size_t i = 0; i < dim_; ++i) {
-        if(!equal(this->coordinates_[i], 0.0)) {
+        if(!equal(coordinates_[i], 0.0)) {
             return false;
         }
     }
@@ -166,8 +164,8 @@ bool ivkg::vector_t<dim_>::zero() const {
 }
 
 template<std::size_t dim_>
-const ivkg::vector_t<dim_> ivkg::vector_t<dim_>::operator-() {
-    ivkg::vector_t<dim_> ret;
+const lingeo::vector_t<dim_> lingeo::vector_t<dim_>::operator-() {
+    lingeo::vector_t<dim_> ret;
     for(std::size_t i = 0; i < dim_; ++i) {
         ret[i] = -coordinates_[i];
     }
@@ -176,24 +174,24 @@ const ivkg::vector_t<dim_> ivkg::vector_t<dim_>::operator-() {
 }
 
 template<std::size_t dim_>
-ivkg::coordinate_t &ivkg::vector_t<dim_>::operator[](std::size_t idx) {
+lingeo::coordinate_t &lingeo::vector_t<dim_>::operator[](std::size_t idx) {
     return coordinates_[idx];
 }
 
 template<std::size_t dim_>
-const ivkg::coordinate_t &ivkg::vector_t<dim_>::operator[](std::size_t idx) const {
+const lingeo::coordinate_t &lingeo::vector_t<dim_>::operator[](std::size_t idx) const {
     return coordinates_[idx];
 }
 
 template<std::size_t dim_>
-ivkg::vector_t<dim_>::vector_t(const ivkg::point_t<dim_> &point) {
+lingeo::vector_t<dim_>::vector_t(const lingeo::point_t<dim_> &point) {
     for(std::size_t i = 0; i < dim_; ++i) {
         coordinates_[i] = point[i];
     }
 }
 
 template<std::size_t dim_>
-void ivkg::vector_t<dim_>::normalize() {
+void lingeo::vector_t<dim_>::normalize() {
     if(!valid()) {
         return;
     }
@@ -206,7 +204,7 @@ void ivkg::vector_t<dim_>::normalize() {
 
 //todo: for vectors with different dimensions
 template<std::size_t DIM_>
-long double ivkg::dot(const ivkg::vector_t<DIM_>& lhs, const ivkg::vector_t<DIM_>& rhs) {
+long double lingeo::dot(const lingeo::vector_t<DIM_>& lhs, const lingeo::vector_t<DIM_>& rhs) {
     if(!lhs.valid() || !rhs.valid()) {
         return std::numeric_limits<double>::quiet_NaN();
     }
@@ -220,15 +218,15 @@ long double ivkg::dot(const ivkg::vector_t<DIM_>& lhs, const ivkg::vector_t<DIM_
 }
 
 //todo: for all dimensions
-ivkg::vector_t<3> ivkg::cross(const ivkg::vector_t<3>& lhs, const ivkg::vector_t<3>& rhs) {
-    ivkg::coordinate_t x = lhs[1] * rhs[2] - lhs[2] * rhs[1];
-    ivkg::coordinate_t y = lhs[2] * rhs[0] - lhs[0] * rhs[2];
-    ivkg::coordinate_t z = lhs[0] * rhs[1] - lhs[1] * rhs[0];
-    return ivkg::vector_t<3>({x, y, z});
+lingeo::vector_t<3> lingeo::cross(const lingeo::vector_t<3>& lhs, const lingeo::vector_t<3>& rhs) {
+    lingeo::coordinate_t x = lhs[1] * rhs[2] - lhs[2] * rhs[1];
+    lingeo::coordinate_t y = lhs[2] * rhs[0] - lhs[0] * rhs[2];
+    lingeo::coordinate_t z = lhs[0] * rhs[1] - lhs[1] * rhs[0];
+    return lingeo::vector_t<3>({x, y, z});
 }
 
 template<std::size_t DIM_>
-bool ivkg::operator==(const ivkg::vector_t<DIM_>& lhs, const ivkg::vector_t<DIM_>& rhs) {
+bool lingeo::operator==(const lingeo::vector_t<DIM_>& lhs, const lingeo::vector_t<DIM_>& rhs) {
     if(!lhs.valid() || !rhs.valid()) {
         return false;
     }
@@ -243,30 +241,30 @@ bool ivkg::operator==(const ivkg::vector_t<DIM_>& lhs, const ivkg::vector_t<DIM_
 }
 
 template<std::size_t DIM_>
-ivkg::vector_t<DIM_> ivkg::operator+(const ivkg::vector_t<DIM_>& lhs, const ivkg::vector_t<DIM_>& rhs) {
-    ivkg::vector_t<DIM_> tmp = lhs;
+lingeo::vector_t<DIM_> lingeo::operator+(const lingeo::vector_t<DIM_>& lhs, const lingeo::vector_t<DIM_>& rhs) {
+    lingeo::vector_t<DIM_> tmp = lhs;
     return tmp += rhs;
 }
 
 template<std::size_t DIM_>
-ivkg::vector_t<DIM_> ivkg::operator-(const ivkg::vector_t<DIM_>& lhs, const ivkg::vector_t<DIM_>& rhs) {
-    ivkg::vector_t<DIM_> tmp = lhs;
+lingeo::vector_t<DIM_> lingeo::operator-(const lingeo::vector_t<DIM_>& lhs, const lingeo::vector_t<DIM_>& rhs) {
+    lingeo::vector_t<DIM_> tmp = lhs;
     return tmp -= rhs;
 }
 
 template<std::size_t DIM_>
-ivkg::vector_t<DIM_> ivkg::operator*(long double lambda, const ivkg::vector_t<DIM_>& rhs) {
-    ivkg::vector_t<DIM_> tmp = rhs;
+lingeo::vector_t<DIM_> lingeo::operator*(long double lambda, const lingeo::vector_t<DIM_>& rhs) {
+    lingeo::vector_t<DIM_> tmp = rhs;
     return tmp *= lambda;
 }
 
 template<std::size_t DIM_>
-ivkg::vector_t<DIM_> ivkg::operator*(const ivkg::vector_t<DIM_>& lhs, long double lambda) {
+lingeo::vector_t<DIM_> lingeo::operator*(const lingeo::vector_t<DIM_>& lhs, long double lambda) {
     return lambda * lhs;
 }
 
 template<std::size_t DIM_>
-bool ivkg::parallel(const ivkg::vector_t<DIM_>& lhs, const ivkg::vector_t<DIM_>& rhs) {
+bool lingeo::parallel(const lingeo::vector_t<DIM_>& lhs, const lingeo::vector_t<DIM_>& rhs) {
     if(!lhs.valid() || !rhs.valid()) {
         return false;
     }
@@ -277,7 +275,7 @@ bool ivkg::parallel(const ivkg::vector_t<DIM_>& lhs, const ivkg::vector_t<DIM_>&
 }
 
 template<std::size_t DIM_>
-std::istream& operator>>(std::istream& in, ivkg::vector_t<DIM_>& vector) {
+std::istream& operator>>(std::istream& in, lingeo::vector_t<DIM_>& vector) {
     for(std::size_t i = 0; i < DIM_; ++i) {
         in >> vector[i];
     }
@@ -288,7 +286,7 @@ std::istream& operator>>(std::istream& in, ivkg::vector_t<DIM_>& vector) {
 /*
  * todo: why it conflict with gtest?
 template<std::size_t DIM_>
-std::ostream& operator<<(std::ostream& out, const ivkg::vector_t<DIM_>& vector) {
+std::ostream& operator<<(std::ostream& out, const lingeo::vector_t<DIM_>& vector) {
     out << '(';
     out << vector[0];
     for(std::size_t i = 1; i < DIM_; ++i) {

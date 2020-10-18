@@ -2,7 +2,7 @@
 
 #include "general.h"
 
-namespace ivkg {
+namespace lingeo {
 
     template<std::size_t dim_>
     class triangle_t {
@@ -29,7 +29,7 @@ namespace ivkg {
 }
 
 template<std::size_t dim_>
-ivkg::triangle_t<dim_>::triangle_t(std::initializer_list<point_t<dim_>> points) {
+lingeo::triangle_t<dim_>::triangle_t(std::initializer_list<point_t < dim_>> points) {
     if(points_.size() != points.size()) {
         return;
     }
@@ -44,22 +44,22 @@ ivkg::triangle_t<dim_>::triangle_t(std::initializer_list<point_t<dim_>> points) 
 }
 
 template<std::size_t dim_>
-ivkg::point_t<dim_>& ivkg::triangle_t<dim_>::operator[](std::size_t idx) {
+lingeo::point_t<dim_>& lingeo::triangle_t<dim_>::operator[](std::size_t idx) {
     return points_[idx];
 }
 
 template<std::size_t dim_>
-const ivkg::point_t<dim_>& ivkg::triangle_t<dim_>::operator[](std::size_t idx) const{
+const lingeo::point_t<dim_>& lingeo::triangle_t<dim_>::operator[](std::size_t idx) const{
     return points_[idx];
 }
 
 template<std::size_t dim_>
-bool ivkg::triangle_t<dim_>::valid() const {
+bool lingeo::triangle_t<dim_>::valid() const {
     return points_[0].valid() && points_[1].valid() && points_[2].valid();
 }
 
 template<std::size_t dim_>
-std::pair<long double, long double> ivkg::triangle_t<dim_>::projection_i(std::size_t i) const {
+std::pair<long double, long double> lingeo::triangle_t<dim_>::projection_i(std::size_t i) const {
     if(i > dim_) {
         return {0.0, 0.0};
     }
@@ -71,7 +71,7 @@ std::pair<long double, long double> ivkg::triangle_t<dim_>::projection_i(std::si
 
 
 template <std::size_t DIM_>
-std::istream& ivkg::operator>>(std::istream& in, ivkg::triangle_t<DIM_>& triangle) {
+std::istream& lingeo::operator>>(std::istream& in, lingeo::triangle_t<DIM_>& triangle) {
     for(std::size_t i = 0; i < DIM_; ++i) {
         in >> triangle[i];
     }
@@ -80,7 +80,7 @@ std::istream& ivkg::operator>>(std::istream& in, ivkg::triangle_t<DIM_>& triangl
 }
 
 template <std::size_t DIM_>
-std::ostream& ivkg::operator<<(std::ostream& in, const triangle_t<DIM_>& triangle) {
+std::ostream& lingeo::operator<<(std::ostream& in, const triangle_t<DIM_>& triangle) {
     for(std::size_t i = 0; i < DIM_; ++i) {
         in << triangle[i] << ' ';
     }
