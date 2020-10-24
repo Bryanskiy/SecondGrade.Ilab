@@ -39,6 +39,9 @@ namespace lingeo {
 template<std::size_t DIM_>
 std::istream& lingeo::operator>>(std::istream& in, lingeo::point_t<DIM_>& point) {
     for(std::size_t i = 0; i < DIM_; ++i) {
+        if(!in.good()) {
+            return in;
+        }
         in >> point[i];
     }
 
@@ -98,15 +101,15 @@ bool lingeo::point_t<dim_>::valid() const {
 }
 template<std::size_t dim_>
 bool lingeo::point_t<dim_>::operator==(const point_t<dim_>& rhs) const {
-    bool flag = true;
-
     auto rhs_iter = rhs.coordinates_.begin();
     for(const auto& lhs_coordinate : coordinates_) {
-        flag = flag && equal(lhs_coordinate, *rhs_iter);
+        if(!equal(lhs_coordinate, *rhs_iter)) {
+            return false;
+        }
         ++rhs_iter;
     }
 
-    return flag;
+    return true;
 }
 
 template<std::size_t dim_>

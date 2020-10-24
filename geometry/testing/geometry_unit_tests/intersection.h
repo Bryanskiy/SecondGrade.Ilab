@@ -143,4 +143,20 @@ TEST(GeometryIntersectionTest, TriangleTriangle) {
 
         ASSERT_FALSE(lingeo::intersection(tr1, tr2));
     }
+
+    //case 9
+    {
+        lingeo::point_t<3> A{1, 1, 0};
+        lingeo::point_t<3> E{3, 1, 0};
+        lingeo::point_t<3> F{1, 3, 0};
+
+        lingeo::point_t<3> B{1, 1, 0};
+        lingeo::point_t<3> C{1, 2, 3};
+        lingeo::point_t<3> D{5, 4, 8};
+
+        lingeo::triangle_t<3> tr1{A, E, F};
+        lingeo::triangle_t<3> tr2{B, C, D};
+
+        ASSERT_TRUE(lingeo::intersection(tr1, tr2));
+    }
 }

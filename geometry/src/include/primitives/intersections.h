@@ -158,7 +158,7 @@ bool lingeo::intersection(const triangle_t<3>& lhs, const triangle_t<3>& rhs) {
     long double max1 = std::max(t[1][0], t[1][1]);
     long double min1 = std::min(t[1][0], t[1][1]);
 
-    if(max0 < min1 || max1 < min0) {
+    if(((min1 - max0) > tolerance) || ((min0 - max1) > tolerance)) {
         return false;
     }
 

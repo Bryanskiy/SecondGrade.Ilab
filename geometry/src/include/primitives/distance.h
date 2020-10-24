@@ -18,6 +18,7 @@ long double lingeo::signed_distance(const lingeo::point_t<3>& point, const linge
     plane_normal.normalize();
 
     point_t<3> p = plane.get_point();
+
     return dot(plane_normal, vector_t<3>{p, point});
 }
 

@@ -73,6 +73,9 @@ std::pair<long double, long double> lingeo::triangle_t<dim_>::projection_i(std::
 template <std::size_t DIM_>
 std::istream& lingeo::operator>>(std::istream& in, lingeo::triangle_t<DIM_>& triangle) {
     for(std::size_t i = 0; i < DIM_; ++i) {
+        if(!in.good()) {
+            return in;
+        }
         in >> triangle[i];
     }
 

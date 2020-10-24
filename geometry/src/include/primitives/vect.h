@@ -214,7 +214,7 @@ long double lingeo::dot(const lingeo::vector_t<DIM_>& lhs, const lingeo::vector_
         ans += lhs[i] * rhs[i];
     }
 
-    return ans;
+    return equal(ans, 0.0) ? 0.0 : ans;
 }
 
 //todo: for all dimensions
@@ -277,6 +277,9 @@ bool lingeo::parallel(const lingeo::vector_t<DIM_>& lhs, const lingeo::vector_t<
 template<std::size_t DIM_>
 std::istream& operator>>(std::istream& in, lingeo::vector_t<DIM_>& vector) {
     for(std::size_t i = 0; i < DIM_; ++i) {
+        if(!in.good()) {
+            return in;
+        }
         in >> vector[i];
     }
 

@@ -48,7 +48,7 @@ TEST(GeometryPointTest, Distance) {
     {
         lingeo::point_t<3> x1{1.0, 5.0, 3.0};
         lingeo::point_t<3> x2{10.0, 5.0, 4.0};
-        ASSERT_TRUE(lingeo::equal(x1.distance(x2), 9.05538)) << "valid points";
+        ASSERT_TRUE(std::abs(x1.distance(x2) - 9.05538) < 1e-5) << "valid points";
     }
 
     {

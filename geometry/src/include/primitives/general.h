@@ -7,7 +7,7 @@
 #include <array>
 
 namespace lingeo {
-    const long double tolerance = 1e-5;
+    const long double tolerance = 1e-8;
 
     using coordinate_t = long double;
 

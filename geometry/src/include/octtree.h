@@ -6,6 +6,7 @@
 #include <cmath>
 #include <algorithm>
 #include "geometry.h"
+#include "queue"
 
 namespace octt {
 
@@ -138,7 +139,7 @@ namespace octt {
         void insert(std::size_t i, bool intersect, const T &elem);
 
         std::array<node_t<T> *, 8> children_;
-        std::vector<std::pair<bool,std::pair<std::size_t, T>>> elements_;
+        std::vector<std::pair<bool, std::pair<std::size_t, T>>> elements_;
         space_t space_;
     };
 }
@@ -163,8 +164,8 @@ void octt::node_t<T>::insert(std::size_t i, const T &elem) {
 template<typename T>
 void octt::node_t<T>::insert(std::size_t i, bool intersect, const T &elem) {
     if(space_.get_Vmin() > space_.V()) {
-        bool flag = check_collision(elem) || intersect;
-        elements_.push_back({flag, {i, elem}});
+        bool flag = check_collision(elem);
+        elements_.push_back({flag || intersect, {i, elem}});
         return;
     }
 
@@ -204,8 +205,8 @@ void octt::node_t<T>::insert(std::size_t i, bool intersect, const T &elem) {
         new_space[0] = x_mid, new_space[2] = y_mid, new_space[4] = z_mid;
         idx = 7;
     } else {
-        bool flag = check_collision(elem) || intersect;
-        elements_.push_back({flag, {i, elem}});
+        bool flag = check_collision(elem);
+        elements_.push_back({flag || intersect, {i, elem}});
         return;
     }
 
@@ -213,15 +214,14 @@ void octt::node_t<T>::insert(std::size_t i, bool intersect, const T &elem) {
         children_[idx] = new node_t<T>(new_space);
     }
 
-    bool flag = intersect;
     for(std::size_t i = 0; i < elements_.size(); ++i) {
         if(lingeo::intersection(elements_[i].second.second, elem)) {
             elements_[i].first = true;
-            flag = true;
+            intersect = true;
         }
     }
 
-    children_[idx]->insert(i, flag, elem);
+    children_[idx]->insert(i, intersect, elem);
 }
 
 template<typename T>
@@ -265,11 +265,25 @@ bool octt::node_t<T>::check_collision(const T &elem){
 
 template<typename T>
 void octt::node_t<T>::del() {
+    std::queue<node_t<T>*> q;
+
     for(std::size_t i = 0, max = children_.size(); i < max; ++i) {
         if(children_[i] != nullptr) {
-            children_[i]->del();
-            delete children_[i];
+            q.push(children_[i]);
         }
+    }
+
+    while(!q.empty()) {
+        node_t<T>* node = q.front();
+        q.pop();
+
+        for(std::size_t i = 0, max = children_.size(); i < max; ++i) {
+            if(node->children_[i] != nullptr) {
+                q.push(node->children_[i]);
+            }
+        }
+
+        delete node;
     }
 }
 
@@ -334,4 +348,3 @@ template<typename T>
 void octt::octtree_t<T>::insert(std::size_t i, const T &elem) {
     root->insert(i, elem);
 }
-

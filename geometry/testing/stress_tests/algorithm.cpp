@@ -56,7 +56,7 @@ lingeo::triangle_t<3> generate_random_triangle(int a, int b) {
     lingeo::point_t<3> B1 = generate_random_point(a, b);
     lingeo::point_t<3> C1 = generate_random_point(a, b);
 
-    lingeo::point_t<3> offset = generate_random_point(lingeo::sign(a) * 5 * std::abs(a),lingeo::sign(b) * 5 * std::abs(b));
+    lingeo::point_t<3> offset = generate_random_point(lingeo::sign(a) * 4 * std::abs(a),lingeo::sign(b) * 4 * std::abs(b));
 
     lingeo::point_t<3> A = lingeo::vector_t<3>{A1} + lingeo::vector_t<3>{offset};
     lingeo::point_t<3> B = lingeo::vector_t<3>{B1} + lingeo::vector_t<3>{offset};
@@ -110,9 +110,15 @@ int main() {
             }
 
             std::sort(fast_v.begin(), fast_v.end());
-            for(std::size_t i = 0, max1 = fast_v.size(), max2 = naive_v.size(); i < max1 && i < max2; ++i) {
+            std::size_t max1 = fast_v.size();
+            std::size_t max2 = naive_v.size();
+            if(max1 != max2) {
+                std::cout << "fail" << std::endl;
+                break;
+            }
+            for(std::size_t i = 0; i < max1 && i < max2; ++i) {
                 if(fast_v[i] != naive_v[i]) {
-                    std::cout << i << ' ';
+                    std::cout << "fail" << std::endl;
                     break;
                 }
             }
