@@ -1,3 +1,0 @@
-/home/ivakin/prog/Ilab2_cpp/matrix/cmake-build-debug/CMakeFiles/rebuild_cache.dir
-/home/ivakin/prog/Ilab2_cpp/matrix/cmake-build-debug/CMakeFiles/edit_cache.dir
-/home/ivakin/prog/Ilab2_cpp/matrix/cmake-build-debug/CMakeFiles/st.dir
