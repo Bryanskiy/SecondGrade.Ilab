@@ -1,0 +1,4 @@
+/home/ivakin/.local/share/JetBrains/Toolbox/apps/CLion/ch-0/202.6948.80/bin/cmake/linux/bin/cmake -DCMAKE_BUILD_TYPE=Debug -G "CodeBlocks - Unix Makefiles" /home/ivakin/prog/Ilab2_cpp/matrix
+-- Configuring done
+-- Generating done
+-- Build files have been written to: /home/ivakin/prog/Ilab2_cpp/matrix/cmake-build-debug
