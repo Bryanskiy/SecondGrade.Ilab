@@ -50,17 +50,17 @@ TEST(MatrixUnitTest, MethodsMaxAbsColElem) {
         std::vector<int> v{1, 2, 5, 12, -2, 0};
         matrix::matrix_t<int> m(3, 2, v.begin(), v.end());
 
-        ASSERT_EQ(m[m.max_abs_col_elem(0)][0], 5);
-        ASSERT_EQ(m[m.max_abs_col_elem(1)][1], 12);
+        ASSERT_EQ(m[m.max_abs_col_elem(0, 0, 3)][0], 5);
+        ASSERT_EQ(m[m.max_abs_col_elem(1, 0, 3)][1], 12);
     }
 
     {
         std::vector<int> v{1, 2, 5, 12, -2, 0};
         matrix::matrix_t<int> m(2, 3, v.begin(), v.end());
 
-        ASSERT_EQ(m[m.max_abs_col_elem(0)][0], 12);
-        ASSERT_EQ(m[m.max_abs_col_elem(1)][1], 2);
-        ASSERT_EQ(m[m.max_abs_col_elem(1)][2], 5);
+        ASSERT_EQ(m[m.max_abs_col_elem(0, 0, 2)][0], 12);
+        ASSERT_EQ(m[m.max_abs_col_elem(1, 0, 2)][1], 2);
+        ASSERT_EQ(m[m.max_abs_col_elem(1, 0, 2)][2], 5);
     }
 }
 
@@ -114,73 +114,18 @@ TEST(MatrixUnitTest, MethodsSwapRows) {
     }
 }
 
-TEST(MatrixUnitTest, MethodsGaussStraight) {
-    {
-        std::vector<int> actual_v{1, 1, 0, 1};
-        matrix::matrix_t<int> actual_m(2, 2, actual_v.begin(), actual_v.end());
-
-        std::vector<int> expected_v{1, 1, 0, 1};
-        matrix::matrix_t<int> expected_m(2, 2, expected_v.begin(), expected_v.end());
-
-        actual_m.gauss_straight();
-
-        ASSERT_EQ(actual_m, expected_m);
-    }
-
-    {
-        std::vector<int> actual_v{1, 1, 1, 1};
-        matrix::matrix_t<int> actual_m(2, 2, actual_v.begin(), actual_v.end());
-
-        std::vector<int> expected_v{1, 1, 0, 0};
-        matrix::matrix_t<int> expected_m(2, 2, expected_v.begin(), expected_v.end());
-
-        actual_m.gauss_straight();
-
-        ASSERT_EQ(actual_m, expected_m);
-    }
-
-    {
-        std::vector<int> actual_v{1, 2, 5, 12};
-        matrix::matrix_t<int> actual_m(2, 2, actual_v.begin(), actual_v.end());
-
-        std::vector<int> expected_v{5, 12, 0, -2};
-        matrix::matrix_t<int> expected_m(2, 2, expected_v.begin(), expected_v.end());
-
-        actual_m.gauss_straight();
-
-        ASSERT_EQ(actual_m, expected_m);
-    }
-
-    {
-        std::vector<int> actual_v{3, 5, 7, 8, 6, 4, 2, 1};
-        matrix::matrix_t<int> actual_m(2, 4, actual_v.begin(), actual_v.end());
-
-        std::vector<int> expected_v{6, 4, 2, 1, 0, 18, 36, 45};
-        matrix::matrix_t<int> expected_m(2, 4, expected_v.begin(), expected_v.end());
-
-        actual_m.gauss_straight();
-
-        ASSERT_EQ(actual_m, expected_m);
-    }
-
-    {
-        std::vector<int> actual_v{3, 5, 7, 8, 6, 4, 2, 1, 9, 7, 3, 3};
-        matrix::matrix_t<int> actual_m(3, 4, actual_v.begin(), actual_v.end());
-
-        std::vector<int> expected_v{9, 7, 3, 3, 0, 24, 54, 63, 0, 0, 324, 162};
-        matrix::matrix_t<int> expected_m(3, 4, expected_v.begin(), expected_v.end());
-
-        actual_m.gauss_straight();
-
-        ASSERT_EQ(actual_m, expected_m);
-    }
-}
-
 TEST(MatrixUnitTest, MethodsDeterminant) {
     {
-        std::vector<int> v{1, 2, 5, 12};
-        matrix::matrix_t<int> m(2, 2, v.begin(), v.end());
+        std::vector<double> v{1, 2, 5, 12};
+        matrix::matrix_t<double> m(2, 2, v.begin(), v.end());
 
-        ASSERT_EQ(m.det(), 2);
+        ASSERT_NEAR(matrix::det(m), 2, 1e-5);
+    }
+
+    {
+        std::vector<double> v{0, 0, 1, 5, 1, 1, 0, 1, 0};
+        matrix::matrix_t<double> m(3, 3, v.begin(), v.end());
+
+        ASSERT_NEAR(matrix::det(m), 5, 1e-5);
     }
 }

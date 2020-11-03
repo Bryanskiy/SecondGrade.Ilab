@@ -32,10 +32,8 @@ namespace matrix {
         bool valid() const;
         matrix_t& negate() &;
         matrix_t& transpose() &;
-        std::size_t max_abs_col_elem(std::size_t idx) const;
+        std::size_t max_abs_col_elem(std::size_t idx, std::size_t start, std::size_t end) const;
         bool swap_rows(std::size_t lhs_idx, std::size_t rhs_idx);
-        std::size_t gauss_straight();
-        T det() const;
 
         /* operators */
         class proxy_row_t {
@@ -60,6 +58,11 @@ namespace matrix {
 
     template<typename T>
     bool operator==(const matrix_t<T>& lhs, const matrix_t<T>& rhs);
+
+    template <typename T>
+    std::istream& operator>>(std::istream& in,  matrix::matrix_t<T>& m);
+
+    double det(const matrix_t<double>& m);
 }
 
 
@@ -233,53 +236,11 @@ const typename matrix::matrix_t<T>::proxy_row_t matrix::matrix_t<T>::operator[](
 }
 
 template<typename T>
-std::size_t matrix::matrix_t<T>::gauss_straight() {
-    std::size_t ret = 0lu;
-
-    std::size_t current_m = 0;
-    std::size_t current_n = 0;
-
-    std::size_t max_m = get_row_number();
-    std::size_t max_n = get_col_number();
-
-    while((current_m < (max_m - 1)) && (current_n < (max_n - 1))) {
-        std::size_t max_elem = max_abs_col_elem(current_n);
-        if(data_[current_n + max_elem * max_n] == 0) {
-            ++current_n;
-            continue;
-        }
-
-        if(max_elem != current_m) {
-            ++ret;
-            swap_rows(max_elem, current_m);
-        }
-
-        T tmp1 = data_[current_n + current_m * max_n];
-        for(std::size_t i = current_m + 1; i < max_m; ++i) {
-            if(data_[current_n + i * max_n] != 0) {
-
-                T tmp2 = data_[current_n + i * max_n];
-                for (std::size_t j = current_n + 1; j < max_n; ++j) {
-                    data_[j + i * max_n] = tmp1 * data_[j + i * max_n] - tmp2 * data_[j + current_m * max_n];
-                }
-
-                data_[current_n + i * max_n] = 0;
-            }
-        }
-
-        ++current_m;
-        ++current_n;
-    }
-
-    return ret;
-}
-
-template<typename T>
-std::size_t matrix::matrix_t<T>::max_abs_col_elem(std::size_t idx) const{
-    std::size_t ret = 0lu;
+std::size_t matrix::matrix_t<T>::max_abs_col_elem(std::size_t idx, std::size_t start, std::size_t end) const{
+    std::size_t ret = start;
 
     std::size_t max_col = get_col_number();
-    for(std::size_t i = 1lu, max = get_row_number(); i < max; ++i) {
+    for(std::size_t i = start + 1; i < end; ++i) {
         if(std::abs(data_[idx + i * max_col]) > std::abs(data_[idx + ret * max_col])) {
             ret = i;
         }
@@ -308,58 +269,8 @@ bool matrix::matrix_t<T>::swap_rows(std::size_t lhs_idx, std::size_t rhs_idx) {
     return true;
 }
 
-template<typename T>
-T matrix::matrix_t<T>::det() const {
-    T ret{1};
-    T div{1};
-
-    matrix_t<T> copy = *this;
-
-    std::size_t current_m = 0;
-    std::size_t current_n = 0;
-
-    std::size_t max_m = get_row_number();
-    std::size_t max_n = get_col_number();
-
-    while((current_m < (max_m - 1)) && (current_n < (max_n - 1))) {
-        std::size_t max_elem = max_abs_col_elem(current_n);
-        if(copy.data_[current_n + max_elem * max_n] == 0) {
-            ++current_n;
-            continue;
-        }
-
-        if(max_elem != current_m) {
-            ret *= -1;
-            copy.swap_rows(max_elem, current_m);
-        }
-
-        T tmp1 = copy.data_[current_n + current_m * max_n];
-        for(std::size_t i = current_m + 1; i < max_m; ++i) {
-            if(copy.data_[current_n + i * max_n] != 0) {
-
-                T tmp2 = copy.data_[current_n + i * max_n];
-                for (std::size_t j = current_n + 1; j < max_n; ++j) {
-                    copy.data_[j + i * max_n] = tmp1 * copy.data_[j + i * max_n] - tmp2 * copy.data_[j + current_m * max_n];
-                    div *= tmp1;
-                }
-
-                copy.data_[current_n + i * max_n] = 0;
-            }
-        }
-
-        ++current_m;
-        ++current_n;
-    }
-
-    for(std::size_t i = 0lu, max = get_col_number();i < max; ++i) {
-        ret *= copy[i][i];
-    }
-
-    return ret / div;
-}
-
 template <typename T>
-std::istream& operator>>(std::istream& in,  matrix::matrix_t<T>& m) {
+std::istream& matrix::operator>>(std::istream& in,  matrix::matrix_t<T>& m) {
     if(!m.valid()) {
         return in;
     }
@@ -380,6 +291,52 @@ bool matrix::operator==(const matrix_t<T>& lhs, const matrix_t<T>& rhs) {
     }
 
     return lhs.equal(rhs);
+}
+
+double matrix::det(const matrix_t<double>& m) {
+    double ret{1};
+
+    matrix_t<double> copy = m;
+
+    std::size_t current_m = 0;
+    std::size_t current_n = 0;
+
+    std::size_t max_m = copy.get_row_number();
+    std::size_t max_n = copy.get_col_number();
+
+    while((current_m < max_m) && (current_n < max_n)) {
+        std::size_t max_elem = copy.max_abs_col_elem(current_n, current_m, max_m);
+        if(copy[max_elem][current_n] == 0) {
+            ++current_n;
+            continue;
+        }
+
+        if(max_elem != current_m) {
+            ret *= -1;
+            copy.swap_rows(max_elem, current_m);
+        }
+
+        for(std::size_t i = current_m + 1; i < max_m; ++i) {
+            double f = copy[i][current_n] / copy[current_m][current_n];
+            copy[i][current_n] = 0.0;
+            for (std::size_t j = current_n + 1; j < max_n; ++j) {
+                copy[i][j] = copy[i][j] - f * copy[current_m][j];
+            }
+        }
+
+        ++current_m;
+        ++current_n;
+    }
+
+    for(std::size_t i = 0lu, max = copy.get_col_number();i < max; ++i) {
+        if(std::abs(ret) < 1e-7) {
+            return 0.0;
+        }
+
+        ret *= copy[i][i];
+    }
+
+    return ret;
 }
 
 
