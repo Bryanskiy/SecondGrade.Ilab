@@ -4,6 +4,7 @@
 #include "selectors.h"
 #include "operators.h"
 #include "useful_methods.h"
+#include "useful_funcs.h"
 
 int main(int argc, char **argv) {
     testing::InitGoogleTest(&argc, argv);

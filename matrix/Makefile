@@ -1,10 +1,20 @@
-all: main unit_tests determinant_swap_tests
+.PHONY: all debug
 
-main:
-	g++ main.cpp -O2 -o main.out
+DEBUG_OPTIONS = -fno-elide-constructors -std=c++17 -D "DEBUG_"
+RELEASE_OPTIONS = -O2 -std=c++17
+GTEST_OPTIONS = -lgtest -lpthread
 
-unit_tests:
-	g++ testing/unit_tests/main.cpp -O2 -o unit_tests.out -lgtest -lpthread
+all: release.out
 
-determinant_swap_tests:
-	g++ testing/determinant_swap_tests/random.cpp -O2 -o random.out
+release.out:
+	g++ main.cpp -o main.out $(RELEASE_OPTIONS)
+	g++ testing/unit_tests/main.cpp -o unit_tests.out $(GTEST_OPTIONS) $(RELEASE_OPTIONS)
+	g++ testing/determinant_tests/random.cpp -o random.out $(RELEASE_OPTIONS)
+
+debug: debug.out
+
+debug.out:
+	g++ main.cpp -o main.out $(DEBUG_OPTIONS)
+	g++ testing/unit_tests/main.cpp -o unit_tests.out $(GTEST_OPTIONS) $(DEBUG_OPTIONS)
+	g++ testing/determinant_tests/random.cpp -o random.out $(DEBUG_OPTIONS)
+

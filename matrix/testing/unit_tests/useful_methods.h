@@ -114,18 +114,39 @@ TEST(MatrixUnitTest, MethodsSwapRows) {
     }
 }
 
+TEST(MatrixUnitTest, MethodsSwapCols) {
+    {
+        std::vector<int> actual_v{1, 2, 5, 12, -2, 0};
+        std::vector<int> expected_v{2, 1, 12, 5, 0, -2};
+
+        matrix::matrix_t<int> actual_m(3, 2, actual_v.begin(), actual_v.end());
+        matrix::matrix_t<int> expected_m(3, 2, expected_v.begin(), expected_v.end());
+
+        actual_m.swap_cols(0, 1);
+        ASSERT_EQ(actual_m, expected_m);
+    }
+}
+
 TEST(MatrixUnitTest, MethodsDeterminant) {
     {
-        std::vector<double> v{1, 2, 5, 12};
-        matrix::matrix_t<double> m(2, 2, v.begin(), v.end());
+        std::vector<long double> v{1, 2, 5, 12};
+        matrix::matrix_t<long double> m(2, 2, v.begin(), v.end());
 
-        ASSERT_NEAR(matrix::det(m), 2, 1e-5);
+        ASSERT_NEAR(m.det(), 2, 1e-5);
+        ASSERT_NEAR(m.det(), 2, 1e-5);
     }
 
     {
-        std::vector<double> v{0, 0, 1, 5, 1, 1, 0, 1, 0};
-        matrix::matrix_t<double> m(3, 3, v.begin(), v.end());
+        std::vector<long double> v{0, 0, 1, 5, 1, 1, 0, 1, 0};
+        matrix::matrix_t<long double> m(3, 3, v.begin(), v.end());
 
-        ASSERT_NEAR(matrix::det(m), 5, 1e-5);
+        ASSERT_NEAR(m.det(), 5, 1e-5);
+    }
+
+    {
+        std::vector<long double> v{1, 4, -1, 5, 6, -3, 2, 1, 10, -5, 4, -7, 3, 5, -10, 6};
+        matrix::matrix_t<long double> m(4, 4, v.begin(), v.end());
+
+        ASSERT_NEAR(m.det(), 2150, 1e-5);
     }
 }

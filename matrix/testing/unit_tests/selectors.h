@@ -23,7 +23,7 @@ TEST(MatrixUnitTest, SelectorsTrace) {
         ASSERT_EQ(m.get_col_number(), 5lu);
         ASSERT_EQ(m.get_elem_number(), 25lu);
 
-        ASSERT_EQ(m.trace(), 0);
+        ASSERT_EQ(m.trace().value(), 0);
     }
 
     {
@@ -33,6 +33,6 @@ TEST(MatrixUnitTest, SelectorsTrace) {
         ASSERT_EQ(m.get_col_number(), 6lu);
         ASSERT_EQ(m.get_elem_number(), 36lu);
 
-        ASSERT_EQ(m.trace(), -6);
+        ASSERT_EQ(m.trace().value(), -6);
     }
 }
