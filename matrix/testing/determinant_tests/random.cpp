@@ -2,6 +2,7 @@
 #include <random>
 #include <iostream>
 #include <cmath>
+#include <fstream>
 
 std::random_device rd;
 std::mt19937 gen(rd());
@@ -35,7 +36,7 @@ matrix::matrix_t<double> generate_random_square_matrix(std::size_t size) {
     return ret;
 }
 
-/* this func don't change matrix determinant */
+/* this func can change determinant sign */
 template<typename T>
 void swap_rows_and_cols(matrix::matrix_t<T>& m) {
     std::size_t max_n = m.get_col_number();
@@ -56,7 +57,7 @@ void swap_rows_and_cols(matrix::matrix_t<T>& m) {
     }
 }
 
-/* generate matrix with det == 1 */
+/* generate matrix with det == +-1 */
 matrix::matrix_t<double> generate_orthogonal_matrix(std::size_t size) {
 #ifdef DEBUG_
     debug::print_block_separator();
@@ -71,7 +72,7 @@ matrix::matrix_t<double> generate_orthogonal_matrix(std::size_t size) {
 #endif
     std::uniform_real_distribution<> dis(0, 6.28);
 
-    for(std::size_t i = 0; i < size; i += 2) {
+    for(std::size_t i = 0; i < size - 1; i += 2) {
         double angle = dis(gen);
         double sin = std::sin(angle);
         double cos = std::cos(angle);
@@ -94,29 +95,81 @@ matrix::matrix_t<double> generate_orthogonal_matrix(std::size_t size) {
     return ret;
 }
 
-void test1() {
+void test_random_1(std::size_t matrix_size) {
     for(std::size_t i = 0; i < 100; ++i) {
-        matrix::matrix_t<double> m = generate_random_square_matrix(3);
-        matrix::matrix_t<double> orthogonal = generate_orthogonal_matrix(3);
+        matrix::matrix_t<double> m = generate_random_square_matrix(matrix_size);
+        matrix::matrix_t<double> orthogonal = generate_orthogonal_matrix(matrix_size);
 
-        if(std::abs(orthogonal.det() - 1) > matrix::tolerance) {
+        if(std::abs(std::abs(orthogonal.det()) - 1) > matrix::tolerance) {
             std::cerr << "Incorrect orthogonal matrix" << std::endl;
             return;
         }
 
-        double first_det = m.det();
+        double first_det = std::abs(m.det());
+
         matrix::matrix_t<double> mult = matrix::multiplication(m, orthogonal);
-        double second_det = mult.det();
+        swap_rows_and_cols(mult);
+        double second_det = std::abs(mult.det());
 
         if(std::abs(first_det - second_det) > matrix::tolerance) {
-            std::cerr << "test1 failed" << std::endl;
+            std::cerr << "test_random_1 for size: " << matrix_size << " failed" << std::endl;
+            return;
+        }
+
+    }
+
+    std::cout << "test_random_1 for size: " << matrix_size << " success" << std::endl;
+}
+
+template<typename T>
+void test_random_2(char* name, T ans) {
+    std::ifstream in(name, std::ios::in);
+    if(!in.good()) {
+        std::cerr << "Can't open test file: " << name << std::endl;
+        return;
+    }
+
+    std::size_t matrix_size; in >> matrix_size;
+    matrix::matrix_t<double> m(matrix_size, matrix_size); in >> m;
+    double actual_det = std::abs(m.det());
+
+    if(std::abs(actual_det - ans) > matrix::tolerance) {
+        std::cerr << "test_random_2 failed for matrix: " << std::endl;
+        std::cerr << m;
+        return;
+    }
+
+    for(std::size_t i = 0; i < 100; ++i) {
+        matrix::matrix_t<double> orthogonal = generate_orthogonal_matrix(m.get_row_number());
+
+        if(std::abs(std::abs(orthogonal.det()) - 1) > matrix::tolerance) {
+            std::cerr << "Incorrect orthogonal matrix" << std::endl;
+            return;
+        }
+
+        matrix::matrix_t<double> mult = matrix::multiplication(m, orthogonal);
+        swap_rows_and_cols(mult);
+        double new_det = std::abs(mult.det());
+
+        if(std::abs(actual_det - new_det) > matrix::tolerance) {
+            std::cerr << "test_random_2 failed for matrix: " << std::endl;
+            std::cerr << m;
             return;
         }
     }
 
-    std::cout << "test1 success" << std::endl;
+    std::cout << name << " test success" << std::endl;
+}
+
+void test_random_2_runner() {
+    {
+        char name[] = "testing/determinant_tests/cases/case_1_0.txt";
+        test_random_2(name, 126.0);
+    }
 }
 
 int main() {
-    test1();
+    test_random_1(7); /* odd size */
+    test_random_1(8); /* even size */
+    test_random_2_runner();
 }

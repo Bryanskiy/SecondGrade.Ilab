@@ -68,11 +68,11 @@ namespace matrix {
         bool equal(const matrix_t& rhs) const;
         bool quadratic() const;
         std::optional<T> trace() const;
+        std::size_t max_abs_col_elem(std::size_t idx, std::size_t start, std::size_t end) const;
 
         /* useful methods */
         matrix_t& negate() &;
         matrix_t& transpose() &;
-        std::size_t max_abs_col_elem(std::size_t idx, std::size_t start, std::size_t end) const;
         bool swap_rows(std::size_t lhs_idx, std::size_t rhs_idx);
         bool swap_cols(std::size_t lhs_idx, std::size_t rhs_idx);
         T det() const;
@@ -324,7 +324,7 @@ std::optional<T> matrix::matrix_t<T>::trace() const {
 
 template<typename T>
 bool matrix::matrix_t<T>::initialized() const {
-    return data_ != nullptr;
+    return (data_ != nullptr);
 }
 
 template <typename T>
@@ -540,7 +540,7 @@ matrix::matrix_t<T> matrix::multiplication(const matrix_t<T>& lhs, const matrix_
         for(std::size_t j = 0, maxj = ret_n; j < maxj; ++j) {
             T elem{};
             for(std::size_t k = 0, maxk = lhs.get_col_number(); k < maxk; ++k) {
-                elem += lhs[i][k] * rhs[k][j];
+                elem += (lhs[i][k] * rhs[k][j]);
             }
 
             ret[i][j] = elem;
