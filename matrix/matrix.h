@@ -17,16 +17,16 @@ namespace debug {
 std::ofstream log_file("log.txt");
 std::string indent = "";
 
-void increment_indent() {
+static inline void increment_indent() {
     debug::indent += "        ";
 }
 
-void decrement_indent() {
+static inline void decrement_indent() {
     std::size_t indent_len = debug::indent.length();
     debug::indent.resize(indent_len - 8);
 }
 
-void print_block_separator() {
+static inline void print_block_separator() {
     log_file << "---------------------------------------------------------------------------------------" << std::endl;
 }
 
@@ -45,7 +45,7 @@ void print_matrix(T* data_, std::size_t rows, std::size_t cols) {
 #endif
 
 namespace matrix {
-    const long double tolerance = 1e-7;
+    const long double tolerance = 1e-5;
 
     template<typename T>
     class matrix_t final {
@@ -428,12 +428,12 @@ T matrix::matrix_t<T>::det() const {
         return T{};
     }
 
-    double ret{1};
+    long double ret{1};
 
 #ifdef DEBUG_
     debug::increment_indent();
 #endif
-    matrix_t<double> copy = *this;
+    matrix_t<long double> copy = *this;
 #ifdef DEBUG_
     debug::decrement_indent();
 #endif

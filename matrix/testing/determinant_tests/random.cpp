@@ -20,7 +20,7 @@ matrix::matrix_t<double> generate_random_square_matrix(std::size_t size) {
     debug::decrement_indent();
 #endif
 
-    std::uniform_int_distribution<> dis(-5, 5);
+    std::uniform_real_distribution<> dis(-5, 5);
 
     for(std::size_t i = 0; i < size; ++i) {
         for(std::size_t j = 0; j < size; ++j) {
@@ -139,7 +139,7 @@ void test_random_2(char* name, T ans) {
         return;
     }
 
-    for(std::size_t i = 0; i < 100; ++i) {
+    for(std::size_t i = 0; i < 10; ++i) {
         matrix::matrix_t<double> orthogonal = generate_orthogonal_matrix(m.get_row_number());
 
         if(std::abs(std::abs(orthogonal.det()) - 1) > matrix::tolerance) {
@@ -157,14 +157,34 @@ void test_random_2(char* name, T ans) {
             return;
         }
     }
-
+    in.close();
     std::cout << name << " test success" << std::endl;
 }
 
 void test_random_2_runner() {
     {
-        char name[] = "testing/determinant_tests/cases/case_1_0.txt";
-        test_random_2(name, 126.0);
+        char name[] = "testing/determinant_tests/cases/case_0.txt";
+        test_random_2(name, 42);
+    }
+
+    {
+        char name[] = "testing/determinant_tests/cases/case_1.txt";
+        test_random_2(name, 126);
+    }
+
+    {
+        char name[] = "testing/determinant_tests/cases/case_2.txt";
+        test_random_2(name, 42);
+    }
+
+    {
+        char name[] = "testing/determinant_tests/cases/case_3.txt";
+        test_random_2(name, 1);
+    }
+
+    {
+        char name[] = "testing/determinant_tests/cases/case_4.txt";
+        test_random_2(name, 42);
     }
 }
 

@@ -4,7 +4,7 @@
 
 int main() {
     std::size_t size; std::cin >> size;
-    matrix::matrix_t<double> matrix(size, size);
+    matrix::matrix_t<long double> matrix(size, size);
     std::cin >> matrix;
     std::cout << matrix.det() << std::endl;
 }
