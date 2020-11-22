@@ -1,0 +1,10 @@
+first = 1;
+second = 1;
+iter = 2;
+while ( iter < 40 ) {
+    tmp = second;
+    second = second + first;
+    first = tmp;
+    iter = iter + 1;
+    print second;
+}
