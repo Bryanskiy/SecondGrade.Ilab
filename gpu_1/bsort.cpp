@@ -37,7 +37,13 @@ void bsort_t::build_program() {
     std::string program_string(std::istreambuf_iterator<char>(program_sources), (std::istreambuf_iterator<char>()));
     cl::Program::Sources source(1, std::make_pair(program_string.c_str(), program_string.length() + 1));
     program_ = cl::Program(context_, source);
-    program_.build();
+
+    try {
+        program_.build();
+    } catch (cl::Error e) {
+        std::cerr << program_.getBuildInfo<CL_PROGRAM_BUILD_LOG>(device_);
+        throw e;
+    }    
 }
 
 void bsort_t::sort(int* data, std::size_t num_elements, direction_t direction) {
