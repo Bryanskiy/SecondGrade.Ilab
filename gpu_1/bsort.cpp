@@ -2,15 +2,15 @@
 
 namespace bsort {
 
-void bsort_t::run(int* data, std::size_t elements_count, direction_t direction) {
+void bsort_t::run(std::vector<int>& data, direction_t direction) {
 
     /* some opencl setup */
     chose_device();
     context_ = cl::Context(device_);
     build_program();
-    queue_ = cl::CommandQueue(context_, device_);
+    queue_ = cl::CommandQueue(context_, device_, CL_QUEUE_PROFILING_ENABLE);
 
-    sort(data, elements_count, direction);
+    sort(data, direction);
 }
 
 void bsort_t::chose_device() {
@@ -46,39 +46,41 @@ void bsort_t::build_program() {
     }    
 }
 
-void bsort_t::sort(int* data, std::size_t num_elements, direction_t direction) {
+void bsort_t::sort(std::vector<int>& data, direction_t direction) {
+
+    Timer_t timer;
     std::size_t power_two_greater = 1;
+    std::size_t num_elements = data.size();
 
     while(power_two_greater <= num_elements) {
         power_two_greater *= 2;
     }
 
     if(num_elements == power_two_greater) {
-        sort_power_two(data, power_two_greater, direction);
+        sort_power_two(data, direction);
+        full_time_ = timer.get_time().count();
         return;
     }
 
-    int* tmp = new int[power_two_greater];
-
-    for(std::size_t i = 0; i < num_elements; ++i) {
-        tmp[i] = data[i];
-    }
+    std::vector<int> tmp = data;
+    tmp.resize(power_two_greater);
 
     for(std::size_t i = num_elements; i < power_two_greater; ++i) {
         tmp[i] = std::numeric_limits<int>::max();
     }
 
-    sort_power_two(tmp, power_two_greater, direction);
+    sort_power_two(tmp, direction);
 
     for(std::size_t i = 0; i < num_elements; ++i) {
         data[i] = tmp[i];
     }
 
-    delete[] tmp;
+    full_time_ = timer.get_time().count();
 }
 
-void bsort_t::sort_power_two(int* data, std::size_t num_elements, direction_t direction) {
+void bsort_t::sort_power_two(std::vector<int>& data, direction_t direction) {
     std::size_t num_stages = 0;
+    std::size_t num_elements = data.size();
 
     std::size_t tmp = 1;
     while (tmp < num_elements) {
@@ -86,7 +88,7 @@ void bsort_t::sort_power_two(int* data, std::size_t num_elements, direction_t di
         tmp *= 2;
     }
 
-    cl::Buffer buffer(context_, CL_MEM_READ_WRITE | CL_MEM_USE_HOST_PTR, num_elements, data);
+    cl::Buffer buffer(context_, CL_MEM_READ_WRITE | CL_MEM_USE_HOST_PTR, num_elements, data.data());
 
     for(std::size_t stage = 0; stage < num_stages; ++stage) {
         for(std::size_t stage_pass = 0; stage_pass < stage + 1; ++stage_pass) {
@@ -99,14 +101,26 @@ void bsort_t::sort_power_two(int* data, std::size_t num_elements, direction_t di
 
             cl::NDRange offset(0);
             cl::NDRange global_size(num_elements / 2);
-            cl::NDRange local_size(1);
+            cl::NDRange local_size(device_.getInfo<CL_DEVICE_MAX_WORK_GROUP_SIZE>());
 
             cl::Event event;
             queue_.enqueueNDRangeKernel(kernel, offset, global_size, local_size, NULL, &event);
-
+            
             event.wait();
+
+            std::size_t start = event.getProfilingInfo<CL_PROFILING_COMMAND_START>();
+            std::size_t end = event.getProfilingInfo<CL_PROFILING_COMMAND_END>();
+            gpu_time_ += (end - start) / 1000;
         }
     }
+}
+
+std::size_t bsort_t::get_full_time() const {
+    return full_time_;
+}
+
+std::size_t bsort_t::get_gpu_time() const {
+    return gpu_time_;
 }
 
 }

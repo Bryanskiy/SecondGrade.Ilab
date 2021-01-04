@@ -98,7 +98,7 @@ const char* cl_get_error_string(int error_code) {
 int main() {
     /* init data */
     std::size_t N; std::cin >> N;
-    int* data = new int[N];
+    std::vector<int> data(N);
     for(std::size_t i = 0; i < N; ++i) {
         std::cin >> data[i];
     }
@@ -106,7 +106,7 @@ int main() {
     /* run sort */
     bsort::bsort_t app;
     try {
-        app.run(data, N, bsort::direction_t::increasing);
+        app.run(data, bsort::direction_t::increasing);
 
         /* write ans */
         for(std::size_t i = 0; i < N; ++i) {
@@ -119,6 +119,4 @@ int main() {
     } catch(std::runtime_error e) {
         std::cerr << e.what() << std::endl;
     }
-
-    delete[] data;
 }
