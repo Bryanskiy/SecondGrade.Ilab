@@ -94,9 +94,9 @@ void bsort_t::sort_power_two(std::vector<int>& data, direction_t direction) {
         for(std::size_t stage_pass = 0; stage_pass < stage + 1; ++stage_pass) {
             cl::Kernel kernel(program_, "bitonic_sort");
             kernel.setArg(0, buffer);
-            kernel.setArg(1, (int)stage);
-            kernel.setArg(2, (int)stage_pass);
-            kernel.setArg(3, (int)direction);
+            kernel.setArg(1, static_cast<unsigned>(stage));
+            kernel.setArg(2, static_cast<unsigned>(stage_pass));
+            kernel.setArg(3, static_cast<unsigned>(direction));
             
 
             cl::NDRange offset(0);

@@ -21,7 +21,6 @@ public:
     /* sort integer array in specified direction */
     void run(std::vector<int>& data, direction_t direction);
 
-    /* return sort time */
     std::size_t get_full_time() const;
     std::size_t get_gpu_time() const;
 

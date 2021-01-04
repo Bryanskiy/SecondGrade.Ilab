@@ -1,11 +1,11 @@
-__kernel void bitonic_sort(__global int * data, int stage, int stage_pass, int direction)
+__kernel void bitonic_sort(__global int * data, uint stage, uint stage_pass, uint direction)
 {
-    int id = get_global_id(0);
+    uint id = get_global_id(0);
     
-    int compare_distance = 1 << (stage - stage_pass);
+    uint compare_distance = 1 << (stage - stage_pass);
 
-    int left_id = (id % compare_distance) + (id / compare_distance) * 2 * compare_distance;
-    int right_id = left_id + compare_distance;
+    uint left_id = (id % compare_distance) + (id / compare_distance) * 2 * compare_distance;
+    uint right_id = left_id + compare_distance;
     
     int left_elem = data[left_id];
     int right_elem = data[right_id];
