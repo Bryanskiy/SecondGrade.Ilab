@@ -4,6 +4,8 @@
 #include <fstream>
 #include <limits>
 #include <chrono>
+#include <algorithm>
+#include <cmath>
 
 #define __CL_ENABLE_EXCEPTIONS
 #include <CL/cl.hpp>
@@ -23,6 +25,7 @@ public:
 
     std::size_t get_full_time() const;
     std::size_t get_gpu_time() const;
+    std::size_t get_power_2_time() const;
 
 private:
 
@@ -32,9 +35,10 @@ private:
     cl::CommandQueue   queue_;
     std::size_t        full_time_ = 0;
     std::size_t        gpu_time_ = 0;
+    std::size_t        power_2_time_ = 0; 
 
     /* chose first device with avaible compiler */
-    void chose_device();
+    void choose_device();
 
     /* compile kernels */
     void build_program();
@@ -44,6 +48,8 @@ private:
 
     /* sort power of 2 elements using bitonic sort */
     void sort_power_two(std::vector<int>& data, direction_t direction);
+
+    std::size_t choose_work_group_size(std::size_t elements_number) const;
 };
 
 }
@@ -63,3 +69,5 @@ public:
 private:
     std::chrono::time_point<clock_t> start_;
 };
+
+const char* cl_get_error_string(int error_code);
