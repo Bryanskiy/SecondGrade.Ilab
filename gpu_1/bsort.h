@@ -50,6 +50,8 @@ private:
     void sort_power_two(std::vector<int>& data, direction_t direction);
 
     std::size_t choose_work_group_size(std::size_t elements_number) const;
+
+    void enqueue_kernel(cl::Kernel& kernel, cl::NDRange& offset, cl::NDRange& global_size, cl::NDRange& local_size);
 };
 
 }

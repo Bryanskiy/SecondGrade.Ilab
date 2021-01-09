@@ -94,9 +94,18 @@ void bsort_t::sort_power_two(std::vector<int>& data, direction_t direction) {
 
     cl::NDRange offset(0);
     cl::NDRange global_size(num_elements / 2);
-    cl::NDRange local_size(choose_work_group_size(num_elements));
+    std::size_t wg_size = choose_work_group_size(num_elements);
+    cl::NDRange local_size(wg_size);
 
-    for(std::size_t stage = 0; stage < num_stages; ++stage) {
+    {
+        cl::Kernel kernel(program_, "bitonic_sort_preproc");
+        kernel.setArg(0, buffer);
+        kernel.setArg(1, static_cast<unsigned>(std::log2(wg_size)));
+        kernel.setArg(2, static_cast<unsigned>(direction));
+        enqueue_kernel(kernel, offset, global_size, local_size);
+    }
+
+    for(std::size_t stage = std::log2(wg_size); stage < num_stages; ++stage) {
         for(std::size_t stage_pass = 0; stage_pass < stage + 1; ++stage_pass) {
             cl::Kernel kernel(program_, "bitonic_sort");
             kernel.setArg(0, buffer);
@@ -104,14 +113,7 @@ void bsort_t::sort_power_two(std::vector<int>& data, direction_t direction) {
             kernel.setArg(2, static_cast<unsigned>(stage_pass));
             kernel.setArg(3, static_cast<unsigned>(direction));
 
-            cl::Event event;
-            queue_.enqueueNDRangeKernel(kernel, offset, global_size, local_size, NULL, &event);
-            
-            event.wait();
-
-            std::size_t start = event.getProfilingInfo<CL_PROFILING_COMMAND_START>();
-            std::size_t end = event.getProfilingInfo<CL_PROFILING_COMMAND_END>();
-            gpu_time_ += (end - start) / 1000;
+            enqueue_kernel(kernel, offset, global_size, local_size);
         }
     }
 
@@ -131,15 +133,25 @@ std::size_t bsort_t::get_power_2_time() const {
 }
 
 std::size_t bsort_t::choose_work_group_size(std::size_t elements_number) const {
-    std::size_t max = device_.getInfo<CL_DEVICE_MAX_WORK_GROUP_SIZE>();
-    std::size_t ret = 1;
-    std::size_t work_items_count = elements_number / 2;
-    while((ret <= max) && (ret <= work_items_count)) {
-        ret *= 2;
-    }
+   std::size_t max = device_.getInfo<CL_DEVICE_MAX_WORK_GROUP_SIZE>();
 
-    return ret / 2;
+   std::size_t first_border = std::log2(max);
+   std::size_t second_border = std::log2(elements_number / 2);
+
+   return std::pow(2, std::min(first_border, second_border));
 }
+
+void bsort_t::enqueue_kernel(cl::Kernel& kernel, cl::NDRange& offset, cl::NDRange& global_size, cl::NDRange& local_size) {
+    cl::Event event;
+    queue_.enqueueNDRangeKernel(kernel, offset, global_size, local_size, NULL, &event);
+
+    event.wait();
+
+    std::size_t start = event.getProfilingInfo<CL_PROFILING_COMMAND_START>();
+    std::size_t end = event.getProfilingInfo<CL_PROFILING_COMMAND_END>();
+    gpu_time_ += (end - start) / 1000;
+}
+
 
 }
 
