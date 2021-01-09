@@ -71,9 +71,8 @@ void bsort_t::sort(std::vector<int>& data, direction_t direction) {
 
     sort_power_two(tmp, direction);
 
-    for(std::size_t i = 0; i < num_elements; ++i) {
-        data[i] = tmp[i];
-    }
+    tmp.resize(num_elements);
+    data = tmp;
 
     full_time_ = timer.get_time().count();
 }
@@ -97,25 +96,43 @@ void bsort_t::sort_power_two(std::vector<int>& data, direction_t direction) {
     std::size_t wg_size = choose_work_group_size(num_elements);
     cl::NDRange local_size(wg_size);
 
+#ifndef ITERATIVE_
     {
-        cl::Kernel kernel(program_, "bitonic_sort_preproc");
+        /*first part: sort elements in wg*/
+#ifdef  LOCAL_PREPROC_         
+        cl::Kernel kernel(program_, "bitonic_sort_preproc_local");
+#else   
+        cl::Kernel kernel(program_, "bitonic_sort_preproc_global");
+#endif                   
         kernel.setArg(0, buffer);
         kernel.setArg(1, static_cast<unsigned>(std::log2(wg_size)));
         kernel.setArg(2, static_cast<unsigned>(direction));
+#ifdef LOCAL_PREPROC_              
+       cl::LocalSpaceArg local = cl::__local(2 * wg_size * sizeof(int));
+       kernel.setArg(3, local);
+#endif       
         enqueue_kernel(kernel, offset, global_size, local_size);
     }
+#endif
+    {
+#ifndef ITERATIVE_
+        std::size_t stage = std::log2(wg_size);
+#else        
+        std::size_t stage = 0;
+#endif        
+        /*second part*/
+        for(;stage < num_stages; ++stage) {
+            for(std::size_t stage_pass = 0; stage_pass < stage + 1; ++stage_pass) {
+                cl::Kernel kernel(program_, "bitonic_sort");
+                kernel.setArg(0, buffer);
+                kernel.setArg(1, static_cast<unsigned>(stage));
+                kernel.setArg(2, static_cast<unsigned>(stage_pass));
+                kernel.setArg(3, static_cast<unsigned>(direction));
 
-    for(std::size_t stage = std::log2(wg_size); stage < num_stages; ++stage) {
-        for(std::size_t stage_pass = 0; stage_pass < stage + 1; ++stage_pass) {
-            cl::Kernel kernel(program_, "bitonic_sort");
-            kernel.setArg(0, buffer);
-            kernel.setArg(1, static_cast<unsigned>(stage));
-            kernel.setArg(2, static_cast<unsigned>(stage_pass));
-            kernel.setArg(3, static_cast<unsigned>(direction));
-
-            enqueue_kernel(kernel, offset, global_size, local_size);
-        }
-    }
+                enqueue_kernel(kernel, offset, global_size, local_size);
+                }       
+            }
+    }        
 
     power_2_time_ = time.get_time().count();
 }
