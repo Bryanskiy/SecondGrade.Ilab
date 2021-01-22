@@ -1,9 +1,9 @@
-.PHONY: all debug
+.PHONY: all main tests
 
-all:
+all: main tests
+
+main:
 	g++ main.cpp -o main.out -O2
-	g++ testing/random_test.cpp -o random_test.out -O2
 
-debug:
-	g++ main.cpp -D "DEBUG_" -o main.out -g -O2
-	g++ testing/random_test.cpp -D "DEBUG_" -o random_test.out -g -O2
+tests:
+	g++ testing/specific_tests.cpp -o sprecific_tests.out -D "DEBUG_" -lgtest -lpthread -g -O2

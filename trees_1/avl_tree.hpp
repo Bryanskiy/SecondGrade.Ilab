@@ -12,14 +12,6 @@ namespace avl {
 template<typename T>
 class tree_t {
 
-public:
-    tree_t() : head_(nullptr) {}
-
-    void insert(const T& key);
-#ifdef DEBUG_
-    void dump() const {dump(head_);}
-#endif    
-
 private:
 
     class node_t {
@@ -27,14 +19,14 @@ private:
         public:
             node_t(const T& key) : key_(key), height_(1), left_(nullptr), right_(nullptr) {}
 
-            T        get_key()                           {return key_;}
-            unsigned get_height() const                  {return height_;}
-            node_t*  get_left()   const                  {return left_;};
-            node_t*  get_right()  const                  {return right_;}
+            T        get_key()                                    { return key_; }
+            unsigned get_height() const                           { return height_; }
+            node_t*  get_left()   const                           { return left_; };
+            node_t*  get_right()  const                           { return right_; }
 
-            void     set_height(unsigned char height)    {height_ = height;}
-            void     set_left(node_t* left)              {left_ = left;}
-            void     set_right(node_t* right)            {right_ = right;}
+            void     set_height(unsigned char height)             { height_ = height; }
+            void     set_left(node_t* left)                       { left_ = left; }
+            void     set_right(node_t* right)                     { right_ = right; }
 
         private:
             T key_;
@@ -53,9 +45,56 @@ private:
     void check_height_invariant(node_t* node) const;
     void dump(node_t* node, const std::string& indent = "") const;
 #endif
-
     node_t* head_;
+
+
+public:
+
+    class iterator {
+        public:
+
+            iterator() = default;
+            iterator(const iterator &) = default;
+		    iterator &operator=(const iterator &) = default;
+
+            const T    operator*() const                            { return node_->get_key(); }
+		    const T*   operator->() const                           { return node_; }
+
+            bool       operator==(const iterator& rhs) const        { return this->node_ == rhs.node_; }
+            bool       operator!=(const iterator& rhs) const        { return !(*this == rhs); }
+            iterator   operator++();
+
+        private:
+
+            iterator(const tree_t<T>& outer_tree, node_t* node) : outer_tree_{outer_tree}, node_{node} {}
+            friend tree_t<T>;
+
+            const tree_t<T>&   outer_tree_ = nullptr;
+            node_t*            node_       = nullptr;
+    };
+
+    tree_t() : head_(nullptr) {}
+
+    void     insert(const T& key);
+    iterator lower_bound(const T& key) const;
+    iterator upper_bound(const T& key) const;
+    iterator begin() const;
+    iterator end() const;
+
+#ifdef DEBUG_
+    void dump() const {dump(head_);}
+#endif    
+
+    friend iterator;
 };
+
+
+/*---------------------------------------------------------
+*
+*   Implementation of tree methods
+*
+---------------------------------------------------------*/
+
 
 template<typename T>
 int tree_t<T>::balance_factor(node_t* node) const {
@@ -176,7 +215,7 @@ void tree_t<T>::fix_height(node_t* node) {
     node_t* right = node->get_right();
 
     if((left == right) && (left == nullptr)) {
-        node->set_height(0);
+        node->set_height(1);
     } else if(left == nullptr) {
         node->set_height(right->get_height() + 1);
     } else if (right == nullptr) {
@@ -185,7 +224,64 @@ void tree_t<T>::fix_height(node_t* node) {
         node->set_height((left->get_height() > right->get_height() ? left->get_height() : right->get_height()) + 1);
     }    
 }
- 
+
+template<typename T> 
+typename tree_t<T>::iterator tree_t<T>::lower_bound(const T& key) const {
+    node_t* prev = nullptr;
+    node_t* current = head_;
+
+    while(current != nullptr) {
+        if(current->get_key() < key) {
+            prev = current;
+            current = current->get_right();
+        } else if(current->get_key() > key) {
+            prev = current;
+            current = current->get_left();
+        } else {
+            return iterator{*this, current};
+        }
+    }
+
+    iterator ret{*this, prev};
+
+    if(prev->get_key() > key) {
+        return ret;
+    }
+
+    return ++ret;
+}
+
+template<typename T> 
+typename tree_t<T>::iterator tree_t<T>::upper_bound(const T& key) const {
+    tree_t<T>::iterator tmp = lower_bound(key);
+    if(tmp == this->end()) {
+        return this->end();
+    } else if(*tmp == key) {
+        return ++tmp;
+    }
+
+    return tmp;
+}
+
+template<typename T> 
+typename tree_t<T>::iterator tree_t<T>::begin() const {
+    if(head_ == nullptr) {
+        return iterator{*this, nullptr};
+    }
+
+    node_t* current = head_;
+    while(current->get_left() != nullptr) {
+        current = current->get_left();
+    }
+
+    return iterator{*this, current};
+}
+
+template<typename T> 
+typename tree_t<T>::iterator tree_t<T>::end() const {
+    return iterator{*this, nullptr};
+}
+
 #ifdef DEBUG_
 template<typename T>
 void tree_t<T>::dump(node_t* node, const std::string& indent) const {
@@ -215,4 +311,30 @@ void tree_t<T>::check_height_invariant(node_t* node) const {
     }
 }
 #endif
+/*---------------------------------------------------------
+*
+*   Implementation of iterator methods
+*
+---------------------------------------------------------*/
+
+template<typename T>
+typename tree_t<T>::iterator tree_t<T>::iterator::operator++() {
+    node_t* current = outer_tree_.head_;
+    node_t* successor = nullptr;
+
+    T key = node_->get_key();
+
+    while(current != nullptr) {
+        if(current->get_key() > key) {
+            successor = current;
+            current = current->get_left();
+        } else {
+            current = current->get_right();
+        }
+    }
+
+    node_ = successor;
+    return iterator(this->outer_tree_, node_);
+}
+
 }
