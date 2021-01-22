@@ -74,6 +74,7 @@ public:
     };
 
     tree_t() : head_(nullptr) {}
+    ~tree_t();
 
     void     insert(const T& key);
     iterator lower_bound(const T& key) const;
@@ -94,7 +95,17 @@ public:
 *   Implementation of tree methods
 *
 ---------------------------------------------------------*/
-
+template <typename T>
+tree_t<T>::~tree_t() {
+	if (head_)
+	{
+		std::vector<node_t*> arr;
+		for (auto iter = begin(); iter != end(); ++iter)
+			arr.push_back(iter.node_);
+		for (node_t* node : arr)
+			delete node;
+	}
+}
 
 template<typename T>
 int tree_t<T>::balance_factor(node_t* node) const {
@@ -144,13 +155,14 @@ void tree_t<T>::insert(const T& key) {
     /* balance */
     while(current != nullptr) {
         fix_height(current);
+        if(!balance_factor(current)) {
+            break;
+        }
+
         node_t* tmp = balance(current);
         if(!path.size()) {
             head_ = tmp;
-#ifdef DEBUG_
-            check_height_invariant(head_);
-#endif              
-            return;
+            break;
         }
         node_t* prev = path.top(); path.pop();
         if(prev->get_left() == current) {

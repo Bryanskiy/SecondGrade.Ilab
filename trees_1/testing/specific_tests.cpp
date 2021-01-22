@@ -93,61 +93,70 @@ TEST(TreeIterator, IncrementOperator) {
             ++it;
         }
     }
+
+    {
+        avl::tree_t<int> tree;
+        for(std::size_t i = 0; i < 100; ++i) {
+            tree.insert(i);
+        }
+
+        avl::tree_t<int>::iterator it_prev = tree.begin();
+        avl::tree_t<int>::iterator it = ++(tree.begin());
+        while(it != tree.end()) {
+            ASSERT_TRUE(*it > *it_prev);
+            ++it; ++it_prev;
+        }
+    }
 }
 
-void uniform_distribution_time_test() {
+std::vector<int> generate_uniform_distribution(std::size_t elements_number) {
     std::random_device rd;
     std::mt19937 gen(rd());
     std::uniform_int_distribution<> dis(std::numeric_limits<int>::min(), std::numeric_limits<int>::max());
 
-    std::size_t iterations_count = std::pow(2, 14) - 1;
-    std::cout << "Number of elements: " << iterations_count << std::endl;
-
-    std::set<int> stdset;
-    avl::tree_t<int> avlset;
-
-    Timer_t stdset_timer;
-    for(std::size_t i = 0; i < iterations_count; ++i) { 
-        stdset.insert(dis(gen));
+    std::vector<int> ret(elements_number);
+    for(auto& i : ret) {
+        i = dis(gen);
     }
 
-    std::cout << "Std::set time : " << stdset_timer.get_time().count() << " mcs" << std::endl;
-
-    Timer_t avlset_timer;
-    for(std::size_t i = 0; i < iterations_count; ++i) {
-        avlset.insert(dis(gen));
-    }
-
-    std::cout << "Avl tree time : " << avlset_timer.get_time().count() << " mcs" << std::endl;
+    return ret;
 }
 
-void specific_distribution_for_avl_time_test() {
-    std::size_t iterations_count = std::pow(2, 14) - 1;
+/* elements number must be pow(2, k) - 1 */
+std::vector<int> generate_special_avl_tree_distribution(std::size_t elements_number) {
+    std::vector<int> ret(elements_number);
 
-    std::cout << "Number of elements: " << iterations_count << std::endl; 
+    std::size_t max_h = std::log2(elements_number);
+    for(std::size_t h = 0; h <= max_h; ++h) {
+        for(std::size_t i = 0; i < std::pow(2, h); ++i) {
+            int elem = elements_number / std::pow(2, h + 1) + i * (std::pow(2, max_h + 1 - h));
+            ret.push_back(elem);
+        }
+    }
+
+    return ret;
+}
+
+template<typename Func>
+void time_test(Func func, std::size_t elements_count) {
+    std::cout << "Number of elements: " << elements_count << std::endl;
 
     std::set<int> stdset;
     avl::tree_t<int> avlset;
 
-    Timer_t stdset_timer;
-    std::size_t max_h = std::log2(iterations_count);
-    for(std::size_t h = 0; h <= max_h; ++h) {
-        for(std::size_t i = 0; i < std::pow(2, h); ++i) {
-            int elem = iterations_count / std::pow(2, h + 1) + i * (std::pow(2, max_h + 1 - h));
-            stdset.insert(elem);
-        }
-    }
-    std::cout << "Std::set time : " << stdset_timer.get_time().count() << " mcs" << std::endl;
+    std::vector<int> data = func(elements_count);
 
     Timer_t avlset_timer;
-    for(std::size_t h = 0; h <= max_h; ++h) {
-        for(std::size_t i = 0; i < std::pow(2, h); ++i) {
-            int elem = iterations_count / std::pow(2, h + 1) + i * (std::pow(2, max_h + 1 - h));
-            avlset.insert(elem);
-        }
+    for(std::size_t i = 0; i < elements_count; ++i) { 
+        avlset.insert(data[i]);
     }
-    std::cout << "Avl tree time : " << avlset_timer.get_time().count() << " mcs" << std::endl;
+    std::cout << "Avl set time  : " << avlset_timer.get_time().count() << " mcs" << std::endl;
 
+    Timer_t stdset_timer;
+    for(std::size_t i = 0; i < elements_count; ++i) { 
+        stdset.insert(data[i]);
+    }
+    std::cout << "Std::set time : " << stdset_timer.get_time().count() << " mcs" << std::endl;
 }
 
 int main(int argc, char **argv) {
@@ -155,16 +164,16 @@ int main(int argc, char **argv) {
     height_invariant_test();
 
 
-
+    std::size_t number_elements = std::pow(2, 15) - 1;
     std::cout << "------------------------------------------------------------------" << std::endl;
     std::cout << "Uniform int distribution time test: " << std::endl;
-    uniform_distribution_time_test();
+    time_test(generate_uniform_distribution, number_elements);
 
 
 
     std::cout << "------------------------------------------------------------------" << std::endl;
     std::cout << "Special distribution for avl tree time test: " << std::endl;
-    specific_distribution_for_avl_time_test();
+    time_test(generate_special_avl_tree_distribution, number_elements);
 
 
 
