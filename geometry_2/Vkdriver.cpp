@@ -50,6 +50,9 @@ void Vkdriver::initWindow() {
 void Vkdriver::initVulkan() {
     createInstance();
     setupDebugMessenger();
+    createSurface();
+    pickPhysicalDevice();
+    createLogicalDevice();
 }
 
 bool checkValidationLayerSupport() {
@@ -155,15 +158,13 @@ void Vkdriver::setupDebugMessenger() {
     }
 }
 
-struct QueueFamilyIndices {
-    std::optional<uint32_t> graphicsFamily;
-
-    bool isComplete() {
-        return graphicsFamily.has_value();
+void Vkdriver::createSurface() {
+    if (glfwCreateWindowSurface(instance, window, nullptr, &surface) != VK_SUCCESS) {
+        throw std::runtime_error("failed to create window surface!");
     }
-};
+}
 
-QueueFamilyIndices findQueueFamilies(VkPhysicalDevice device) {
+Vkdriver::QueueFamilyIndices Vkdriver::findQueueFamilies(VkPhysicalDevice device) {
     QueueFamilyIndices indices;
 
     uint32_t queueFamilyCount = 0;
@@ -174,12 +175,15 @@ QueueFamilyIndices findQueueFamilies(VkPhysicalDevice device) {
 
     int i = 0;
     for (const auto& queueFamily : queueFamilies) {
-        if (queueFamily.queueFlags & VK_QUEUE_GRAPHICS_BIT) {
-            indices.graphicsFamily = i;
+        VkQueueFlags flags = queueFamily.queueFlags;
+
+        VkBool32 presentSupport = false;
+        vkGetPhysicalDeviceSurfaceSupportKHR(device, i, surface, &presentSupport);
+
+        if((flags & VK_QUEUE_GRAPHICS_BIT) && (presentSupport)) {
+            indices.family = i;
             break;
         }
-
-        i++;
     }
 
     return indices;
@@ -187,7 +191,7 @@ QueueFamilyIndices findQueueFamilies(VkPhysicalDevice device) {
 
 /* device is suitable == it has a QueueFamily with VK_QUEUE_GRAPHICS_BIT
    VK_QUEUE_GRAPHICS_BIT specifies that queues in this queue family support graphics operations*/
-bool isDeviceSuitable(VkPhysicalDevice device) {
+bool Vkdriver::isDeviceSuitable(VkPhysicalDevice device) {
     QueueFamilyIndices indices = findQueueFamilies(device);
 
     return indices.isComplete();
@@ -216,6 +220,43 @@ void Vkdriver::pickPhysicalDevice() {
     }
 }
 
+void Vkdriver::createLogicalDevice() {
+    QueueFamilyIndices indices = findQueueFamilies(physicalDevice);
+
+    VkDeviceQueueCreateInfo queueCreateInfo{};
+    queueCreateInfo.sType = VK_STRUCTURE_TYPE_DEVICE_QUEUE_CREATE_INFO;
+    queueCreateInfo.queueFamilyIndex = indices.family.value();
+    queueCreateInfo.queueCount = 1;
+
+    float queuePriority = 1.0f;
+    queueCreateInfo.pQueuePriorities = &queuePriority;
+
+    VkPhysicalDeviceFeatures deviceFeatures{};
+
+    VkDeviceCreateInfo createInfo{};
+    createInfo.sType = VK_STRUCTURE_TYPE_DEVICE_CREATE_INFO;
+
+    createInfo.pQueueCreateInfos = &queueCreateInfo;
+    createInfo.queueCreateInfoCount = 1;
+
+    createInfo.pEnabledFeatures = &deviceFeatures;
+
+    createInfo.enabledExtensionCount = 0;
+
+    if (enableValidationLayers) {
+        createInfo.enabledLayerCount = static_cast<uint32_t>(validationLayers.size());
+        createInfo.ppEnabledLayerNames = validationLayers.data();
+    } else {
+        createInfo.enabledLayerCount = 0;
+    }
+
+    if (vkCreateDevice(physicalDevice, &createInfo, nullptr, &device) != VK_SUCCESS) {
+        throw std::runtime_error("failed to create logical device!");
+    }
+
+    vkGetDeviceQueue(device, indices.family.value(), 0, &queue);
+}
+
 void Vkdriver::mainLoop() {
     while (!glfwWindowShouldClose(window)) {
         glfwPollEvents();
@@ -223,15 +264,18 @@ void Vkdriver::mainLoop() {
 }
 
 void Vkdriver::cleanup() {
-    if (enableValidationLayers) {
-        DestroyDebugUtilsMessengerEXT(instance, debugMessenger, nullptr);
-    }
+        vkDestroyDevice(device, nullptr);
 
-    vkDestroyInstance(instance, nullptr);
+        if (enableValidationLayers) {
+            DestroyDebugUtilsMessengerEXT(instance, debugMessenger, nullptr);
+        }
 
-    glfwDestroyWindow(window);
+        vkDestroySurfaceKHR(instance, surface, nullptr);
+        vkDestroyInstance(instance, nullptr);
 
-    glfwTerminate();
+        glfwDestroyWindow(window);
+
+        glfwTerminate();
 }
 
 Vkdriver::~Vkdriver() {
