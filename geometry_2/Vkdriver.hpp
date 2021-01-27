@@ -7,6 +7,7 @@
 #include <vector>
 #include <cstring>
 #include <iostream>
+#include <fstream>
 #include <optional>
 #include <set>
 #include <string>
@@ -56,7 +57,10 @@ const bool enableValidationLayers = true;
     std::vector<VkImage>      swapChainImages;
     VkFormat                  swapChainImageFormat;
     VkExtent2D                swapChainExtent;
+    std::vector<VkImageView>  swapChainImageViews;
+    VkPipelineLayout          pipelineLayout;
 
+    void                      createGraphicsPipeline();
     void                      initWindow();
     void                      initVulkan();
     void                      createInstance();
@@ -65,16 +69,20 @@ const bool enableValidationLayers = true;
     void                      pickPhysicalDevice();
     void                      createLogicalDevice();
     void                      createSwapChain();
+    void                      createImageViews();
     void                      mainLoop();
     void                      cleanup();
 
+    bool                      checkValidationLayerSupport();
     bool                      isDeviceSuitable(VkPhysicalDevice device);
+    std::vector<const char*>  getRequiredExtensions();
     QueueFamilyIndices        findQueueFamilies(VkPhysicalDevice device);
     bool                      checkDeviceExtensionSupport(VkPhysicalDevice device);
     SwapChainSupportDetails   querySwapChainSupport(VkPhysicalDevice device);
     VkSurfaceFormatKHR        chooseSwapSurfaceFormat(const std::vector<VkSurfaceFormatKHR>& availableFormats);
     VkPresentModeKHR          chooseSwapPresentMode(const std::vector<VkPresentModeKHR>& availablePresentModes);
     VkExtent2D                chooseSwapExtent(const VkSurfaceCapabilitiesKHR& capabilities);
+    VkShaderModule            createShaderModule(const std::vector<char>& code);
 
 public:
 
