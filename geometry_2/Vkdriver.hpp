@@ -11,7 +11,9 @@
 #include <fstream>
 #include <optional>
 #include <set>
+#include <glm/gtc/matrix_transform.hpp>
 #include <string>
+#include <chrono>
 
 namespace vkdriver {
 
@@ -45,10 +47,16 @@ struct Vertex {
     }
 };
 
+struct UniformBufferObject {
+    glm::mat4 model;
+    glm::mat4 view;
+    glm::mat4 proj;
+};
+
 const std::vector<Vertex> vertices = {
-    {{0.0f, -0.5f}, {1.0f, 1.0f, 1.0f}},
+    {{0.0f, -0.5f}, {0.3f, 0.7f, 1.0f}},
     {{0.5f, 0.5f}, {0.0f, 1.0f, 0.0f}},
-    {{-0.5f, 0.5f}, {0.0f, 0.0f, 1.0f}}
+    {{-0.5f, 0.5f}, {0.0f, 0.0f, 1.0f}},
 };
 
 
@@ -111,8 +119,14 @@ const bool enableValidationLayers = true;
     bool                            framebufferResized = false;
     VkBuffer                        vertexBuffer;
     VkDeviceMemory                  vertexBufferMemory;
+    VkDescriptorSetLayout           descriptorSetLayout;
+    std::vector<VkBuffer>           uniformBuffers;
+    std::vector<VkDeviceMemory>     uniformBuffersMemory;
+    VkDescriptorPool                descriptorPool;
+    std::vector<VkDescriptorSet>    descriptorSets;
 
 
+    void                            createDescriptorSetLayout();
     void                            createVertexBuffer();
     void                            cleanupSwapChain();
     void                            createSyncObjects();
@@ -134,6 +148,10 @@ const bool enableValidationLayers = true;
     void                            cleanup();
     void                            recreateSwapChain();
     void                            drawFrame();
+    void                            createUniformBuffers();
+    void                            createDescriptorPool();
+    void                            createDescriptorSets();
+    void                            updateUniformBuffer(uint32_t currentImage);
     void                            createBuffer(VkDeviceSize size, VkBufferUsageFlags usage, VkMemoryPropertyFlags properties, VkBuffer& buffer, VkDeviceMemory& bufferMemory);
     void                            copyBuffer(VkBuffer srcBuffer, VkBuffer dstBuffer, VkDeviceSize size);
     uint32_t                        findMemoryType(uint32_t typeFilter, VkMemoryPropertyFlags properties);
