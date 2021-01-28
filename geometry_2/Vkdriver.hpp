@@ -70,7 +70,9 @@ const bool enableValidationLayers = true;
     std::vector<VkFence>            imagesInFlight;
     size_t                          currentFrame = 0;
     const int                       MAX_FRAMES_IN_FLIGHT = 2;
+    bool                            framebufferResized = false;
 
+    void                            cleanupSwapChain();
     void                            createSyncObjects();
     void                            createCommandBuffers();
     void                            createCommandPool();
@@ -88,7 +90,8 @@ const bool enableValidationLayers = true;
     void                            createImageViews();
     void                            mainLoop();
     void                            cleanup();
-  
+
+    void                            recreateSwapChain();
     void                            drawFrame();
     bool                            checkValidationLayerSupport();
     bool                            isDeviceSuitable(VkPhysicalDevice device);
@@ -100,6 +103,8 @@ const bool enableValidationLayers = true;
     VkPresentModeKHR                chooseSwapPresentMode(const std::vector<VkPresentModeKHR>& availablePresentModes);
     VkExtent2D                      chooseSwapExtent(const VkSurfaceCapabilitiesKHR& capabilities);
     VkShaderModule                  createShaderModule(const std::vector<char>& code);
+
+    static void                     framebufferResizeCallback(GLFWwindow* window, int width, int height);
 
 public:
 
