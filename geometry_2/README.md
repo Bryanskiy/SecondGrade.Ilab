@@ -8,17 +8,27 @@
 - There must be at least trivial lighting
 - And it should be possible to control the camera by flying around the scene, zooming in and out of the camera (with the mouse or keyboard)
 
+
 -------------------------------------
-## Usefull links:
-- https://vulkan-tutorial.com/Introduction - VULKAN tutorial
-- https://www.opengl-tutorial.org/ru/beginners-tutorials/tutorial-3-matrices/ - MVP matrices
+
+## Config.txt format
+
+- first two integers - width and height
+- number of validation layers 
+- validation layers
+- number of device extensions
+- device extensions
+
 -------------------------------------
 
 ## Keyboard shortcuts
 
 | Keys              | purpose       |
 | -------------     |:-------------:|
-| TAB (holding)     | cursor release|
 |      ESC          | close window  | 
-| 1, 2, 3           | move speed    |
 | w, a, s, d        | move          |
+
+-------------------------------------
+## Usefull links:
+- https://vulkan-tutorial.com/Introduction - VULKAN tutorial
+- https://www.opengl-tutorial.org/ru/beginners-tutorials/tutorial-3-matrices/ - MVP matrices
