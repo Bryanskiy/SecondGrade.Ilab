@@ -56,6 +56,19 @@ void Vkdriver::run(const std::vector<Vertex>& vertex_array) {
 }
 
 
+void Vkdriver::mouseButtonCallback(GLFWwindow* window, int button, int action, int mods) {
+    if (button == GLFW_MOUSE_BUTTON_LEFT && action == GLFW_PRESS) {
+        int wHeight = 0, wWidth = 0;
+		glfwGetWindowSize(window, &wWidth, &wHeight);
+        glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_HIDDEN);
+        glfwSetCursorPos(window, wWidth / 2.0, wHeight / 2.0);
+    } else if (button == GLFW_MOUSE_BUTTON_LEFT && action == GLFW_RELEASE) {
+        glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_NORMAL);
+    }
+
+}
+
+
 void Vkdriver::initWindow() {
     glfwInit();
 
@@ -65,6 +78,7 @@ void Vkdriver::initWindow() {
     glfwSetWindowUserPointer(window, this);
     glfwSetFramebufferSizeCallback(window, framebufferResizeCallback);
     glfwSetKeyCallback(window, keyCallback);
+    glfwSetMouseButtonCallback(window, mouseButtonCallback);
 } 
 
 void Vkdriver::initVulkan() {
@@ -155,17 +169,6 @@ void Vkdriver::keyCallback(GLFWwindow* window, int key, int scancode, int action
 
 	if (key == GLFW_KEY_ESCAPE && action == GLFW_PRESS) {
 		glfwSetWindowShouldClose(window, GL_TRUE);
-	}
-	else if (key == GLFW_KEY_TAB) {
-		if (action == GLFW_PRESS) {
-			glfwSetInputMode(app->window, GLFW_CURSOR, GLFW_CURSOR_NORMAL);
-		}
-	    else if (action == GLFW_RELEASE) {
-		    int wHeight = 0, wWidth = 0;
-		    glfwGetWindowSize(app->window, &wWidth, &wHeight);
-		    glfwSetCursorPos(app->window, wWidth / 2.0, wHeight / 2.0);
-		    glfwSetInputMode(app->window, GLFW_CURSOR, GLFW_CURSOR_HIDDEN);
-		}
 	}
 }
 

@@ -179,6 +179,7 @@ const bool enableValidationLayers = true;
 
     static void                     keyCallback(GLFWwindow* window, int key, int scancode, int action, int mode);
     static void                     framebufferResizeCallback(GLFWwindow* window, int width, int height);
+    static void                     mouseButtonCallback(GLFWwindow* window, int button, int action, int mods);
 
 public:
 

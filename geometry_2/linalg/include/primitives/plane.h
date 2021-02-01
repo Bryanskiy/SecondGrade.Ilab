@@ -28,5 +28,4 @@ namespace lingeo {
 
     bool operator==(const plane_t &lhs, const plane_t &rhs);
     bool parallel(const plane_t &lhs, const plane_t &rhs);
-
 }

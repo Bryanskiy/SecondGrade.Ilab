@@ -23,7 +23,7 @@ public:
 
         int wHeight = 0, wWidth = 0;
 		glfwGetWindowSize(window, &wWidth, &wHeight);
-		if (glfwGetKey(window, GLFW_KEY_TAB) != GLFW_PRESS) {
+		if (glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_LEFT) == GLFW_PRESS) {
 			double x = 0, y = 0;
 			glfwGetCursorPos(window, &x, &y);
 			const float dx = wWidth / 2.f - x;
