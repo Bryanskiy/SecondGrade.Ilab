@@ -1,4 +1,6 @@
 #include <gtest/gtest.h>
+
+#define DEBUG_
 #include "../avl_tree.hpp"
 #include <random>
 #include <iostream>
@@ -22,24 +24,22 @@ private:
     std::chrono::time_point<clock_t> start_;
 };
 
-/* it makes some operations with tree in a loop 
-   if invariant is broken tree will throw exeption */
 void height_invariant_test() {
     avl::tree_t<int> tree;
 
     std::random_device rd;
     std::mt19937 gen(rd());
     std::uniform_int_distribution<> dis(std::numeric_limits<int>::min(), std::numeric_limits<int>::max());
+
+    for(std::size_t i = 0; i < 10000; ++i) {
+        int tmp = dis(gen);
+        tree.insert(tmp);
+    }        
+
     try {
-
-        for(std::size_t i = 0; i < 10000; ++i) {
-            int tmp = dis(gen);
-            tree.insert(tmp);
-        }        
-
+        tree.check_height_invariant();
     } catch(std::runtime_error e) {
-        std::cerr << e.what();
-        return;
+        std::cerr << e.what() << std::endl;
     }
 
     std::cout << "Height invariant test: SUCCESS" << std::endl;
@@ -123,7 +123,7 @@ std::vector<int> generate_uniform_distribution(std::size_t elements_number) {
 }
 
 /* elements number must be pow(2, k) - 1 */
-std::vector<int> generate_special_avl_tree_distribution(std::size_t elements_number) {
+std::vector<int> generate_distribution_without_rotations(std::size_t elements_number) {
     std::vector<int> ret(elements_number);
 
     std::size_t max_h = std::log2(elements_number);
@@ -172,8 +172,8 @@ int main(int argc, char **argv) {
 
 
     std::cout << "------------------------------------------------------------------" << std::endl;
-    std::cout << "Special distribution for avl tree time test: " << std::endl;
-    time_test(generate_special_avl_tree_distribution, number_elements);
+    std::cout << "Distribution without rotations time test: " << std::endl;
+    time_test(generate_distribution_without_rotations, number_elements);
 
 
 

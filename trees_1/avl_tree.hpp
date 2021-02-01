@@ -10,16 +10,16 @@
 namespace avl {
 
 template<typename T>
-class tree_t {
+class tree_t final {
 
 private:
 
-    class node_t {
+    class node_t final {
     
         public:
             node_t(const T& key) : key_(key), height_(1), left_(nullptr), right_(nullptr) {}
 
-            T        get_key()                                    { return key_; }
+            T        get_key()    const                           { return key_; }
             unsigned get_height() const                           { return height_; }
             node_t*  get_left()   const                           { return left_; };
             node_t*  get_right()  const                           { return right_; }
@@ -50,7 +50,7 @@ private:
 
 public:
 
-    class iterator {
+    class iterator final {
         public:
 
             iterator() = default;
@@ -83,6 +83,7 @@ public:
     iterator end() const;
 
 #ifdef DEBUG_
+    void check_height_invariant() const {check_height_invariant(head_);}
     void dump() const {dump(head_);}
 #endif    
 
@@ -109,18 +110,10 @@ tree_t<T>::~tree_t() {
 
 template<typename T>
 int tree_t<T>::balance_factor(node_t* node) const {
-    node_t* left = node->get_left();
-    node_t* right = node->get_right();
+    int left = (!node) ? node->get_left()->get_key() : 0;
+    int right = (!node) ? node->get_right()->get_key() : 0;
 
-    if((left == right) && (left == nullptr)) {
-        return 0;
-    } else if(left == nullptr) {
-        return right->get_height();
-    } else if (right == nullptr) {
-        return -left->get_height();
-    }
-
-    return right->get_height() - left->get_height();
+    return right - left;
 }
 
 template<typename T>
@@ -172,11 +165,7 @@ void tree_t<T>::insert(const T& key) {
         }
 
         current = prev;
-    }
-
-#ifdef DEBUG_
-    check_height_invariant(head_);
-#endif     
+    }    
 }
 
 template<typename T>
@@ -223,18 +212,11 @@ typename tree_t<T>::node_t* tree_t<T>::balance(node_t* node) {
 
 template<typename T>
 void tree_t<T>::fix_height(node_t* node) {
-    node_t* left = node->get_left();
-    node_t* right = node->get_right();
 
-    if((left == right) && (left == nullptr)) {
-        node->set_height(1);
-    } else if(left == nullptr) {
-        node->set_height(right->get_height() + 1);
-    } else if (right == nullptr) {
-        node->set_height(left->get_height() + 1);
-    } else { 
-        node->set_height((left->get_height() > right->get_height() ? left->get_height() : right->get_height()) + 1);
-    }    
+    unsigned char left = (!node) ? node->get_left()->get_height() : 0;
+    unsigned char right = (!node) ? node->get_right()->get_height() : 0;
+
+    node->set_height(std::max(left, right));
 }
 
 template<typename T> 
