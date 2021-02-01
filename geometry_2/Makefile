@@ -3,4 +3,4 @@ LDFLAGS = -lglfw -lvulkan -ldl -lpthread -lX11 -lXxf86vm -lXrandr -lXi
 
 VulkanTest: main.cpp
 	g++ $(CFLAGS) main.cpp Vkdriver.cpp linalg/src/distance.cpp linalg/src/intersections.cpp linalg/src/plane.cpp \
-linalg/src/vect.cpp linalg/src/general.cpp -o main.out $(LDFLAGS)
+linalg/src/vect.cpp linalg/src/general.cpp linalg/src/space.cpp -o main.out $(LDFLAGS)

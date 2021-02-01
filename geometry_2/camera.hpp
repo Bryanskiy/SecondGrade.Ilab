@@ -6,10 +6,19 @@
 #include <glm/glm.hpp>
 #include <GLFW/glfw3.h>
 #include <glm/gtc/matrix_transform.hpp>
+#include "linalg/include/octtree.h"
 
 namespace vkdriver {
 class Camera {
 public:
+	Camera(octt::space_t space) {
+		int offset = 5;
+		position = glm::vec3{space[1] + offset, space[3] + offset, space[5] + offset};
+		glm::vec3 center = glm::vec3{(space[0] + space[1]) / 2, (space[2] + space[3]) / 2, (space[4] + space[5]) / 2};
+		direction = glm::normalize(center - position);
+		speed = (center - position).length() * 1.5f;
+	}
+
     glm::vec3 getPosition() const {return position;}
     glm::vec3 getDirection() const {return direction;}
     glm::vec3 getUpVector() const {return upVector;}
@@ -35,16 +44,6 @@ public:
 			glfwSetCursorPos(window, wWidth / 2.0, wHeight / 2.0);
 		}
 
-		if (glfwGetKey(window, GLFW_KEY_1) == GLFW_PRESS) {
-			speed = 1.f;
-		}
-		if (glfwGetKey(window, GLFW_KEY_2) == GLFW_PRESS) {
-			speed = 2.f;
-		}
-		if (glfwGetKey(window, GLFW_KEY_3) == GLFW_PRESS) {
-			speed = 3.f;
-		}
-
 		if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS) {
 			moveInDirection(time * speed);
 		}
@@ -66,15 +65,15 @@ public:
     }
 
 private:
-    glm::vec3 position = glm::vec3(2.0, 2.0, 2.0);
-    glm::vec3 direction = glm::vec3(2.0, 2.0, 2.0);
+    glm::vec3 position = {1, 1, 1};
+    glm::vec3 direction = {1, 1, 1};
 
 	glm::vec3 upVector = glm::vec3(0.f, 0.f, 1.f);
 	float viewAngle = 45.f;
 	float aspect = 4.f / 3.f;
 	float near = 0.1f;
 	float far = 1000.f;
-    float speed = 1.f;
+    float speed = 5.f;
 
     void moveInDirection(float distance) { position += distance * direction;}
     void moveUp(float distance) {position += distance * upVector;}

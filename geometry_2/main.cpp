@@ -51,7 +51,8 @@ int main() {
     std::vector<std::size_t> intersection_indices = octtree.get_intersections();
 
     try {
-        vkdriver::Vkdriver driver;
+        vkdriver::Camera camera(space);
+        vkdriver::Vkdriver driver(camera);
         driver.run(transformTriangles2Verteces(intersection_indices, triangles));
     } catch (const std::exception& e) {
         std::cerr << e.what() << std::endl;

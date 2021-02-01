@@ -191,9 +191,11 @@ const bool enableValidationLayers = true;
     static void                     mouseButtonCallback(GLFWwindow* window, int button, int action, int mods);
 
 public:
-    Vkdriver() = default;
+    Vkdriver() = delete;
     Vkdriver(const Vkdriver& driver) = delete;
     Vkdriver& operator=(const Vkdriver& rhs) = delete;
+
+    Vkdriver(Camera camera_) : camera(camera_) {}
 
     ~Vkdriver();
 
