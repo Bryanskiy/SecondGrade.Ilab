@@ -67,7 +67,7 @@ public:
 
 private:
     glm::vec3 position = glm::vec3(2.0, 2.0, 2.0);
-    glm::vec3 direction = glm::vec3(-2.0, -2.0, -2.0);
+    glm::vec3 direction = glm::vec3(2.0, 2.0, 2.0);
 
 	glm::vec3 upVector = glm::vec3(0.f, 0.f, 1.f);
 	float viewAngle = 45.f;

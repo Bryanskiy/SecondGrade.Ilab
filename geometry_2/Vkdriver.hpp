@@ -62,19 +62,27 @@ struct UniformBufferObject {
     glm::mat4 proj;
 };
 
-class Vkdriver {
+class Vkdriver final {
 
 private:
 
-    const uint32_t WIDTH = 800;
-    const uint32_t HEIGHT = 600;
+    class ConfigData {
+        public:
+            ConfigData();
+            ConfigData(const ConfigData&) = delete;
+            ConfigData& operator=(const ConfigData&) = delete;
+            ~ConfigData(); 
 
-    const std::vector<const char*> validationLayers = {
-        "VK_LAYER_KHRONOS_validation"
-    };
+            uint32_t getWidth() const {return width;}
+            uint32_t getHeight() const {return height;}
+            const std::vector<const char*>& getValidationLayers() const {return validationLayers;} 
+            const std::vector<const char*>& getDeviceExtensions() const {return deviceExtensions;}
 
-    const std::vector<const char*> deviceExtensions = {
-        VK_KHR_SWAPCHAIN_EXTENSION_NAME
+        private:
+            uint32_t width = 800;
+            uint32_t height = 600;
+            std::vector<const char*> validationLayers;
+            std::vector<const char*> deviceExtensions;
     };
 
 #ifdef NDEBUG
@@ -131,6 +139,7 @@ const bool enableValidationLayers = true;
     VkImageView                     depthImageView;
     std::vector<Vertex>             vertices;
     Camera                          camera;
+    ConfigData                      configData;
 
     void                            createDepthResources();
     void                            createDescriptorSetLayout();
@@ -161,19 +170,19 @@ const bool enableValidationLayers = true;
     void                            updateUniformBuffer(uint32_t currentImage);
     void                            createBuffer(VkDeviceSize size, VkBufferUsageFlags usage, VkMemoryPropertyFlags properties, VkBuffer& buffer, VkDeviceMemory& bufferMemory);
     void                            copyBuffer(VkBuffer srcBuffer, VkBuffer dstBuffer, VkDeviceSize size);
-    uint32_t                        findMemoryType(uint32_t typeFilter, VkMemoryPropertyFlags properties);
-    bool                            checkValidationLayerSupport();
-    bool                            isDeviceSuitable(VkPhysicalDevice device);
-    std::vector<const char*>        getRequiredExtensions();
-    QueueFamilyIndices              findQueueFamilies(VkPhysicalDevice device);
-    bool                            checkDeviceExtensionSupport(VkPhysicalDevice device);
-    SwapChainSupportDetails         querySwapChainSupport(VkPhysicalDevice device);
-    VkSurfaceFormatKHR              chooseSwapSurfaceFormat(const std::vector<VkSurfaceFormatKHR>& availableFormats);
-    VkPresentModeKHR                chooseSwapPresentMode(const std::vector<VkPresentModeKHR>& availablePresentModes);
-    VkExtent2D                      chooseSwapExtent(const VkSurfaceCapabilitiesKHR& capabilities);
-    VkShaderModule                  createShaderModule(const std::vector<char>& code);
-    VkFormat                        findSupportedFormat(const std::vector<VkFormat>& candidates, VkImageTiling tiling, VkFormatFeatureFlags features);
-    VkFormat                        findDepthFormat();
+    uint32_t                        findMemoryType(uint32_t typeFilter, VkMemoryPropertyFlags properties) const;
+    bool                            checkValidationLayerSupport() const;
+    bool                            isDeviceSuitable(VkPhysicalDevice device) const;
+    std::vector<const char*>        getRequiredExtensions() const;
+    QueueFamilyIndices              findQueueFamilies(VkPhysicalDevice device) const;
+    bool                            checkDeviceExtensionSupport(VkPhysicalDevice device) const;
+    SwapChainSupportDetails         querySwapChainSupport(VkPhysicalDevice device) const;
+    VkSurfaceFormatKHR              chooseSwapSurfaceFormat(const std::vector<VkSurfaceFormatKHR>& availableFormats) const;
+    VkPresentModeKHR                chooseSwapPresentMode(const std::vector<VkPresentModeKHR>& availablePresentModes) const;
+    VkExtent2D                      chooseSwapExtent(const VkSurfaceCapabilitiesKHR& capabilities) const;
+    VkShaderModule                  createShaderModule(const std::vector<char>& code) const;
+    VkFormat                        findSupportedFormat(const std::vector<VkFormat>& candidates, VkImageTiling tiling, VkFormatFeatureFlags features) const;
+    VkFormat                        findDepthFormat() const;
     void                            createImage(uint32_t width, uint32_t height, VkFormat format, VkImageTiling tiling, VkImageUsageFlags usage, VkMemoryPropertyFlags properties, VkImage& image, VkDeviceMemory& imageMemory);
     VkImageView                     createImageView(VkImage image, VkFormat format, VkImageAspectFlags aspectFlags);
 
@@ -182,8 +191,12 @@ const bool enableValidationLayers = true;
     static void                     mouseButtonCallback(GLFWwindow* window, int button, int action, int mods);
 
 public:
+    Vkdriver() = default;
+    Vkdriver(const Vkdriver& driver) = delete;
+    Vkdriver& operator=(const Vkdriver& rhs) = delete;
 
     ~Vkdriver();
+
     void run(const std::vector<Vertex>& vertex_array);
 };
 

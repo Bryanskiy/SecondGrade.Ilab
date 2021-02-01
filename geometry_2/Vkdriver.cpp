@@ -9,7 +9,7 @@ static std::vector<char> readFile(const std::string& filename) {
         throw std::runtime_error("failed to open file!");
     }
 
-    size_t fileSize = (size_t) file.tellg();
+    size_t fileSize = static_cast<std::size_t> (file.tellg());
     std::vector<char> buffer(fileSize);
 
     file.seekg(0);
@@ -68,13 +68,48 @@ void Vkdriver::mouseButtonCallback(GLFWwindow* window, int button, int action, i
 
 }
 
+Vkdriver::ConfigData::ConfigData() {
+    std::ifstream configFile("config.txt");
+    if (!configFile.is_open()) {
+        throw std::runtime_error("failed to open config file!");
+    }
+
+    configFile >> width >> height;
+
+    std::size_t layersCount;
+    configFile >> layersCount;
+    validationLayers.resize(layersCount);
+    for(std::size_t i = 0; i < layersCount; ++i) {
+        std::string tmp; configFile >> tmp;
+        validationLayers[i] = new char[tmp.size() + 1];
+        memcpy(const_cast<char*>(validationLayers[i]), tmp.c_str(), tmp.size() * sizeof(char) + 1);
+    }
+
+    std::size_t deviceExCount;
+    configFile >> deviceExCount;
+    deviceExtensions.resize(deviceExCount);
+    for(std::size_t i = 0; i < deviceExCount; ++i) {
+        std::string tmp; configFile >> tmp;
+        deviceExtensions[i] = new char[tmp.size() + 1];
+        memcpy(const_cast<char*>(deviceExtensions[i]), tmp.c_str(), tmp.size() * sizeof(char) + 1);
+    }
+}
+
+Vkdriver::ConfigData::~ConfigData() {
+    for(std::size_t i = 0, max = validationLayers.size(); i < max; ++i) {
+        delete[] validationLayers[i];
+    }
+    for(std::size_t i = 0, max = deviceExtensions.size(); i < max; ++i) {
+        delete[] deviceExtensions[i];
+    }
+}
 
 void Vkdriver::initWindow() {
     glfwInit();
 
     glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API);
 
-    window = glfwCreateWindow(WIDTH, HEIGHT, "Vulkan", nullptr, nullptr);
+    window = glfwCreateWindow(configData.getWidth() , configData.getHeight(), "Vulkan", nullptr, nullptr);
     glfwSetWindowUserPointer(window, this);
     glfwSetFramebufferSizeCallback(window, framebufferResizeCallback);
     glfwSetKeyCallback(window, keyCallback);
@@ -103,14 +138,14 @@ void Vkdriver::initVulkan() {
     createSyncObjects();
 }
 
-bool Vkdriver::checkValidationLayerSupport() {
+bool Vkdriver::checkValidationLayerSupport() const {
     uint32_t layerCount;
     vkEnumerateInstanceLayerProperties(&layerCount, nullptr);
 
     std::vector<VkLayerProperties> availableLayers(layerCount);
     vkEnumerateInstanceLayerProperties(&layerCount, availableLayers.data());
 
-    for (const char* layerName : validationLayers) {
+    for (const char* layerName : configData.getValidationLayers()) {
         bool layerFound = false;
 
         for (const auto& layerProperties : availableLayers) {
@@ -128,7 +163,7 @@ bool Vkdriver::checkValidationLayerSupport() {
     return true;
 }
 
-std::vector<const char*> Vkdriver::getRequiredExtensions() {
+std::vector<const char*> Vkdriver::getRequiredExtensions() const {
     uint32_t glfwExtensionCount = 0;
     const char** glfwExtensions;
     glfwExtensions = glfwGetRequiredInstanceExtensions(&glfwExtensionCount);
@@ -195,8 +230,8 @@ void Vkdriver::createInstance() {
 
     VkDebugUtilsMessengerCreateInfoEXT debugCreateInfo;
     if (enableValidationLayers) {
-        createInfo.enabledLayerCount   = static_cast<uint32_t>(validationLayers.size());
-        createInfo.ppEnabledLayerNames = validationLayers.data();
+        createInfo.enabledLayerCount   = static_cast<uint32_t>(configData.getValidationLayers().size());
+        createInfo.ppEnabledLayerNames = configData.getValidationLayers().data();
 
         populateDebugMessengerCreateInfo(debugCreateInfo);
         createInfo.pNext = (VkDebugUtilsMessengerCreateInfoEXT*) &debugCreateInfo;
@@ -227,7 +262,7 @@ void Vkdriver::createSurface() {
     }
 }
 
-Vkdriver::QueueFamilyIndices Vkdriver::findQueueFamilies(VkPhysicalDevice device) {
+Vkdriver::QueueFamilyIndices Vkdriver::findQueueFamilies(VkPhysicalDevice device) const {
     QueueFamilyIndices indices;
 
     uint32_t queueFamilyCount = 0;
@@ -252,14 +287,14 @@ Vkdriver::QueueFamilyIndices Vkdriver::findQueueFamilies(VkPhysicalDevice device
     return indices;
 }
 
-bool Vkdriver::checkDeviceExtensionSupport(VkPhysicalDevice device) {
+bool Vkdriver::checkDeviceExtensionSupport(VkPhysicalDevice device) const {
     uint32_t extensionCount;
     vkEnumerateDeviceExtensionProperties(device, nullptr, &extensionCount, nullptr);
 
     std::vector<VkExtensionProperties> availableExtensions(extensionCount);
     vkEnumerateDeviceExtensionProperties(device, nullptr, &extensionCount, availableExtensions.data());
 
-    std::set<std::string> requiredExtensions(deviceExtensions.begin(), deviceExtensions.end());
+    std::set<std::string> requiredExtensions(configData.getDeviceExtensions().begin(), configData.getDeviceExtensions().end());
 
     for (const auto& extension : availableExtensions) {
         requiredExtensions.erase(extension.extensionName);
@@ -272,7 +307,7 @@ bool Vkdriver::checkDeviceExtensionSupport(VkPhysicalDevice device) {
                          it has a swapchain extensions support &&
                          swapchain has some support
    VK_QUEUE_GRAPHICS_BIT specifies that queues in this queue family support graphics operations*/
-bool Vkdriver::isDeviceSuitable(VkPhysicalDevice device) {
+bool Vkdriver::isDeviceSuitable(VkPhysicalDevice device) const {
     QueueFamilyIndices indices = findQueueFamilies(device);
 
      bool extensionsSupported = checkDeviceExtensionSupport(device);
@@ -327,12 +362,12 @@ void Vkdriver::createLogicalDevice() {
     createInfo.pQueueCreateInfos       = &queueCreateInfo;
     createInfo.queueCreateInfoCount    = 1;
     createInfo.pEnabledFeatures        = &deviceFeatures;
-    createInfo.enabledExtensionCount   = static_cast<uint32_t>(deviceExtensions.size());
-    createInfo.ppEnabledExtensionNames = deviceExtensions.data();
+    createInfo.enabledExtensionCount   = static_cast<uint32_t>(configData.getDeviceExtensions().size());
+    createInfo.ppEnabledExtensionNames = configData.getDeviceExtensions().data();
 
     if (enableValidationLayers) {
-        createInfo.enabledLayerCount   = static_cast<uint32_t>(validationLayers.size());
-        createInfo.ppEnabledLayerNames = validationLayers.data();
+        createInfo.enabledLayerCount   = static_cast<uint32_t>(configData.getValidationLayers().size());
+        createInfo.ppEnabledLayerNames = configData.getValidationLayers().data();
     } else {
         createInfo.enabledLayerCount   = 0;
     }
@@ -344,7 +379,7 @@ void Vkdriver::createLogicalDevice() {
     vkGetDeviceQueue(device, indices.family.value(), 0, &queue);
 }
 
-Vkdriver::SwapChainSupportDetails Vkdriver::querySwapChainSupport(VkPhysicalDevice device) {
+Vkdriver::SwapChainSupportDetails Vkdriver::querySwapChainSupport(VkPhysicalDevice device) const {
     SwapChainSupportDetails details;
 
     vkGetPhysicalDeviceSurfaceCapabilitiesKHR(device, surface, &details.capabilities);
@@ -372,7 +407,7 @@ Vkdriver::SwapChainSupportDetails Vkdriver::querySwapChainSupport(VkPhysicalDevi
    VkFormat format member specifies the color channels and types. 
    The colorSpace member indicates if the SRGB color space is supported or not using the VK_COLOR_SPACE_SRGB_NONLINEAR_KHR flag.
 */
-VkSurfaceFormatKHR Vkdriver::chooseSwapSurfaceFormat(const std::vector<VkSurfaceFormatKHR>& availableFormats) {
+VkSurfaceFormatKHR Vkdriver::chooseSwapSurfaceFormat(const std::vector<VkSurfaceFormatKHR>& availableFormats) const {
     for (const auto& availableFormat : availableFormats) {
         if (availableFormat.format == VK_FORMAT_B8G8R8A8_SRGB && 
             availableFormat.colorSpace == VK_COLOR_SPACE_SRGB_NONLINEAR_KHR) {
@@ -388,7 +423,7 @@ VkSurfaceFormatKHR Vkdriver::chooseSwapSurfaceFormat(const std::vector<VkSurface
 /* VK_PRESENT_MODE_MAILBOX_KHR - triple buffering 
    Only the VK_PRESENT_MODE_FIFO_KHR mode is guaranteed to be available, so we'll again have to write a 
    function that looks for the best mode that is available:*/
-VkPresentModeKHR Vkdriver::chooseSwapPresentMode(const std::vector<VkPresentModeKHR>& availablePresentModes) {
+VkPresentModeKHR Vkdriver::chooseSwapPresentMode(const std::vector<VkPresentModeKHR>& availablePresentModes) const {
     for (const auto& availablePresentMode : availablePresentModes) {
         if (availablePresentMode == VK_PRESENT_MODE_MAILBOX_KHR) {
             return availablePresentMode;
@@ -398,7 +433,7 @@ VkPresentModeKHR Vkdriver::chooseSwapPresentMode(const std::vector<VkPresentMode
     return VK_PRESENT_MODE_FIFO_KHR;
 }
 
-VkExtent2D Vkdriver::chooseSwapExtent(const VkSurfaceCapabilitiesKHR& capabilities) {
+VkExtent2D Vkdriver::chooseSwapExtent(const VkSurfaceCapabilitiesKHR& capabilities) const {
     if (capabilities.currentExtent.width != UINT32_MAX) {
         return capabilities.currentExtent;
     } else {
@@ -465,7 +500,7 @@ void Vkdriver::createImageViews() {
     }
 }
 
-VkShaderModule Vkdriver::createShaderModule(const std::vector<char>& code) {
+VkShaderModule Vkdriver::createShaderModule(const std::vector<char>& code) const {
     VkShaderModuleCreateInfo createInfo{};
     createInfo.sType = VK_STRUCTURE_TYPE_SHADER_MODULE_CREATE_INFO;
     createInfo.codeSize = code.size();
@@ -944,7 +979,7 @@ void Vkdriver::copyBuffer(VkBuffer srcBuffer, VkBuffer dstBuffer, VkDeviceSize s
     vkFreeCommandBuffers(device, commandPool, 1, &commandBuffer);
 }
 
-uint32_t Vkdriver::findMemoryType(uint32_t typeFilter, VkMemoryPropertyFlags properties) {
+uint32_t Vkdriver::findMemoryType(uint32_t typeFilter, VkMemoryPropertyFlags properties) const {
     VkPhysicalDeviceMemoryProperties memProperties;
     vkGetPhysicalDeviceMemoryProperties(physicalDevice, &memProperties);
 
@@ -1034,7 +1069,7 @@ void Vkdriver::createDescriptorSets() {
     }
 }
 
-VkFormat Vkdriver::findSupportedFormat(const std::vector<VkFormat>& candidates, VkImageTiling tiling, VkFormatFeatureFlags features) {
+VkFormat Vkdriver::findSupportedFormat(const std::vector<VkFormat>& candidates, VkImageTiling tiling, VkFormatFeatureFlags features) const {
     for (VkFormat format : candidates) {
         VkFormatProperties props;
         vkGetPhysicalDeviceFormatProperties(physicalDevice, format, &props);
@@ -1049,7 +1084,7 @@ VkFormat Vkdriver::findSupportedFormat(const std::vector<VkFormat>& candidates, 
     throw std::runtime_error("failed to find supported format!"); 
 }
 
-VkFormat Vkdriver::findDepthFormat() {
+VkFormat Vkdriver::findDepthFormat() const {
     return findSupportedFormat(
         {VK_FORMAT_D32_SFLOAT, VK_FORMAT_D32_SFLOAT_S8_UINT, VK_FORMAT_D24_UNORM_S8_UINT},
         VK_IMAGE_TILING_OPTIMAL,

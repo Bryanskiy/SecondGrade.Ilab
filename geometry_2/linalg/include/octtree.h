@@ -100,8 +100,8 @@ octt::space_t octt::create(const std::vector<T>& elements) {
         ret[2] = std::min(ret[2], proj[1].first);
         ret[3] = std::max(ret[3], proj[1].second);
 
-        ret[4] = std::min(ret[0], proj[2].first);
-        ret[5] = std::max(ret[1], proj[2].second);
+        ret[4] = std::min(ret[4], proj[2].first);
+        ret[5] = std::max(ret[5], proj[2].second);
     }
 
     ret.set_Vmin(std::pow(ret.V(), 0.33));
