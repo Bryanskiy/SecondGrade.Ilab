@@ -217,14 +217,6 @@ long double lingeo::dot(const lingeo::vector_t<DIM_>& lhs, const lingeo::vector_
     return equal(ans, 0.0) ? 0.0 : ans;
 }
 
-//todo: for all dimensions
-lingeo::vector_t<3> lingeo::cross(const lingeo::vector_t<3>& lhs, const lingeo::vector_t<3>& rhs) {
-    lingeo::coordinate_t x = lhs[1] * rhs[2] - lhs[2] * rhs[1];
-    lingeo::coordinate_t y = lhs[2] * rhs[0] - lhs[0] * rhs[2];
-    lingeo::coordinate_t z = lhs[0] * rhs[1] - lhs[1] * rhs[0];
-    return lingeo::vector_t<3>({x, y, z});
-}
-
 template<std::size_t DIM_>
 bool lingeo::operator==(const lingeo::vector_t<DIM_>& lhs, const lingeo::vector_t<DIM_>& rhs) {
     if(!lhs.valid() || !rhs.valid()) {
