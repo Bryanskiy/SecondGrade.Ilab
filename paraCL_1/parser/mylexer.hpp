@@ -3,6 +3,7 @@
 #ifndef yyFlexLexer
 #include <FlexLexer.h>
 #endif
+#include <iostream>
 #include "compiler.tab.hh"
 
 class mylexer_t : public yyFlexLexer {
@@ -23,5 +24,6 @@ public:
     }
 
     int yylex() override;
+
     virtual ~mylexer_t() = default;
 };

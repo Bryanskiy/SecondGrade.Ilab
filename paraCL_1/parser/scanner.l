@@ -1,4 +1,5 @@
 %option c++
+%option noyywrap nounput noinput batch debug
 %option yylineno
 %option yyclass="mylexer_t"
 %{

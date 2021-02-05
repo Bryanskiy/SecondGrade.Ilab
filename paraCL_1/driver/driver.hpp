@@ -2,6 +2,7 @@
 
 #include <FlexLexer.h>
 #include <string>
+#include <fstream>
 
 #include "../node_interface/Inode.hpp"
 #include "../parser/compiler.tab.hh"
@@ -20,7 +21,10 @@ namespace yy {
         void set_source_stream();
         bool parse();
     private:
+        const std::string file_name_ = "std::cin";
+        std::vector<std::string> code_lines_;
         mylexer_t* plexer_;
+        std::ifstream file_;
     };
 }
 
