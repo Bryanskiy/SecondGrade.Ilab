@@ -46,7 +46,7 @@ enum class unary_op {
 struct Iscope_t : Inode_t {
     virtual void add_branch(Inode_t* branch) = 0;
     virtual Iscope_t* duplicate() = 0;
-    virtual Iscope_t* reset() const = 0;
+    virtual Iscope_t* get_prev() const = 0;
     virtual Inode_t* add(const std::string& name) = 0;
     virtual Inode_t* visible(const std::string& name) = 0; 
 };

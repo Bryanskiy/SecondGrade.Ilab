@@ -1,7 +1,11 @@
 %language "c++"
 %skeleton "lalr1.cc"
+
 %define api.value.type variant
-%param {yy::driver_t* driver}
+%define parse.error custom
+%param {driver_t* driver}
+
+%locations
 
 %code requires {
 #include <string>
@@ -12,7 +16,7 @@ namespace yy { class driver_t; }
 %code {
 #include "../driver/driver.hpp"
 extern Inode::Iscope_t* current_scope;
-namespace yy {parser::token_type yylex(parser::semantic_type* yylval, driver_t* driver);}
+namespace yy {parser::token_type yylex(parser::semantic_type* yylval, parser::location_type* l, driver_t* driver);}
 }
 
 %token <std::string> NAME 
@@ -54,7 +58,7 @@ open_sc:    LCB                                 {
 
 close_sc:   RCB                                 {
                                                     $$ = current_scope;
-                                                    current_scope = current_scope->reset();
+                                                    current_scope = current_scope->get_prev();
                                                 };
 
 stms:       stm                                 {current_scope->add_branch($1);};
@@ -97,8 +101,16 @@ output:    OUTPUT expr SCOLON                   {$$ = Inode::make_unary_op(Inode
 %%
 
 namespace yy {
-parser::token_type yylex(parser::semantic_type* yylval, driver_t* driver) {return driver->yylex(yylval);
-}
 
-void parser::error(const std::string& s) {std::cout << s << std::endl;}
+    parser::token_type yylex (parser::semantic_type* yylval, parser::location_type* l, driver_t* driver) {
+		return driver->yylex (l, yylval);
+	}
+
+	void parser::error (const parser::location_type& l, const std::string& msg) {
+		std::cout << msg << " in line: " << l.begin.line << std::endl;
+	}
+
+	void parser::report_syntax_error(parser::context const& ctx) const {
+		driver->report_syntax_error(ctx);
+	}
 }

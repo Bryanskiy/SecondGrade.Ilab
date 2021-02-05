@@ -1,7 +1,11 @@
 %option c++
-
+%option yylineno
+%option yyclass="mylexer_t"
 %{
 #include "compiler.tab.hh"
+#include "mylexer.hpp"
+
+#define YY_USER_ACTION update_location();
 %}
 
 WS [ \t\n\v]+
@@ -42,7 +46,7 @@ NAME [a-zA-Z][a-zA-Z0-9]*
 "/"         return yy::parser::token_type::DIV;
 "%"         return yy::parser::token_type::MOD;
 
-{WS}        /* skip blanks and tabs */
+{WS}        
 {INTEGER}   return yy::parser::token_type::INTEGER;
 {NAME}      return yy::parser::token_type::NAME;
                 

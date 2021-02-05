@@ -79,7 +79,7 @@ int bin_op_t::calc() {
 
         case bin_op::assign_:
             ret = rhs_->calc();
-            static_cast<decl_t*>(lhs_)->set(ret);
+            dynamic_cast<decl_t*>(lhs_)->set(ret);
             return ret;
 
         case bin_op::equal_:

@@ -1,4 +1,4 @@
-// A Bison parser, made by GNU Bison 3.5.1.
+// A Bison parser, made by GNU Bison 3.7.1.
 
 // Skeleton implementation for Bison LALR(1) parsers in C++
 
@@ -30,8 +30,9 @@
 // This special exception was added by the Free Software Foundation in
 // version 2.2 of Bison.
 
-// Undocumented macros, especially those whose name start with YY_,
-// are private implementation details.  Do not rely on them.
+// DO NOT RELY ON FEATURES THAT ARE NOT DOCUMENTED in the manual,
+// especially those whose name start with YY_ or yy_.  They are
+// private implementation details that can be changed or removed.
 
 
 
@@ -41,13 +42,13 @@
 
 
 // Unqualified %code blocks.
-#line 12 "compiler.y"
+#line 16 "compiler.y"
 
 #include "../driver/driver.hpp"
 extern Inode::Iscope_t* current_scope;
-namespace yy {parser::token_type yylex(parser::semantic_type* yylval, driver_t* driver);}
+namespace yy {parser::token_type yylex(parser::semantic_type* yylval, parser::location_type* l, driver_t* driver);}
 
-#line 51 "compiler.tab.cc"
+#line 52 "compiler.tab.cc"
 
 
 #ifndef YY_
@@ -62,6 +63,7 @@ namespace yy {parser::token_type yylex(parser::semantic_type* yylval, driver_t* 
 # endif
 #endif
 
+
 // Whether we are compiled with exception support.
 #ifndef YY_EXCEPTIONS
 # if defined __GNUC__ && !defined __EXCEPTIONS
@@ -71,6 +73,25 @@ namespace yy {parser::token_type yylex(parser::semantic_type* yylval, driver_t* 
 # endif
 #endif
 
+#define YYRHSLOC(Rhs, K) ((Rhs)[K].location)
+/* YYLLOC_DEFAULT -- Set CURRENT to span from RHS[1] to RHS[N].
+   If N is 0, then set CURRENT to the empty location which ends
+   the previous symbol: RHS[0] (always defined).  */
+
+# ifndef YYLLOC_DEFAULT
+#  define YYLLOC_DEFAULT(Current, Rhs, N)                               \
+    do                                                                  \
+      if (N)                                                            \
+        {                                                               \
+          (Current).begin  = YYRHSLOC (Rhs, 1).begin;                   \
+          (Current).end    = YYRHSLOC (Rhs, N).end;                     \
+        }                                                               \
+      else                                                              \
+        {                                                               \
+          (Current).begin = (Current).end = YYRHSLOC (Rhs, 0).end;      \
+        }                                                               \
+    while (false)
+# endif
 
 
 // Enable debugging if requested.
@@ -98,7 +119,7 @@ namespace yy {parser::token_type yylex(parser::semantic_type* yylval, driver_t* 
 # define YY_STACK_PRINT()               \
   do {                                  \
     if (yydebug_)                       \
-      yystack_print_ ();                \
+      yy_stack_print_ ();                \
   } while (false)
 
 #else // !YYDEBUG
@@ -119,11 +140,10 @@ namespace yy {parser::token_type yylex(parser::semantic_type* yylval, driver_t* 
 #define YYRECOVERING()  (!!yyerrstatus_)
 
 namespace yy {
-#line 123 "compiler.tab.cc"
-
+#line 144 "compiler.tab.cc"
 
   /// Build a parser object.
-  parser::parser (yy::driver_t* driver_yyarg)
+  parser::parser (driver_t* driver_yyarg)
 #if YYDEBUG
     : yydebug_ (false),
       yycdebug_ (&std::cerr),
@@ -140,79 +160,40 @@ namespace yy {
   {}
 
   /*---------------.
-  | Symbol types.  |
+  | symbol kinds.  |
   `---------------*/
 
   // basic_symbol.
-#if 201103L <= YY_CPLUSPLUS
-  template <typename Base>
-  parser::basic_symbol<Base>::basic_symbol (basic_symbol&& that)
-    : Base (std::move (that))
-    , value ()
-  {
-    switch (this->type_get ())
-    {
-      case 32: // stm
-      case 33: // assign
-      case 34: // lval
-      case 35: // if
-      case 36: // while
-      case 37: // expr
-      case 38: // output
-      case 39: // stms
-      case 40: // open_sc
-        value.move< Inode::Inode_t* > (std::move (that.value));
-        break;
-
-      case 30: // scope
-      case 31: // close_sc
-        value.move< Inode::Iscope_t* > (std::move (that.value));
-        break;
-
-      case 4: // INTEGER
-        value.move< int > (std::move (that.value));
-        break;
-
-      case 3: // NAME
-        value.move< std::string > (std::move (that.value));
-        break;
-
-      default:
-        break;
-    }
-
-  }
-#endif
-
   template <typename Base>
   parser::basic_symbol<Base>::basic_symbol (const basic_symbol& that)
     : Base (that)
     , value ()
+    , location (that.location)
   {
-    switch (this->type_get ())
+    switch (this->kind ())
     {
-      case 32: // stm
-      case 33: // assign
-      case 34: // lval
-      case 35: // if
-      case 36: // while
-      case 37: // expr
-      case 38: // output
-      case 39: // stms
-      case 40: // open_sc
+      case symbol_kind::S_stm: // stm
+      case symbol_kind::S_assign: // assign
+      case symbol_kind::S_lval: // lval
+      case symbol_kind::S_if: // if
+      case symbol_kind::S_while: // while
+      case symbol_kind::S_expr: // expr
+      case symbol_kind::S_output: // output
+      case symbol_kind::S_stms: // stms
+      case symbol_kind::S_open_sc: // open_sc
         value.copy< Inode::Inode_t* > (YY_MOVE (that.value));
         break;
 
-      case 30: // scope
-      case 31: // close_sc
+      case symbol_kind::S_scope: // scope
+      case symbol_kind::S_close_sc: // close_sc
         value.copy< Inode::Iscope_t* > (YY_MOVE (that.value));
         break;
 
-      case 4: // INTEGER
+      case symbol_kind::S_INTEGER: // INTEGER
         value.copy< int > (YY_MOVE (that.value));
         break;
 
-      case 3: // NAME
+      case symbol_kind::S_NAME: // NAME
         value.copy< std::string > (YY_MOVE (that.value));
         break;
 
@@ -225,10 +206,17 @@ namespace yy {
 
 
   template <typename Base>
+  parser::symbol_kind_type
+  parser::basic_symbol<Base>::type_get () const YY_NOEXCEPT
+  {
+    return this->kind ();
+  }
+
+  template <typename Base>
   bool
   parser::basic_symbol<Base>::empty () const YY_NOEXCEPT
   {
-    return Base::type_get () == empty_symbol;
+    return this->kind () == symbol_kind::S_YYEMPTY;
   }
 
   template <typename Base>
@@ -236,30 +224,30 @@ namespace yy {
   parser::basic_symbol<Base>::move (basic_symbol& s)
   {
     super_type::move (s);
-    switch (this->type_get ())
+    switch (this->kind ())
     {
-      case 32: // stm
-      case 33: // assign
-      case 34: // lval
-      case 35: // if
-      case 36: // while
-      case 37: // expr
-      case 38: // output
-      case 39: // stms
-      case 40: // open_sc
+      case symbol_kind::S_stm: // stm
+      case symbol_kind::S_assign: // assign
+      case symbol_kind::S_lval: // lval
+      case symbol_kind::S_if: // if
+      case symbol_kind::S_while: // while
+      case symbol_kind::S_expr: // expr
+      case symbol_kind::S_output: // output
+      case symbol_kind::S_stms: // stms
+      case symbol_kind::S_open_sc: // open_sc
         value.move< Inode::Inode_t* > (YY_MOVE (s.value));
         break;
 
-      case 30: // scope
-      case 31: // close_sc
+      case symbol_kind::S_scope: // scope
+      case symbol_kind::S_close_sc: // close_sc
         value.move< Inode::Iscope_t* > (YY_MOVE (s.value));
         break;
 
-      case 4: // INTEGER
+      case symbol_kind::S_INTEGER: // INTEGER
         value.move< int > (YY_MOVE (s.value));
         break;
 
-      case 3: // NAME
+      case symbol_kind::S_NAME: // NAME
         value.move< std::string > (YY_MOVE (s.value));
         break;
 
@@ -267,46 +255,53 @@ namespace yy {
         break;
     }
 
+    location = YY_MOVE (s.location);
   }
 
-  // by_type.
-  parser::by_type::by_type ()
-    : type (empty_symbol)
+  // by_kind.
+  parser::by_kind::by_kind ()
+    : kind_ (symbol_kind::S_YYEMPTY)
   {}
 
 #if 201103L <= YY_CPLUSPLUS
-  parser::by_type::by_type (by_type&& that)
-    : type (that.type)
+  parser::by_kind::by_kind (by_kind&& that)
+    : kind_ (that.kind_)
   {
     that.clear ();
   }
 #endif
 
-  parser::by_type::by_type (const by_type& that)
-    : type (that.type)
+  parser::by_kind::by_kind (const by_kind& that)
+    : kind_ (that.kind_)
   {}
 
-  parser::by_type::by_type (token_type t)
-    : type (yytranslate_ (t))
+  parser::by_kind::by_kind (token_kind_type t)
+    : kind_ (yytranslate_ (t))
   {}
 
   void
-  parser::by_type::clear ()
+  parser::by_kind::clear ()
   {
-    type = empty_symbol;
+    kind_ = symbol_kind::S_YYEMPTY;
   }
 
   void
-  parser::by_type::move (by_type& that)
+  parser::by_kind::move (by_kind& that)
   {
-    type = that.type;
+    kind_ = that.kind_;
     that.clear ();
   }
 
-  int
-  parser::by_type::type_get () const YY_NOEXCEPT
+  parser::symbol_kind_type
+  parser::by_kind::kind () const YY_NOEXCEPT
   {
-    return type;
+    return kind_;
+  }
+
+  parser::symbol_kind_type
+  parser::by_kind::type_get () const YY_NOEXCEPT
+  {
+    return this->kind ();
   }
 
 
@@ -336,45 +331,45 @@ namespace yy {
     : state (s)
   {}
 
-  parser::symbol_number_type
-  parser::by_state::type_get () const YY_NOEXCEPT
+  parser::symbol_kind_type
+  parser::by_state::kind () const YY_NOEXCEPT
   {
     if (state == empty_state)
-      return empty_symbol;
+      return symbol_kind::S_YYEMPTY;
     else
-      return yystos_[+state];
+      return YY_CAST (symbol_kind_type, yystos_[+state]);
   }
 
   parser::stack_symbol_type::stack_symbol_type ()
   {}
 
   parser::stack_symbol_type::stack_symbol_type (YY_RVREF (stack_symbol_type) that)
-    : super_type (YY_MOVE (that.state))
+    : super_type (YY_MOVE (that.state), YY_MOVE (that.location))
   {
-    switch (that.type_get ())
+    switch (that.kind ())
     {
-      case 32: // stm
-      case 33: // assign
-      case 34: // lval
-      case 35: // if
-      case 36: // while
-      case 37: // expr
-      case 38: // output
-      case 39: // stms
-      case 40: // open_sc
+      case symbol_kind::S_stm: // stm
+      case symbol_kind::S_assign: // assign
+      case symbol_kind::S_lval: // lval
+      case symbol_kind::S_if: // if
+      case symbol_kind::S_while: // while
+      case symbol_kind::S_expr: // expr
+      case symbol_kind::S_output: // output
+      case symbol_kind::S_stms: // stms
+      case symbol_kind::S_open_sc: // open_sc
         value.YY_MOVE_OR_COPY< Inode::Inode_t* > (YY_MOVE (that.value));
         break;
 
-      case 30: // scope
-      case 31: // close_sc
+      case symbol_kind::S_scope: // scope
+      case symbol_kind::S_close_sc: // close_sc
         value.YY_MOVE_OR_COPY< Inode::Iscope_t* > (YY_MOVE (that.value));
         break;
 
-      case 4: // INTEGER
+      case symbol_kind::S_INTEGER: // INTEGER
         value.YY_MOVE_OR_COPY< int > (YY_MOVE (that.value));
         break;
 
-      case 3: // NAME
+      case symbol_kind::S_NAME: // NAME
         value.YY_MOVE_OR_COPY< std::string > (YY_MOVE (that.value));
         break;
 
@@ -389,32 +384,32 @@ namespace yy {
   }
 
   parser::stack_symbol_type::stack_symbol_type (state_type s, YY_MOVE_REF (symbol_type) that)
-    : super_type (s)
+    : super_type (s, YY_MOVE (that.location))
   {
-    switch (that.type_get ())
+    switch (that.kind ())
     {
-      case 32: // stm
-      case 33: // assign
-      case 34: // lval
-      case 35: // if
-      case 36: // while
-      case 37: // expr
-      case 38: // output
-      case 39: // stms
-      case 40: // open_sc
+      case symbol_kind::S_stm: // stm
+      case symbol_kind::S_assign: // assign
+      case symbol_kind::S_lval: // lval
+      case symbol_kind::S_if: // if
+      case symbol_kind::S_while: // while
+      case symbol_kind::S_expr: // expr
+      case symbol_kind::S_output: // output
+      case symbol_kind::S_stms: // stms
+      case symbol_kind::S_open_sc: // open_sc
         value.move< Inode::Inode_t* > (YY_MOVE (that.value));
         break;
 
-      case 30: // scope
-      case 31: // close_sc
+      case symbol_kind::S_scope: // scope
+      case symbol_kind::S_close_sc: // close_sc
         value.move< Inode::Iscope_t* > (YY_MOVE (that.value));
         break;
 
-      case 4: // INTEGER
+      case symbol_kind::S_INTEGER: // INTEGER
         value.move< int > (YY_MOVE (that.value));
         break;
 
-      case 3: // NAME
+      case symbol_kind::S_NAME: // NAME
         value.move< std::string > (YY_MOVE (that.value));
         break;
 
@@ -423,7 +418,7 @@ namespace yy {
     }
 
     // that is emptied.
-    that.type = empty_symbol;
+    that.kind_ = symbol_kind::S_YYEMPTY;
   }
 
 #if YY_CPLUSPLUS < 201103L
@@ -431,30 +426,30 @@ namespace yy {
   parser::stack_symbol_type::operator= (const stack_symbol_type& that)
   {
     state = that.state;
-    switch (that.type_get ())
+    switch (that.kind ())
     {
-      case 32: // stm
-      case 33: // assign
-      case 34: // lval
-      case 35: // if
-      case 36: // while
-      case 37: // expr
-      case 38: // output
-      case 39: // stms
-      case 40: // open_sc
+      case symbol_kind::S_stm: // stm
+      case symbol_kind::S_assign: // assign
+      case symbol_kind::S_lval: // lval
+      case symbol_kind::S_if: // if
+      case symbol_kind::S_while: // while
+      case symbol_kind::S_expr: // expr
+      case symbol_kind::S_output: // output
+      case symbol_kind::S_stms: // stms
+      case symbol_kind::S_open_sc: // open_sc
         value.copy< Inode::Inode_t* > (that.value);
         break;
 
-      case 30: // scope
-      case 31: // close_sc
+      case symbol_kind::S_scope: // scope
+      case symbol_kind::S_close_sc: // close_sc
         value.copy< Inode::Iscope_t* > (that.value);
         break;
 
-      case 4: // INTEGER
+      case symbol_kind::S_INTEGER: // INTEGER
         value.copy< int > (that.value);
         break;
 
-      case 3: // NAME
+      case symbol_kind::S_NAME: // NAME
         value.copy< std::string > (that.value);
         break;
 
@@ -462,6 +457,7 @@ namespace yy {
         break;
     }
 
+    location = that.location;
     return *this;
   }
 
@@ -469,30 +465,30 @@ namespace yy {
   parser::stack_symbol_type::operator= (stack_symbol_type& that)
   {
     state = that.state;
-    switch (that.type_get ())
+    switch (that.kind ())
     {
-      case 32: // stm
-      case 33: // assign
-      case 34: // lval
-      case 35: // if
-      case 36: // while
-      case 37: // expr
-      case 38: // output
-      case 39: // stms
-      case 40: // open_sc
+      case symbol_kind::S_stm: // stm
+      case symbol_kind::S_assign: // assign
+      case symbol_kind::S_lval: // lval
+      case symbol_kind::S_if: // if
+      case symbol_kind::S_while: // while
+      case symbol_kind::S_expr: // expr
+      case symbol_kind::S_output: // output
+      case symbol_kind::S_stms: // stms
+      case symbol_kind::S_open_sc: // open_sc
         value.move< Inode::Inode_t* > (that.value);
         break;
 
-      case 30: // scope
-      case 31: // close_sc
+      case symbol_kind::S_scope: // scope
+      case symbol_kind::S_close_sc: // close_sc
         value.move< Inode::Iscope_t* > (that.value);
         break;
 
-      case 4: // INTEGER
+      case symbol_kind::S_INTEGER: // INTEGER
         value.move< int > (that.value);
         break;
 
-      case 3: // NAME
+      case symbol_kind::S_NAME: // NAME
         value.move< std::string > (that.value);
         break;
 
@@ -500,6 +496,7 @@ namespace yy {
         break;
     }
 
+    location = that.location;
     // that is emptied.
     that.state = empty_state;
     return *this;
@@ -517,22 +514,21 @@ namespace yy {
 #if YYDEBUG
   template <typename Base>
   void
-  parser::yy_print_ (std::ostream& yyo,
-                                     const basic_symbol<Base>& yysym) const
+  parser::yy_print_ (std::ostream& yyo, const basic_symbol<Base>& yysym) const
   {
     std::ostream& yyoutput = yyo;
     YYUSE (yyoutput);
-    symbol_number_type yytype = yysym.type_get ();
-#if defined __GNUC__ && ! defined __clang__ && ! defined __ICC && __GNUC__ * 100 + __GNUC_MINOR__ <= 408
-    // Avoid a (spurious) G++ 4.8 warning about "array subscript is
-    // below array bounds".
     if (yysym.empty ())
-      std::abort ();
-#endif
-    yyo << (yytype < yyntokens_ ? "token" : "nterm")
-        << ' ' << yytname_[yytype] << " (";
-    YYUSE (yytype);
-    yyo << ')';
+      yyo << "empty symbol";
+    else
+      {
+        symbol_kind_type yykind = yysym.kind ();
+        yyo << (yykind < YYNTOKENS ? "token" : "nterm")
+            << ' ' << yysym.name () << " ("
+            << yysym.location << ": ";
+        YYUSE (yykind);
+        yyo << ')';
+      }
   }
 #endif
 
@@ -591,11 +587,11 @@ namespace yy {
   parser::state_type
   parser::yy_lr_goto_state_ (state_type yystate, int yysym)
   {
-    int yyr = yypgoto_[yysym - yyntokens_] + yystate;
+    int yyr = yypgoto_[yysym - YYNTOKENS] + yystate;
     if (0 <= yyr && yyr <= yylast_ && yycheck_[yyr] == yystate)
       return yytable_[yyr];
     else
-      return yydefgoto_[yysym - yyntokens_];
+      return yydefgoto_[yysym - YYNTOKENS];
   }
 
   bool
@@ -630,6 +626,9 @@ namespace yy {
     /// The lookahead symbol.
     symbol_type yyla;
 
+    /// The locations where the error started and ended.
+    stack_symbol_type yyerror_range[3];
+
     /// The return value of parse ().
     int yyresult;
 
@@ -652,6 +651,7 @@ namespace yy {
   `-----------------------------------------------*/
   yynewstate:
     YYCDEBUG << "Entering state " << int (yystack_[0].state) << '\n';
+    YY_STACK_PRINT ();
 
     // Accept?
     if (yystack_[0].state == yyfinal_)
@@ -672,12 +672,12 @@ namespace yy {
     // Read a lookahead token.
     if (yyla.empty ())
       {
-        YYCDEBUG << "Reading a token: ";
+        YYCDEBUG << "Reading a token\n";
 #if YY_EXCEPTIONS
         try
 #endif // YY_EXCEPTIONS
           {
-            yyla.type = yytranslate_ (yylex (&yyla.value, driver));
+            yyla.kind_ = yytranslate_ (yylex (&yyla.value, &yyla.location, driver));
           }
 #if YY_EXCEPTIONS
         catch (const syntax_error& yyexc)
@@ -690,10 +690,20 @@ namespace yy {
       }
     YY_SYMBOL_PRINT ("Next token is", yyla);
 
+    if (yyla.kind () == symbol_kind::S_YYerror)
+    {
+      // The scanner already issued an error message, process directly
+      // to error recovery.  But do not keep the error token as
+      // lookahead, it is too special and may lead us to an endless
+      // loop in error recovery. */
+      yyla.kind_ = symbol_kind::S_YYUNDEF;
+      goto yyerrlab1;
+    }
+
     /* If the proper action on seeing token YYLA.TYPE is to reduce or
        to detect an error, take that action.  */
-    yyn += yyla.type_get ();
-    if (yyn < 0 || yylast_ < yyn || yycheck_[yyn] != yyla.type_get ())
+    yyn += yyla.kind ();
+    if (yyn < 0 || yylast_ < yyn || yycheck_[yyn] != yyla.kind ())
       {
         goto yydefault;
       }
@@ -740,28 +750,28 @@ namespace yy {
          when using variants.  */
       switch (yyr1_[yyn])
     {
-      case 32: // stm
-      case 33: // assign
-      case 34: // lval
-      case 35: // if
-      case 36: // while
-      case 37: // expr
-      case 38: // output
-      case 39: // stms
-      case 40: // open_sc
+      case symbol_kind::S_stm: // stm
+      case symbol_kind::S_assign: // assign
+      case symbol_kind::S_lval: // lval
+      case symbol_kind::S_if: // if
+      case symbol_kind::S_while: // while
+      case symbol_kind::S_expr: // expr
+      case symbol_kind::S_output: // output
+      case symbol_kind::S_stms: // stms
+      case symbol_kind::S_open_sc: // open_sc
         yylhs.value.emplace< Inode::Inode_t* > ();
         break;
 
-      case 30: // scope
-      case 31: // close_sc
+      case symbol_kind::S_scope: // scope
+      case symbol_kind::S_close_sc: // close_sc
         yylhs.value.emplace< Inode::Iscope_t* > ();
         break;
 
-      case 4: // INTEGER
+      case symbol_kind::S_INTEGER: // INTEGER
         yylhs.value.emplace< int > ();
         break;
 
-      case 3: // NAME
+      case symbol_kind::S_NAME: // NAME
         yylhs.value.emplace< std::string > ();
         break;
 
@@ -770,6 +780,12 @@ namespace yy {
     }
 
 
+      // Default location.
+      {
+        stack_type::slice range (yystack_, yylen);
+        YYLLOC_DEFAULT (yylhs.location, range, yylen);
+        yyerror_range[1].location = yylhs.location;
+      }
 
       // Perform the reduction.
       YY_REDUCE_PRINT (yyn);
@@ -779,211 +795,211 @@ namespace yy {
         {
           switch (yyn)
             {
-  case 2:
-#line 47 "compiler.y"
-                                                {current_scope->calc();}
-#line 786 "compiler.tab.cc"
-    break;
-
-  case 3:
-#line 49 "compiler.y"
-                                                {yylhs.value.as < Inode::Iscope_t* > () = yystack_[0].value.as < Inode::Iscope_t* > ();}
-#line 792 "compiler.tab.cc"
-    break;
-
-  case 4:
+  case 2: // program: stms
 #line 51 "compiler.y"
+                                                {current_scope->calc();}
+#line 802 "compiler.tab.cc"
+    break;
+
+  case 3: // scope: open_sc stms close_sc
+#line 53 "compiler.y"
+                                                {yylhs.value.as < Inode::Iscope_t* > () = yystack_[0].value.as < Inode::Iscope_t* > ();}
+#line 808 "compiler.tab.cc"
+    break;
+
+  case 4: // open_sc: LCB
+#line 55 "compiler.y"
                                                 {
                                                     current_scope = current_scope->duplicate();
                                                 }
-#line 800 "compiler.tab.cc"
+#line 816 "compiler.tab.cc"
     break;
 
-  case 5:
-#line 55 "compiler.y"
+  case 5: // close_sc: RCB
+#line 59 "compiler.y"
                                                 {
                                                     yylhs.value.as < Inode::Iscope_t* > () = current_scope;
-                                                    current_scope = current_scope->reset();
+                                                    current_scope = current_scope->get_prev();
                                                 }
-#line 809 "compiler.tab.cc"
+#line 825 "compiler.tab.cc"
     break;
 
-  case 6:
-#line 60 "compiler.y"
-                                                {current_scope->add_branch(yystack_[0].value.as < Inode::Inode_t* > ());}
-#line 815 "compiler.tab.cc"
-    break;
-
-  case 7:
-#line 61 "compiler.y"
-                                                {current_scope->add_branch(yystack_[0].value.as < Inode::Inode_t* > ());}
-#line 821 "compiler.tab.cc"
-    break;
-
-  case 8:
-#line 62 "compiler.y"
-                                                {current_scope->add_branch(yystack_[0].value.as < Inode::Iscope_t* > ());}
-#line 827 "compiler.tab.cc"
-    break;
-
-  case 9:
+  case 6: // stms: stm
 #line 64 "compiler.y"
-                                                {yylhs.value.as < Inode::Inode_t* > () = yystack_[0].value.as < Inode::Inode_t* > ();}
-#line 833 "compiler.tab.cc"
+                                                {current_scope->add_branch(yystack_[0].value.as < Inode::Inode_t* > ());}
+#line 831 "compiler.tab.cc"
     break;
 
-  case 10:
+  case 7: // stms: stms stm
 #line 65 "compiler.y"
-                                                {yylhs.value.as < Inode::Inode_t* > () = yystack_[0].value.as < Inode::Inode_t* > ();}
-#line 839 "compiler.tab.cc"
+                                                {current_scope->add_branch(yystack_[0].value.as < Inode::Inode_t* > ());}
+#line 837 "compiler.tab.cc"
     break;
 
-  case 11:
+  case 8: // stms: stms scope
 #line 66 "compiler.y"
-                                                {yylhs.value.as < Inode::Inode_t* > () = yystack_[0].value.as < Inode::Inode_t* > ();}
-#line 845 "compiler.tab.cc"
+                                                {current_scope->add_branch(yystack_[0].value.as < Inode::Iscope_t* > ());}
+#line 843 "compiler.tab.cc"
     break;
 
-  case 12:
-#line 67 "compiler.y"
+  case 9: // stm: assign
+#line 68 "compiler.y"
                                                 {yylhs.value.as < Inode::Inode_t* > () = yystack_[0].value.as < Inode::Inode_t* > ();}
-#line 851 "compiler.tab.cc"
+#line 849 "compiler.tab.cc"
     break;
 
-  case 13:
+  case 10: // stm: if
 #line 69 "compiler.y"
-                                                {yylhs.value.as < Inode::Inode_t* > () = Inode::make_bin_op(yystack_[3].value.as < Inode::Inode_t* > (), Inode::bin_op::assign_, yystack_[1].value.as < Inode::Inode_t* > ());}
-#line 857 "compiler.tab.cc"
+                                                {yylhs.value.as < Inode::Inode_t* > () = yystack_[0].value.as < Inode::Inode_t* > ();}
+#line 855 "compiler.tab.cc"
     break;
 
-  case 14:
+  case 11: // stm: while
+#line 70 "compiler.y"
+                                                {yylhs.value.as < Inode::Inode_t* > () = yystack_[0].value.as < Inode::Inode_t* > ();}
+#line 861 "compiler.tab.cc"
+    break;
+
+  case 12: // stm: output
 #line 71 "compiler.y"
-                                                {yylhs.value.as < Inode::Inode_t* > () = current_scope->add(yystack_[0].value.as < std::string > ());}
-#line 863 "compiler.tab.cc"
+                                                {yylhs.value.as < Inode::Inode_t* > () = yystack_[0].value.as < Inode::Inode_t* > ();}
+#line 867 "compiler.tab.cc"
     break;
 
-  case 15:
+  case 13: // assign: lval ASSIGN expr SCOLON
 #line 73 "compiler.y"
-                                                {yylhs.value.as < Inode::Inode_t* > () = Inode::make_bin_op(yystack_[2].value.as < Inode::Inode_t* > (), Inode::bin_op::plus_, yystack_[0].value.as < Inode::Inode_t* > ());}
-#line 869 "compiler.tab.cc"
+                                                {yylhs.value.as < Inode::Inode_t* > () = Inode::make_bin_op(yystack_[3].value.as < Inode::Inode_t* > (), Inode::bin_op::assign_, yystack_[1].value.as < Inode::Inode_t* > ());}
+#line 873 "compiler.tab.cc"
     break;
 
-  case 16:
-#line 74 "compiler.y"
-                                                {yylhs.value.as < Inode::Inode_t* > () = Inode::make_bin_op(yystack_[2].value.as < Inode::Inode_t* > (), Inode::bin_op::minus_, yystack_[0].value.as < Inode::Inode_t* > ());}
-#line 875 "compiler.tab.cc"
-    break;
-
-  case 17:
+  case 14: // lval: NAME
 #line 75 "compiler.y"
-                                                {yylhs.value.as < Inode::Inode_t* > () = Inode::make_bin_op(yystack_[2].value.as < Inode::Inode_t* > (), Inode::bin_op::mult_, yystack_[0].value.as < Inode::Inode_t* > ());}
-#line 881 "compiler.tab.cc"
+                                                {yylhs.value.as < Inode::Inode_t* > () = current_scope->add(yystack_[0].value.as < std::string > ());}
+#line 879 "compiler.tab.cc"
     break;
 
-  case 18:
-#line 76 "compiler.y"
-                                                {yylhs.value.as < Inode::Inode_t* > () = Inode::make_bin_op(yystack_[2].value.as < Inode::Inode_t* > (), Inode::bin_op::div_, yystack_[0].value.as < Inode::Inode_t* > ());}
-#line 887 "compiler.tab.cc"
-    break;
-
-  case 19:
+  case 15: // expr: expr PLUS expr
 #line 77 "compiler.y"
-                                                {yylhs.value.as < Inode::Inode_t* > () = Inode::make_bin_op(yystack_[2].value.as < Inode::Inode_t* > (), Inode::bin_op::mod_, yystack_[0].value.as < Inode::Inode_t* > ());}
-#line 893 "compiler.tab.cc"
+                                                {yylhs.value.as < Inode::Inode_t* > () = Inode::make_bin_op(yystack_[2].value.as < Inode::Inode_t* > (), Inode::bin_op::plus_, yystack_[0].value.as < Inode::Inode_t* > ());}
+#line 885 "compiler.tab.cc"
     break;
 
-  case 20:
+  case 16: // expr: expr MINUS expr
 #line 78 "compiler.y"
-                                                {yylhs.value.as < Inode::Inode_t* > () = Inode::make_bin_op(yystack_[2].value.as < Inode::Inode_t* > (), Inode::bin_op::and_, yystack_[0].value.as < Inode::Inode_t* > ());}
-#line 899 "compiler.tab.cc"
+                                                {yylhs.value.as < Inode::Inode_t* > () = Inode::make_bin_op(yystack_[2].value.as < Inode::Inode_t* > (), Inode::bin_op::minus_, yystack_[0].value.as < Inode::Inode_t* > ());}
+#line 891 "compiler.tab.cc"
     break;
 
-  case 21:
+  case 17: // expr: expr MUL expr
 #line 79 "compiler.y"
-                                                {yylhs.value.as < Inode::Inode_t* > () = Inode::make_bin_op(yystack_[2].value.as < Inode::Inode_t* > (), Inode::bin_op::or_, yystack_[0].value.as < Inode::Inode_t* > ());}
-#line 905 "compiler.tab.cc"
+                                                {yylhs.value.as < Inode::Inode_t* > () = Inode::make_bin_op(yystack_[2].value.as < Inode::Inode_t* > (), Inode::bin_op::mult_, yystack_[0].value.as < Inode::Inode_t* > ());}
+#line 897 "compiler.tab.cc"
     break;
 
-  case 22:
+  case 18: // expr: expr DIV expr
 #line 80 "compiler.y"
-                                                {yylhs.value.as < Inode::Inode_t* > () = Inode::make_unary_op(yystack_[0].value.as < Inode::Inode_t* > (), Inode::unary_op::not_);}
-#line 911 "compiler.tab.cc"
+                                                {yylhs.value.as < Inode::Inode_t* > () = Inode::make_bin_op(yystack_[2].value.as < Inode::Inode_t* > (), Inode::bin_op::div_, yystack_[0].value.as < Inode::Inode_t* > ());}
+#line 903 "compiler.tab.cc"
     break;
 
-  case 23:
+  case 19: // expr: expr MOD expr
 #line 81 "compiler.y"
-                                                {yylhs.value.as < Inode::Inode_t* > () = Inode::make_bin_op(yystack_[2].value.as < Inode::Inode_t* > (), Inode::bin_op::equal_, yystack_[0].value.as < Inode::Inode_t* > ());}
-#line 917 "compiler.tab.cc"
+                                                {yylhs.value.as < Inode::Inode_t* > () = Inode::make_bin_op(yystack_[2].value.as < Inode::Inode_t* > (), Inode::bin_op::mod_, yystack_[0].value.as < Inode::Inode_t* > ());}
+#line 909 "compiler.tab.cc"
     break;
 
-  case 24:
+  case 20: // expr: expr AND expr
 #line 82 "compiler.y"
-                                                {yylhs.value.as < Inode::Inode_t* > () = Inode::make_bin_op(yystack_[2].value.as < Inode::Inode_t* > (), Inode::bin_op::not_equal_, yystack_[0].value.as < Inode::Inode_t* > ());}
-#line 923 "compiler.tab.cc"
+                                                {yylhs.value.as < Inode::Inode_t* > () = Inode::make_bin_op(yystack_[2].value.as < Inode::Inode_t* > (), Inode::bin_op::and_, yystack_[0].value.as < Inode::Inode_t* > ());}
+#line 915 "compiler.tab.cc"
     break;
 
-  case 25:
+  case 21: // expr: expr OR expr
 #line 83 "compiler.y"
-                                                {yylhs.value.as < Inode::Inode_t* > () = Inode::make_bin_op(yystack_[2].value.as < Inode::Inode_t* > (), Inode::bin_op::greater_, yystack_[0].value.as < Inode::Inode_t* > ());}
-#line 929 "compiler.tab.cc"
+                                                {yylhs.value.as < Inode::Inode_t* > () = Inode::make_bin_op(yystack_[2].value.as < Inode::Inode_t* > (), Inode::bin_op::or_, yystack_[0].value.as < Inode::Inode_t* > ());}
+#line 921 "compiler.tab.cc"
     break;
 
-  case 26:
+  case 22: // expr: NOT expr
 #line 84 "compiler.y"
-                                                {yylhs.value.as < Inode::Inode_t* > () = Inode::make_bin_op(yystack_[2].value.as < Inode::Inode_t* > (), Inode::bin_op::less_, yystack_[0].value.as < Inode::Inode_t* > ());}
-#line 935 "compiler.tab.cc"
+                                                {yylhs.value.as < Inode::Inode_t* > () = Inode::make_unary_op(yystack_[0].value.as < Inode::Inode_t* > (), Inode::unary_op::not_);}
+#line 927 "compiler.tab.cc"
     break;
 
-  case 27:
+  case 23: // expr: expr EQUAL expr
 #line 85 "compiler.y"
-                                                {yylhs.value.as < Inode::Inode_t* > () = Inode::make_bin_op(yystack_[2].value.as < Inode::Inode_t* > (), Inode::bin_op::greater_or_equal_, yystack_[0].value.as < Inode::Inode_t* > ());}
-#line 941 "compiler.tab.cc"
+                                                {yylhs.value.as < Inode::Inode_t* > () = Inode::make_bin_op(yystack_[2].value.as < Inode::Inode_t* > (), Inode::bin_op::equal_, yystack_[0].value.as < Inode::Inode_t* > ());}
+#line 933 "compiler.tab.cc"
     break;
 
-  case 28:
+  case 24: // expr: expr NOT_EQUAL expr
 #line 86 "compiler.y"
-                                                {yylhs.value.as < Inode::Inode_t* > () = Inode::make_bin_op(yystack_[2].value.as < Inode::Inode_t* > (), Inode::bin_op::less_or_equal_, yystack_[0].value.as < Inode::Inode_t* > ());}
-#line 947 "compiler.tab.cc"
+                                                {yylhs.value.as < Inode::Inode_t* > () = Inode::make_bin_op(yystack_[2].value.as < Inode::Inode_t* > (), Inode::bin_op::not_equal_, yystack_[0].value.as < Inode::Inode_t* > ());}
+#line 939 "compiler.tab.cc"
     break;
 
-  case 29:
+  case 25: // expr: expr GREATER expr
 #line 87 "compiler.y"
-                                                {yylhs.value.as < Inode::Inode_t* > () = current_scope->visible(yystack_[0].value.as < std::string > ());}
-#line 953 "compiler.tab.cc"
+                                                {yylhs.value.as < Inode::Inode_t* > () = Inode::make_bin_op(yystack_[2].value.as < Inode::Inode_t* > (), Inode::bin_op::greater_, yystack_[0].value.as < Inode::Inode_t* > ());}
+#line 945 "compiler.tab.cc"
     break;
 
-  case 30:
+  case 26: // expr: expr LESS expr
 #line 88 "compiler.y"
-                                                {yylhs.value.as < Inode::Inode_t* > () = Inode::make_value(yystack_[0].value.as < int > ());}
-#line 959 "compiler.tab.cc"
+                                                {yylhs.value.as < Inode::Inode_t* > () = Inode::make_bin_op(yystack_[2].value.as < Inode::Inode_t* > (), Inode::bin_op::less_, yystack_[0].value.as < Inode::Inode_t* > ());}
+#line 951 "compiler.tab.cc"
     break;
 
-  case 31:
+  case 27: // expr: expr GREATER_OR_EQUAL expr
 #line 89 "compiler.y"
-                                                {yylhs.value.as < Inode::Inode_t* > () = Inode::make_unary_op(Inode::unary_op::input_, nullptr);}
-#line 965 "compiler.tab.cc"
+                                                {yylhs.value.as < Inode::Inode_t* > () = Inode::make_bin_op(yystack_[2].value.as < Inode::Inode_t* > (), Inode::bin_op::greater_or_equal_, yystack_[0].value.as < Inode::Inode_t* > ());}
+#line 957 "compiler.tab.cc"
     break;
 
-  case 32:
+  case 28: // expr: expr LESS_OR_EQUAL expr
+#line 90 "compiler.y"
+                                                {yylhs.value.as < Inode::Inode_t* > () = Inode::make_bin_op(yystack_[2].value.as < Inode::Inode_t* > (), Inode::bin_op::less_or_equal_, yystack_[0].value.as < Inode::Inode_t* > ());}
+#line 963 "compiler.tab.cc"
+    break;
+
+  case 29: // expr: NAME
 #line 91 "compiler.y"
-                                                {yylhs.value.as < Inode::Inode_t* > () = Inode::make_if(yystack_[2].value.as < Inode::Inode_t* > (), yystack_[0].value.as < Inode::Iscope_t* > ());}
-#line 971 "compiler.tab.cc"
+                                                {yylhs.value.as < Inode::Inode_t* > () = current_scope->visible(yystack_[0].value.as < std::string > ());}
+#line 969 "compiler.tab.cc"
     break;
 
-  case 33:
+  case 30: // expr: INTEGER
+#line 92 "compiler.y"
+                                                {yylhs.value.as < Inode::Inode_t* > () = Inode::make_value(yystack_[0].value.as < int > ());}
+#line 975 "compiler.tab.cc"
+    break;
+
+  case 31: // expr: INPUT
 #line 93 "compiler.y"
-                                                {yylhs.value.as < Inode::Inode_t* > () = Inode::make_while(yystack_[2].value.as < Inode::Inode_t* > (), yystack_[0].value.as < Inode::Iscope_t* > ());}
-#line 977 "compiler.tab.cc"
+                                                {yylhs.value.as < Inode::Inode_t* > () = Inode::make_unary_op(Inode::unary_op::input_, nullptr);}
+#line 981 "compiler.tab.cc"
     break;
 
-  case 34:
+  case 32: // if: IF LRB expr RRB scope
 #line 95 "compiler.y"
+                                                {yylhs.value.as < Inode::Inode_t* > () = Inode::make_if(yystack_[2].value.as < Inode::Inode_t* > (), yystack_[0].value.as < Inode::Iscope_t* > ());}
+#line 987 "compiler.tab.cc"
+    break;
+
+  case 33: // while: WHILE LRB expr RRB scope
+#line 97 "compiler.y"
+                                                {yylhs.value.as < Inode::Inode_t* > () = Inode::make_while(yystack_[2].value.as < Inode::Inode_t* > (), yystack_[0].value.as < Inode::Iscope_t* > ());}
+#line 993 "compiler.tab.cc"
+    break;
+
+  case 34: // output: OUTPUT expr SCOLON
+#line 99 "compiler.y"
                                                 {yylhs.value.as < Inode::Inode_t* > () = Inode::make_unary_op(Inode::unary_op::output_, yystack_[1].value.as < Inode::Inode_t* > ());}
-#line 983 "compiler.tab.cc"
+#line 999 "compiler.tab.cc"
     break;
 
 
-#line 987 "compiler.tab.cc"
+#line 1003 "compiler.tab.cc"
 
             default:
               break;
@@ -1000,7 +1016,6 @@ namespace yy {
       YY_SYMBOL_PRINT ("-> $$ =", yylhs);
       yypop_ (yylen);
       yylen = 0;
-      YY_STACK_PRINT ();
 
       // Shift the result of the reduction.
       yypush_ (YY_NULLPTR, YY_MOVE (yylhs));
@@ -1016,17 +1031,19 @@ namespace yy {
     if (!yyerrstatus_)
       {
         ++yynerrs_;
-        error (yysyntax_error_ (yystack_[0].state, yyla));
+        context yyctx (*this, yyla);
+        report_syntax_error (yyctx);
       }
 
 
+    yyerror_range[1].location = yyla.location;
     if (yyerrstatus_ == 3)
       {
         /* If just tried and failed to reuse lookahead token after an
            error, discard it.  */
 
         // Return failure if at end of input.
-        if (yyla.type_get () == yyeof_)
+        if (yyla.kind () == symbol_kind::S_YYEOF)
           YYABORT;
         else if (!yyla.empty ())
           {
@@ -1052,6 +1069,7 @@ namespace yy {
        this YYERROR.  */
     yypop_ (yylen);
     yylen = 0;
+    YY_STACK_PRINT ();
     goto yyerrlab1;
 
 
@@ -1060,31 +1078,36 @@ namespace yy {
   `-------------------------------------------------------------*/
   yyerrlab1:
     yyerrstatus_ = 3;   // Each real token shifted decrements this.
+    // Pop stack until we find a state that shifts the error token.
+    for (;;)
+      {
+        yyn = yypact_[+yystack_[0].state];
+        if (!yy_pact_value_is_default_ (yyn))
+          {
+            yyn += symbol_kind::S_YYerror;
+            if (0 <= yyn && yyn <= yylast_
+                && yycheck_[yyn] == symbol_kind::S_YYerror)
+              {
+                yyn = yytable_[yyn];
+                if (0 < yyn)
+                  break;
+              }
+          }
+
+        // Pop the current state because it cannot handle the error token.
+        if (yystack_.size () == 1)
+          YYABORT;
+
+        yyerror_range[1].location = yystack_[0].location;
+        yy_destroy_ ("Error: popping", yystack_[0]);
+        yypop_ ();
+        YY_STACK_PRINT ();
+      }
     {
       stack_symbol_type error_token;
-      for (;;)
-        {
-          yyn = yypact_[+yystack_[0].state];
-          if (!yy_pact_value_is_default_ (yyn))
-            {
-              yyn += yy_error_token_;
-              if (0 <= yyn && yyn <= yylast_ && yycheck_[yyn] == yy_error_token_)
-                {
-                  yyn = yytable_[yyn];
-                  if (0 < yyn)
-                    break;
-                }
-            }
 
-          // Pop the current state because it cannot handle the error token.
-          if (yystack_.size () == 1)
-            YYABORT;
-
-          yy_destroy_ ("Error: popping", yystack_[0]);
-          yypop_ ();
-          YY_STACK_PRINT ();
-        }
-
+      yyerror_range[2].location = yyla.location;
+      YYLLOC_DEFAULT (error_token.location, yyerror_range, 2);
 
       // Shift the error token.
       error_token.state = state_type (yyn);
@@ -1119,6 +1142,7 @@ namespace yy {
     /* Do not reclaim the symbols of the rule whose action triggered
        this YYABORT or YYACCEPT.  */
     yypop_ (yylen);
+    YY_STACK_PRINT ();
     while (1 < yystack_.size ())
       {
         yy_destroy_ ("Cleanup: popping", yystack_[0]);
@@ -1149,15 +1173,67 @@ namespace yy {
   void
   parser::error (const syntax_error& yyexc)
   {
-    error (yyexc.what ());
+    error (yyexc.location, yyexc.what ());
   }
 
-  // Generate an error message.
-  std::string
-  parser::yysyntax_error_ (state_type, const symbol_type&) const
+  const char *
+  parser::symbol_name (symbol_kind_type yysymbol)
   {
-    return YY_("syntax error");
+    static const char *const yy_sname[] =
+    {
+    "end of file", "error", "invalid token", "NAME", "INTEGER", "WHILE",
+  "IF", "SCOLON", "LCB", "RCB", "LRB", "RRB", "OUTPUT", "ASSIGN", "INPUT",
+  "OR", "AND", "NOT", "EQUAL", "NOT_EQUAL", "GREATER", "LESS",
+  "LESS_OR_EQUAL", "GREATER_OR_EQUAL", "PLUS", "MINUS", "MUL", "DIV",
+  "MOD", "$accept", "scope", "close_sc", "stm", "assign", "lval", "if",
+  "while", "expr", "output", "stms", "open_sc", "program", YY_NULLPTR
+    };
+    return yy_sname[yysymbol];
   }
+
+
+
+  // parser::context.
+  parser::context::context (const parser& yyparser, const symbol_type& yyla)
+    : yyparser_ (yyparser)
+    , yyla_ (yyla)
+  {}
+
+  int
+  parser::context::expected_tokens (symbol_kind_type yyarg[], int yyargn) const
+  {
+    // Actual number of expected tokens
+    int yycount = 0;
+
+    int yyn = yypact_[+yyparser_.yystack_[0].state];
+    if (!yy_pact_value_is_default_ (yyn))
+      {
+        /* Start YYX at -YYN if negative to avoid negative indexes in
+           YYCHECK.  In other words, skip the first -YYN actions for
+           this state because they are default actions.  */
+        int yyxbegin = yyn < 0 ? -yyn : 0;
+        // Stay within bounds of both yycheck and yytname.
+        int yychecklim = yylast_ - yyn + 1;
+        int yyxend = yychecklim < YYNTOKENS ? yychecklim : YYNTOKENS;
+        for (int yyx = yyxbegin; yyx < yyxend; ++yyx)
+          if (yycheck_[yyx + yyn] == yyx && yyx != symbol_kind::S_YYerror
+              && !yy_table_value_is_error_ (yytable_[yyx + yyn]))
+            {
+              if (!yyarg)
+                ++yycount;
+              else if (yycount == yyargn)
+                return 0;
+              else
+                yyarg[yycount++] = YY_CAST (symbol_kind_type, yyx);
+            }
+      }
+
+    if (yyarg && yycount == 0 && 0 < yyargn)
+      yyarg[0] = symbol_kind::S_YYEMPTY;
+    return yycount;
+  }
+
+
 
 
   const signed char parser::yypact_ninf_ = -13;
@@ -1273,33 +1349,20 @@ namespace yy {
   };
 
 
+
+
 #if YYDEBUG
-  // YYTNAME[SYMBOL-NUM] -- String name of the symbol SYMBOL-NUM.
-  // First, the terminals, then, starting at \a yyntokens_, nonterminals.
-  const char*
-  const parser::yytname_[] =
-  {
-  "$end", "error", "$undefined", "NAME", "INTEGER", "WHILE", "IF",
-  "SCOLON", "LCB", "RCB", "LRB", "RRB", "OUTPUT", "ASSIGN", "INPUT", "OR",
-  "AND", "NOT", "EQUAL", "NOT_EQUAL", "GREATER", "LESS", "LESS_OR_EQUAL",
-  "GREATER_OR_EQUAL", "PLUS", "MINUS", "MUL", "DIV", "MOD", "$accept",
-  "scope", "close_sc", "stm", "assign", "lval", "if", "while", "expr",
-  "output", "stms", "open_sc", "program", YY_NULLPTR
-  };
-
-
   const signed char
   parser::yyrline_[] =
   {
-       0,    47,    47,    49,    51,    55,    60,    61,    62,    64,
-      65,    66,    67,    69,    71,    73,    74,    75,    76,    77,
-      78,    79,    80,    81,    82,    83,    84,    85,    86,    87,
-      88,    89,    91,    93,    95
+       0,    51,    51,    53,    55,    59,    64,    65,    66,    68,
+      69,    70,    71,    73,    75,    77,    78,    79,    80,    81,
+      82,    83,    84,    85,    86,    87,    88,    89,    90,    91,
+      92,    93,    95,    97,    99
   };
 
-  // Print the state stack on the debug stream.
   void
-  parser::yystack_print_ ()
+  parser::yy_stack_print_ () const
   {
     *yycdebug_ << "Stack now";
     for (stack_type::const_iterator
@@ -1310,9 +1373,8 @@ namespace yy {
     *yycdebug_ << '\n';
   }
 
-  // Report on the debug stream that the rule \a yyrule is going to be reduced.
   void
-  parser::yy_reduce_print_ (int yyrule)
+  parser::yy_reduce_print_ (int yyrule) const
   {
     int yylno = yyrline_[yyrule];
     int yynrhs = yyr2_[yyrule];
@@ -1326,13 +1388,13 @@ namespace yy {
   }
 #endif // YYDEBUG
 
-  parser::token_number_type
+  parser::symbol_kind_type
   parser::yytranslate_ (int t)
   {
     // YYTRANSLATE[TOKEN-NUM] -- Symbol number corresponding to
     // TOKEN-NUM as returned by yylex.
     static
-    const token_number_type
+    const signed char
     translate_table[] =
     {
        0,     2,     2,     2,     2,     2,     2,     2,     2,     2,
@@ -1365,25 +1427,34 @@ namespace yy {
       15,    16,    17,    18,    19,    20,    21,    22,    23,    24,
       25,    26,    27,    28
     };
-    const int user_token_number_max_ = 283;
+    // Last valid token kind.
+    const int code_max = 283;
 
     if (t <= 0)
-      return yyeof_;
-    else if (t <= user_token_number_max_)
-      return translate_table[t];
+      return symbol_kind::S_YYEOF;
+    else if (t <= code_max)
+      return YY_CAST (symbol_kind_type, translate_table[t]);
     else
-      return yy_undef_token_;
+      return symbol_kind::S_YYUNDEF;
   }
 
 } // yy
-#line 1380 "compiler.tab.cc"
+#line 1443 "compiler.tab.cc"
 
-#line 97 "compiler.y"
+#line 101 "compiler.y"
 
 
 namespace yy {
-parser::token_type yylex(parser::semantic_type* yylval, driver_t* driver) {return driver->yylex(yylval);
-}
 
-void parser::error(const std::string& s) {std::cout << s << std::endl;}
+    parser::token_type yylex (parser::semantic_type* yylval, parser::location_type* l, driver_t* driver) {
+		return driver->yylex (l, yylval);
+	}
+
+	void parser::error (const parser::location_type& l, const std::string& msg) {
+		std::cout << msg << " in line: " << l.begin.line << std::endl;
+	}
+
+	void parser::report_syntax_error(parser::context const& ctx) const {
+		driver->report_syntax_error(ctx);
+	}
 }

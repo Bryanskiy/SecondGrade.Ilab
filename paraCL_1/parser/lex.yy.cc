@@ -153,8 +153,27 @@ extern int yyleng;
 #define EOB_ACT_END_OF_FILE 1
 #define EOB_ACT_LAST_MATCH 2
     
-    #define YY_LESS_LINENO(n)
-    #define YY_LINENO_REWIND_TO(ptr)
+    /* Note: We specifically omit the test for yy_rule_can_match_eol because it requires
+     *       access to the local variable yy_act. Since yyless() is a macro, it would break
+     *       existing scanners that call yyless() from OUTSIDE yylex.
+     *       One obvious solution it to make yy_act a global. I tried that, and saw
+     *       a 5% performance hit in a non-yylineno scanner, because yy_act is
+     *       normally declared as a register variable-- so it is not worth it.
+     */
+    #define  YY_LESS_LINENO(n) \
+            do { \
+                int yyl;\
+                for ( yyl = n; yyl < yyleng; ++yyl )\
+                    if ( yytext[yyl] == '\n' )\
+                        --yylineno;\
+            }while(0)
+    #define YY_LINENO_REWIND_TO(dst) \
+            do {\
+                const char *p;\
+                for ( p = yy_cp-1; p >= (dst); --p)\
+                    if ( *p == '\n' )\
+                        --yylineno;\
+            }while(0)
     
 /* Return all but the first "n" matched characters back to the input stream. */
 #define yyless(n) \
@@ -283,6 +302,13 @@ typedef flex_uint8_t YY_CHAR;
 #define YY_INTERACTIVE
 
 #include <FlexLexer.h>
+int yyFlexLexer::yylex()
+	{
+	LexerError( "yyFlexLexer::yylex invoked but %option yyclass used" );
+	return 0;
+	}
+
+#define YY_DECL int mylexer_t::yylex()
 
 /* Done after the current pattern has been matched and before the
  * corresponding action - sets up yytext.
@@ -395,6 +421,12 @@ static const flex_int16_t yy_chk[89] =
        47,   47,   47,   47,   47,   47,   47,   47
     } ;
 
+/* Table of booleans, true if rule could match eol. */
+static const flex_int32_t yy_rule_can_match_eol[29] =
+    {   0,
+0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 
+    0, 0, 0, 0, 0, 1, 0, 0, 0,     };
+
 /* The intent behind this definition is that it'll catch
  * any uses of REJECT which flex missed.
  */
@@ -403,10 +435,13 @@ static const flex_int16_t yy_chk[89] =
 #define YY_MORE_ADJ 0
 #define YY_RESTORE_YY_MORE_OFFSET
 #line 1 "scanner.l"
-#line 4 "scanner.l"
+#line 5 "scanner.l"
 #include "compiler.tab.hh"
-#line 409 "lex.yy.cc"
-#line 410 "lex.yy.cc"
+#include "mylexer.hpp"
+
+#define YY_USER_ACTION update_location();
+#line 444 "lex.yy.cc"
+#line 445 "lex.yy.cc"
 
 #define INITIAL 0
 
@@ -538,9 +573,9 @@ YY_DECL
 		}
 
 	{
-#line 11 "scanner.l"
+#line 15 "scanner.l"
 
-#line 544 "lex.yy.cc"
+#line 579 "lex.yy.cc"
 
 	while ( /*CONSTCOND*/1 )		/* loops until end-of-file is reached */
 		{
@@ -586,6 +621,16 @@ yy_find_action:
 
 		YY_DO_BEFORE_ACTION;
 
+		if ( yy_act != YY_END_OF_BUFFER && yy_rule_can_match_eol[yy_act] )
+			{
+			int yyl;
+			for ( yyl = 0; yyl < yyleng; ++yyl )
+				if ( yytext[yyl] == '\n' )
+					
+    yylineno++;
+;
+			}
+
 do_action:	/* This label is used only to access EOF actions. */
 
 		switch ( yy_act )
@@ -599,146 +644,146 @@ do_action:	/* This label is used only to access EOF actions. */
 
 case 1:
 YY_RULE_SETUP
-#line 12 "scanner.l"
+#line 16 "scanner.l"
 return yy::parser::token_type::WHILE;
 	YY_BREAK
 case 2:
 YY_RULE_SETUP
-#line 13 "scanner.l"
+#line 17 "scanner.l"
 return yy::parser::token_type::IF;
 	YY_BREAK
 case 3:
 YY_RULE_SETUP
-#line 15 "scanner.l"
+#line 19 "scanner.l"
 return yy::parser::token_type::SCOLON;
 	YY_BREAK
 case 4:
 YY_RULE_SETUP
-#line 16 "scanner.l"
+#line 20 "scanner.l"
 return yy::parser::token_type::LCB;
 	YY_BREAK
 case 5:
 YY_RULE_SETUP
-#line 17 "scanner.l"
+#line 21 "scanner.l"
 return yy::parser::token_type::RCB;
 	YY_BREAK
 case 6:
 YY_RULE_SETUP
-#line 18 "scanner.l"
+#line 22 "scanner.l"
 return yy::parser::token_type::LRB;
 	YY_BREAK
 case 7:
 YY_RULE_SETUP
-#line 19 "scanner.l"
+#line 23 "scanner.l"
 return yy::parser::token_type::RRB;
 	YY_BREAK
 case 8:
 YY_RULE_SETUP
-#line 21 "scanner.l"
+#line 25 "scanner.l"
 return yy::parser::token_type::OUTPUT;
 	YY_BREAK
 case 9:
 YY_RULE_SETUP
-#line 23 "scanner.l"
+#line 27 "scanner.l"
 return yy::parser::token_type::GREATER_OR_EQUAL;
 	YY_BREAK
 case 10:
 YY_RULE_SETUP
-#line 24 "scanner.l"
+#line 28 "scanner.l"
 return yy::parser::token_type::LESS_OR_EQUAL;
 	YY_BREAK
 case 11:
 YY_RULE_SETUP
-#line 25 "scanner.l"
+#line 29 "scanner.l"
 return yy::parser::token_type::GREATER;
 	YY_BREAK
 case 12:
 YY_RULE_SETUP
-#line 26 "scanner.l"
+#line 30 "scanner.l"
 return yy::parser::token_type::LESS;
 	YY_BREAK
 case 13:
 YY_RULE_SETUP
-#line 27 "scanner.l"
+#line 31 "scanner.l"
 return yy::parser::token_type::EQUAL;
 	YY_BREAK
 case 14:
 YY_RULE_SETUP
-#line 28 "scanner.l"
+#line 32 "scanner.l"
 return yy::parser::token_type::NOT_EQUAL;
 	YY_BREAK
 case 15:
 YY_RULE_SETUP
-#line 30 "scanner.l"
+#line 34 "scanner.l"
 return yy::parser::token_type::ASSIGN;
 	YY_BREAK
 case 16:
 YY_RULE_SETUP
-#line 32 "scanner.l"
+#line 36 "scanner.l"
 return yy::parser::token_type::INPUT;
 	YY_BREAK
 case 17:
 YY_RULE_SETUP
-#line 34 "scanner.l"
+#line 38 "scanner.l"
 return yy::parser::token_type::OR;
 	YY_BREAK
 case 18:
 YY_RULE_SETUP
-#line 35 "scanner.l"
+#line 39 "scanner.l"
 return yy::parser::token_type::AND;
 	YY_BREAK
 case 19:
 YY_RULE_SETUP
-#line 36 "scanner.l"
+#line 40 "scanner.l"
 return yy::parser::token_type::NOT;
 	YY_BREAK
 case 20:
 YY_RULE_SETUP
-#line 38 "scanner.l"
+#line 42 "scanner.l"
 return yy::parser::token_type::PLUS;
 	YY_BREAK
 case 21:
 YY_RULE_SETUP
-#line 39 "scanner.l"
+#line 43 "scanner.l"
 return yy::parser::token_type::MINUS;
 	YY_BREAK
 case 22:
 YY_RULE_SETUP
-#line 41 "scanner.l"
+#line 45 "scanner.l"
 return yy::parser::token_type::MUL;
 	YY_BREAK
 case 23:
 YY_RULE_SETUP
-#line 42 "scanner.l"
+#line 46 "scanner.l"
 return yy::parser::token_type::DIV;
 	YY_BREAK
 case 24:
 YY_RULE_SETUP
-#line 43 "scanner.l"
+#line 47 "scanner.l"
 return yy::parser::token_type::MOD;
 	YY_BREAK
 case 25:
 /* rule 25 can match eol */
 YY_RULE_SETUP
-#line 45 "scanner.l"
-/* skip blanks and tabs */
+#line 49 "scanner.l"
+
 	YY_BREAK
 case 26:
 YY_RULE_SETUP
-#line 46 "scanner.l"
+#line 50 "scanner.l"
 return yy::parser::token_type::INTEGER;
 	YY_BREAK
 case 27:
 YY_RULE_SETUP
-#line 47 "scanner.l"
+#line 51 "scanner.l"
 return yy::parser::token_type::NAME;
 	YY_BREAK
 case 28:
 YY_RULE_SETUP
-#line 49 "scanner.l"
+#line 53 "scanner.l"
 ECHO;
 	YY_BREAK
-#line 742 "lex.yy.cc"
+#line 787 "lex.yy.cc"
 case YY_STATE_EOF(INITIAL):
 	yyterminate();
 
@@ -1225,6 +1270,10 @@ int yyFlexLexer::yy_get_next_buffer()
 
 	*--yy_cp = (char) c;
 
+    if ( c == '\n' ){
+        --yylineno;
+    }
+
 	(yytext_ptr) = yy_bp;
 	(yy_hold_char) = *yy_cp;
 	(yy_c_buf_p) = yy_cp;
@@ -1294,6 +1343,11 @@ int yyFlexLexer::yy_get_next_buffer()
 	c = *(unsigned char *) (yy_c_buf_p);	/* cast for 8-bit char's */
 	*(yy_c_buf_p) = '\0';	/* preserve yytext */
 	(yy_hold_char) = *++(yy_c_buf_p);
+
+	if ( c == '\n' )
+		
+    yylineno++;
+;
 
 	return c;
 }
@@ -1699,5 +1753,5 @@ void yyfree (void * ptr )
 			free( (char *) ptr );	/* see yyrealloc() for (char *) cast */
 }
 
-#line 49 "scanner.l"
+#line 53 "scanner.l"
 

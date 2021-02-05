@@ -36,7 +36,7 @@ public:
     int calc() override;
 
     Iscope_t* duplicate() override {return new scope_t(this);}
-    Iscope_t* reset() const override {return prev_scope_;}
+    Iscope_t* get_prev() const override {return prev_scope_;}
     void add_branch(Inode_t* branch) override {branches_.push_back(branch);}
     virtual Inode_t* add(const std::string& name) override;
     virtual Inode_t* visible(const std::string& name) override; 
