@@ -177,7 +177,10 @@ namespace yy {
       case symbol_kind::S_lval: // lval
       case symbol_kind::S_if: // if
       case symbol_kind::S_while: // while
-      case symbol_kind::S_expr: // expr
+      case symbol_kind::S_expr1: // expr1
+      case symbol_kind::S_expr2: // expr2
+      case symbol_kind::S_expr3: // expr3
+      case symbol_kind::S_condition: // condition
       case symbol_kind::S_output: // output
       case symbol_kind::S_stms: // stms
       case symbol_kind::S_open_sc: // open_sc
@@ -231,7 +234,10 @@ namespace yy {
       case symbol_kind::S_lval: // lval
       case symbol_kind::S_if: // if
       case symbol_kind::S_while: // while
-      case symbol_kind::S_expr: // expr
+      case symbol_kind::S_expr1: // expr1
+      case symbol_kind::S_expr2: // expr2
+      case symbol_kind::S_expr3: // expr3
+      case symbol_kind::S_condition: // condition
       case symbol_kind::S_output: // output
       case symbol_kind::S_stms: // stms
       case symbol_kind::S_open_sc: // open_sc
@@ -353,7 +359,10 @@ namespace yy {
       case symbol_kind::S_lval: // lval
       case symbol_kind::S_if: // if
       case symbol_kind::S_while: // while
-      case symbol_kind::S_expr: // expr
+      case symbol_kind::S_expr1: // expr1
+      case symbol_kind::S_expr2: // expr2
+      case symbol_kind::S_expr3: // expr3
+      case symbol_kind::S_condition: // condition
       case symbol_kind::S_output: // output
       case symbol_kind::S_stms: // stms
       case symbol_kind::S_open_sc: // open_sc
@@ -393,7 +402,10 @@ namespace yy {
       case symbol_kind::S_lval: // lval
       case symbol_kind::S_if: // if
       case symbol_kind::S_while: // while
-      case symbol_kind::S_expr: // expr
+      case symbol_kind::S_expr1: // expr1
+      case symbol_kind::S_expr2: // expr2
+      case symbol_kind::S_expr3: // expr3
+      case symbol_kind::S_condition: // condition
       case symbol_kind::S_output: // output
       case symbol_kind::S_stms: // stms
       case symbol_kind::S_open_sc: // open_sc
@@ -433,7 +445,10 @@ namespace yy {
       case symbol_kind::S_lval: // lval
       case symbol_kind::S_if: // if
       case symbol_kind::S_while: // while
-      case symbol_kind::S_expr: // expr
+      case symbol_kind::S_expr1: // expr1
+      case symbol_kind::S_expr2: // expr2
+      case symbol_kind::S_expr3: // expr3
+      case symbol_kind::S_condition: // condition
       case symbol_kind::S_output: // output
       case symbol_kind::S_stms: // stms
       case symbol_kind::S_open_sc: // open_sc
@@ -472,7 +487,10 @@ namespace yy {
       case symbol_kind::S_lval: // lval
       case symbol_kind::S_if: // if
       case symbol_kind::S_while: // while
-      case symbol_kind::S_expr: // expr
+      case symbol_kind::S_expr1: // expr1
+      case symbol_kind::S_expr2: // expr2
+      case symbol_kind::S_expr3: // expr3
+      case symbol_kind::S_condition: // condition
       case symbol_kind::S_output: // output
       case symbol_kind::S_stms: // stms
       case symbol_kind::S_open_sc: // open_sc
@@ -755,7 +773,10 @@ namespace yy {
       case symbol_kind::S_lval: // lval
       case symbol_kind::S_if: // if
       case symbol_kind::S_while: // while
-      case symbol_kind::S_expr: // expr
+      case symbol_kind::S_expr1: // expr1
+      case symbol_kind::S_expr2: // expr2
+      case symbol_kind::S_expr3: // expr3
+      case symbol_kind::S_condition: // condition
       case symbol_kind::S_output: // output
       case symbol_kind::S_stms: // stms
       case symbol_kind::S_open_sc: // open_sc
@@ -796,210 +817,234 @@ namespace yy {
           switch (yyn)
             {
   case 2: // program: stms
-#line 51 "compiler.y"
+#line 54 "compiler.y"
                                                 {current_scope->calc();}
-#line 802 "compiler.tab.cc"
+#line 823 "compiler.tab.cc"
     break;
 
   case 3: // scope: open_sc stms close_sc
-#line 53 "compiler.y"
+#line 56 "compiler.y"
                                                 {yylhs.value.as < Inode::Iscope_t* > () = yystack_[0].value.as < Inode::Iscope_t* > ();}
-#line 808 "compiler.tab.cc"
+#line 829 "compiler.tab.cc"
     break;
 
   case 4: // open_sc: LCB
-#line 55 "compiler.y"
+#line 58 "compiler.y"
                                                 {
                                                     current_scope = current_scope->duplicate();
                                                 }
-#line 816 "compiler.tab.cc"
+#line 837 "compiler.tab.cc"
     break;
 
   case 5: // close_sc: RCB
-#line 59 "compiler.y"
+#line 62 "compiler.y"
                                                 {
                                                     yylhs.value.as < Inode::Iscope_t* > () = current_scope;
                                                     current_scope = current_scope->get_prev();
                                                 }
-#line 825 "compiler.tab.cc"
+#line 846 "compiler.tab.cc"
     break;
 
   case 6: // stms: stm
-#line 64 "compiler.y"
+#line 67 "compiler.y"
                                                 {current_scope->add_branch(yystack_[0].value.as < Inode::Inode_t* > ());}
-#line 831 "compiler.tab.cc"
+#line 852 "compiler.tab.cc"
     break;
 
   case 7: // stms: stms stm
-#line 65 "compiler.y"
+#line 68 "compiler.y"
                                                 {current_scope->add_branch(yystack_[0].value.as < Inode::Inode_t* > ());}
-#line 837 "compiler.tab.cc"
+#line 858 "compiler.tab.cc"
     break;
 
   case 8: // stms: stms scope
-#line 66 "compiler.y"
+#line 69 "compiler.y"
                                                 {current_scope->add_branch(yystack_[0].value.as < Inode::Iscope_t* > ());}
-#line 843 "compiler.tab.cc"
+#line 864 "compiler.tab.cc"
     break;
 
   case 9: // stm: assign
-#line 68 "compiler.y"
+#line 71 "compiler.y"
                                                 {yylhs.value.as < Inode::Inode_t* > () = yystack_[0].value.as < Inode::Inode_t* > ();}
-#line 849 "compiler.tab.cc"
+#line 870 "compiler.tab.cc"
     break;
 
   case 10: // stm: if
-#line 69 "compiler.y"
+#line 72 "compiler.y"
                                                 {yylhs.value.as < Inode::Inode_t* > () = yystack_[0].value.as < Inode::Inode_t* > ();}
-#line 855 "compiler.tab.cc"
+#line 876 "compiler.tab.cc"
     break;
 
   case 11: // stm: while
-#line 70 "compiler.y"
+#line 73 "compiler.y"
                                                 {yylhs.value.as < Inode::Inode_t* > () = yystack_[0].value.as < Inode::Inode_t* > ();}
-#line 861 "compiler.tab.cc"
+#line 882 "compiler.tab.cc"
     break;
 
   case 12: // stm: output
-#line 71 "compiler.y"
+#line 74 "compiler.y"
                                                 {yylhs.value.as < Inode::Inode_t* > () = yystack_[0].value.as < Inode::Inode_t* > ();}
-#line 867 "compiler.tab.cc"
+#line 888 "compiler.tab.cc"
     break;
 
-  case 13: // assign: lval ASSIGN expr SCOLON
-#line 73 "compiler.y"
+  case 13: // assign: lval ASSIGN expr1 SCOLON
+#line 76 "compiler.y"
                                                 {yylhs.value.as < Inode::Inode_t* > () = Inode::make_bin_op(yystack_[3].value.as < Inode::Inode_t* > (), Inode::bin_op::assign_, yystack_[1].value.as < Inode::Inode_t* > ());}
-#line 873 "compiler.tab.cc"
+#line 894 "compiler.tab.cc"
     break;
 
   case 14: // lval: NAME
-#line 75 "compiler.y"
-                                                {yylhs.value.as < Inode::Inode_t* > () = current_scope->add(yystack_[0].value.as < std::string > ());}
-#line 879 "compiler.tab.cc"
-    break;
-
-  case 15: // expr: expr PLUS expr
-#line 77 "compiler.y"
-                                                {yylhs.value.as < Inode::Inode_t* > () = Inode::make_bin_op(yystack_[2].value.as < Inode::Inode_t* > (), Inode::bin_op::plus_, yystack_[0].value.as < Inode::Inode_t* > ());}
-#line 885 "compiler.tab.cc"
-    break;
-
-  case 16: // expr: expr MINUS expr
 #line 78 "compiler.y"
-                                                {yylhs.value.as < Inode::Inode_t* > () = Inode::make_bin_op(yystack_[2].value.as < Inode::Inode_t* > (), Inode::bin_op::minus_, yystack_[0].value.as < Inode::Inode_t* > ());}
-#line 891 "compiler.tab.cc"
+                                                {yylhs.value.as < Inode::Inode_t* > () = current_scope->add(yystack_[0].value.as < std::string > ());}
+#line 900 "compiler.tab.cc"
     break;
 
-  case 17: // expr: expr MUL expr
-#line 79 "compiler.y"
-                                                {yylhs.value.as < Inode::Inode_t* > () = Inode::make_bin_op(yystack_[2].value.as < Inode::Inode_t* > (), Inode::bin_op::mult_, yystack_[0].value.as < Inode::Inode_t* > ());}
-#line 897 "compiler.tab.cc"
-    break;
-
-  case 18: // expr: expr DIV expr
+  case 15: // expr1: expr2 PLUS expr2
 #line 80 "compiler.y"
-                                                {yylhs.value.as < Inode::Inode_t* > () = Inode::make_bin_op(yystack_[2].value.as < Inode::Inode_t* > (), Inode::bin_op::div_, yystack_[0].value.as < Inode::Inode_t* > ());}
-#line 903 "compiler.tab.cc"
+                                                {yylhs.value.as < Inode::Inode_t* > () = Inode::make_bin_op(yystack_[2].value.as < Inode::Inode_t* > (), Inode::bin_op::plus_, yystack_[0].value.as < Inode::Inode_t* > ());}
+#line 906 "compiler.tab.cc"
     break;
 
-  case 19: // expr: expr MOD expr
+  case 16: // expr1: expr2 MINUS expr2
 #line 81 "compiler.y"
-                                                {yylhs.value.as < Inode::Inode_t* > () = Inode::make_bin_op(yystack_[2].value.as < Inode::Inode_t* > (), Inode::bin_op::mod_, yystack_[0].value.as < Inode::Inode_t* > ());}
-#line 909 "compiler.tab.cc"
+                                                {yylhs.value.as < Inode::Inode_t* > () = Inode::make_bin_op(yystack_[2].value.as < Inode::Inode_t* > (), Inode::bin_op::minus_, yystack_[0].value.as < Inode::Inode_t* > ());}
+#line 912 "compiler.tab.cc"
     break;
 
-  case 20: // expr: expr AND expr
+  case 17: // expr1: expr2
 #line 82 "compiler.y"
-                                                {yylhs.value.as < Inode::Inode_t* > () = Inode::make_bin_op(yystack_[2].value.as < Inode::Inode_t* > (), Inode::bin_op::and_, yystack_[0].value.as < Inode::Inode_t* > ());}
-#line 915 "compiler.tab.cc"
+                                                {yylhs.value.as < Inode::Inode_t* > () = yystack_[0].value.as < Inode::Inode_t* > ();}
+#line 918 "compiler.tab.cc"
     break;
 
-  case 21: // expr: expr OR expr
-#line 83 "compiler.y"
-                                                {yylhs.value.as < Inode::Inode_t* > () = Inode::make_bin_op(yystack_[2].value.as < Inode::Inode_t* > (), Inode::bin_op::or_, yystack_[0].value.as < Inode::Inode_t* > ());}
-#line 921 "compiler.tab.cc"
-    break;
-
-  case 22: // expr: NOT expr
+  case 18: // expr2: expr3 MUL expr3
 #line 84 "compiler.y"
-                                                {yylhs.value.as < Inode::Inode_t* > () = Inode::make_unary_op(yystack_[0].value.as < Inode::Inode_t* > (), Inode::unary_op::not_);}
-#line 927 "compiler.tab.cc"
+                                                {yylhs.value.as < Inode::Inode_t* > () = Inode::make_bin_op(yystack_[2].value.as < Inode::Inode_t* > (), Inode::bin_op::mult_, yystack_[0].value.as < Inode::Inode_t* > ());}
+#line 924 "compiler.tab.cc"
     break;
 
-  case 23: // expr: expr EQUAL expr
+  case 19: // expr2: expr3 DIV expr3
 #line 85 "compiler.y"
-                                                {yylhs.value.as < Inode::Inode_t* > () = Inode::make_bin_op(yystack_[2].value.as < Inode::Inode_t* > (), Inode::bin_op::equal_, yystack_[0].value.as < Inode::Inode_t* > ());}
-#line 933 "compiler.tab.cc"
+                                                {yylhs.value.as < Inode::Inode_t* > () = Inode::make_bin_op(yystack_[2].value.as < Inode::Inode_t* > (), Inode::bin_op::div_, yystack_[0].value.as < Inode::Inode_t* > ());}
+#line 930 "compiler.tab.cc"
     break;
 
-  case 24: // expr: expr NOT_EQUAL expr
+  case 20: // expr2: expr3 MOD expr3
 #line 86 "compiler.y"
-                                                {yylhs.value.as < Inode::Inode_t* > () = Inode::make_bin_op(yystack_[2].value.as < Inode::Inode_t* > (), Inode::bin_op::not_equal_, yystack_[0].value.as < Inode::Inode_t* > ());}
-#line 939 "compiler.tab.cc"
+                                                {yylhs.value.as < Inode::Inode_t* > () = Inode::make_bin_op(yystack_[2].value.as < Inode::Inode_t* > (), Inode::bin_op::mod_, yystack_[0].value.as < Inode::Inode_t* > ());}
+#line 936 "compiler.tab.cc"
     break;
 
-  case 25: // expr: expr GREATER expr
+  case 21: // expr2: expr3
 #line 87 "compiler.y"
-                                                {yylhs.value.as < Inode::Inode_t* > () = Inode::make_bin_op(yystack_[2].value.as < Inode::Inode_t* > (), Inode::bin_op::greater_, yystack_[0].value.as < Inode::Inode_t* > ());}
-#line 945 "compiler.tab.cc"
+                                                {yylhs.value.as < Inode::Inode_t* > () = yystack_[0].value.as < Inode::Inode_t* > ();}
+#line 942 "compiler.tab.cc"
     break;
 
-  case 26: // expr: expr LESS expr
-#line 88 "compiler.y"
-                                                {yylhs.value.as < Inode::Inode_t* > () = Inode::make_bin_op(yystack_[2].value.as < Inode::Inode_t* > (), Inode::bin_op::less_, yystack_[0].value.as < Inode::Inode_t* > ());}
-#line 951 "compiler.tab.cc"
-    break;
-
-  case 27: // expr: expr GREATER_OR_EQUAL expr
+  case 22: // expr3: LRB expr1 RRB
 #line 89 "compiler.y"
-                                                {yylhs.value.as < Inode::Inode_t* > () = Inode::make_bin_op(yystack_[2].value.as < Inode::Inode_t* > (), Inode::bin_op::greater_or_equal_, yystack_[0].value.as < Inode::Inode_t* > ());}
-#line 957 "compiler.tab.cc"
+                                                {yylhs.value.as < Inode::Inode_t* > () = yystack_[1].value.as < Inode::Inode_t* > ();}
+#line 948 "compiler.tab.cc"
     break;
 
-  case 28: // expr: expr LESS_OR_EQUAL expr
+  case 23: // expr3: NAME
 #line 90 "compiler.y"
-                                                {yylhs.value.as < Inode::Inode_t* > () = Inode::make_bin_op(yystack_[2].value.as < Inode::Inode_t* > (), Inode::bin_op::less_or_equal_, yystack_[0].value.as < Inode::Inode_t* > ());}
-#line 963 "compiler.tab.cc"
-    break;
-
-  case 29: // expr: NAME
-#line 91 "compiler.y"
                                                 {yylhs.value.as < Inode::Inode_t* > () = current_scope->visible(yystack_[0].value.as < std::string > ());}
-#line 969 "compiler.tab.cc"
+#line 954 "compiler.tab.cc"
     break;
 
-  case 30: // expr: INTEGER
-#line 92 "compiler.y"
+  case 24: // expr3: INTEGER
+#line 91 "compiler.y"
                                                 {yylhs.value.as < Inode::Inode_t* > () = Inode::make_value(yystack_[0].value.as < int > ());}
-#line 975 "compiler.tab.cc"
+#line 960 "compiler.tab.cc"
     break;
 
-  case 31: // expr: INPUT
-#line 93 "compiler.y"
+  case 25: // expr3: INPUT
+#line 92 "compiler.y"
                                                 {yylhs.value.as < Inode::Inode_t* > () = Inode::make_unary_op(Inode::unary_op::input_, nullptr);}
-#line 981 "compiler.tab.cc"
+#line 966 "compiler.tab.cc"
     break;
 
-  case 32: // if: IF LRB expr RRB scope
+  case 26: // condition: expr1 AND expr1
+#line 94 "compiler.y"
+                                                {yylhs.value.as < Inode::Inode_t* > () = Inode::make_bin_op(yystack_[2].value.as < Inode::Inode_t* > (), Inode::bin_op::and_, yystack_[0].value.as < Inode::Inode_t* > ());}
+#line 972 "compiler.tab.cc"
+    break;
+
+  case 27: // condition: expr1 OR expr1
 #line 95 "compiler.y"
-                                                {yylhs.value.as < Inode::Inode_t* > () = Inode::make_if(yystack_[2].value.as < Inode::Inode_t* > (), yystack_[0].value.as < Inode::Iscope_t* > ());}
-#line 987 "compiler.tab.cc"
+                                                {yylhs.value.as < Inode::Inode_t* > () = Inode::make_bin_op(yystack_[2].value.as < Inode::Inode_t* > (), Inode::bin_op::or_, yystack_[0].value.as < Inode::Inode_t* > ());}
+#line 978 "compiler.tab.cc"
     break;
 
-  case 33: // while: WHILE LRB expr RRB scope
+  case 28: // condition: NOT expr1
+#line 96 "compiler.y"
+                                                {yylhs.value.as < Inode::Inode_t* > () = Inode::make_unary_op(yystack_[0].value.as < Inode::Inode_t* > (), Inode::unary_op::not_);}
+#line 984 "compiler.tab.cc"
+    break;
+
+  case 29: // condition: expr1 EQUAL expr1
 #line 97 "compiler.y"
-                                                {yylhs.value.as < Inode::Inode_t* > () = Inode::make_while(yystack_[2].value.as < Inode::Inode_t* > (), yystack_[0].value.as < Inode::Iscope_t* > ());}
-#line 993 "compiler.tab.cc"
+                                                {yylhs.value.as < Inode::Inode_t* > () = Inode::make_bin_op(yystack_[2].value.as < Inode::Inode_t* > (), Inode::bin_op::equal_, yystack_[0].value.as < Inode::Inode_t* > ());}
+#line 990 "compiler.tab.cc"
     break;
 
-  case 34: // output: OUTPUT expr SCOLON
+  case 30: // condition: expr1 NOT_EQUAL expr1
+#line 98 "compiler.y"
+                                                {yylhs.value.as < Inode::Inode_t* > () = Inode::make_bin_op(yystack_[2].value.as < Inode::Inode_t* > (), Inode::bin_op::not_equal_, yystack_[0].value.as < Inode::Inode_t* > ());}
+#line 996 "compiler.tab.cc"
+    break;
+
+  case 31: // condition: expr1 GREATER expr1
 #line 99 "compiler.y"
-                                                {yylhs.value.as < Inode::Inode_t* > () = Inode::make_unary_op(Inode::unary_op::output_, yystack_[1].value.as < Inode::Inode_t* > ());}
-#line 999 "compiler.tab.cc"
+                                                {yylhs.value.as < Inode::Inode_t* > () = Inode::make_bin_op(yystack_[2].value.as < Inode::Inode_t* > (), Inode::bin_op::greater_, yystack_[0].value.as < Inode::Inode_t* > ());}
+#line 1002 "compiler.tab.cc"
+    break;
+
+  case 32: // condition: expr1 LESS expr1
+#line 100 "compiler.y"
+                                                {yylhs.value.as < Inode::Inode_t* > () = Inode::make_bin_op(yystack_[2].value.as < Inode::Inode_t* > (), Inode::bin_op::less_, yystack_[0].value.as < Inode::Inode_t* > ());}
+#line 1008 "compiler.tab.cc"
+    break;
+
+  case 33: // condition: expr1 GREATER_OR_EQUAL expr1
+#line 101 "compiler.y"
+                                                {yylhs.value.as < Inode::Inode_t* > () = Inode::make_bin_op(yystack_[2].value.as < Inode::Inode_t* > (), Inode::bin_op::greater_or_equal_, yystack_[0].value.as < Inode::Inode_t* > ());}
+#line 1014 "compiler.tab.cc"
+    break;
+
+  case 34: // condition: expr1 LESS_OR_EQUAL expr1
+#line 102 "compiler.y"
+                                                {yylhs.value.as < Inode::Inode_t* > () = Inode::make_bin_op(yystack_[2].value.as < Inode::Inode_t* > (), Inode::bin_op::less_or_equal_, yystack_[0].value.as < Inode::Inode_t* > ());}
+#line 1020 "compiler.tab.cc"
+    break;
+
+  case 35: // condition: expr1
+#line 103 "compiler.y"
+                                                {yylhs.value.as < Inode::Inode_t* > () = yystack_[0].value.as < Inode::Inode_t* > ();}
+#line 1026 "compiler.tab.cc"
+    break;
+
+  case 36: // if: IF LRB condition RRB scope
+#line 105 "compiler.y"
+                                                {yylhs.value.as < Inode::Inode_t* > () = Inode::make_if(yystack_[2].value.as < Inode::Inode_t* > (), yystack_[0].value.as < Inode::Iscope_t* > ());}
+#line 1032 "compiler.tab.cc"
+    break;
+
+  case 37: // while: WHILE LRB condition RRB scope
+#line 107 "compiler.y"
+                                                {yylhs.value.as < Inode::Inode_t* > () = Inode::make_while(yystack_[2].value.as < Inode::Inode_t* > (), yystack_[0].value.as < Inode::Iscope_t* > ());}
+#line 1038 "compiler.tab.cc"
+    break;
+
+  case 38: // output: OUTPUT expr1 SCOLON
+#line 109 "compiler.y"
+                                                 {yylhs.value.as < Inode::Inode_t* > () = Inode::make_unary_op(Inode::unary_op::output_, yystack_[1].value.as < Inode::Inode_t* > ());}
+#line 1044 "compiler.tab.cc"
     break;
 
 
-#line 1003 "compiler.tab.cc"
+#line 1048 "compiler.tab.cc"
 
             default:
               break;
@@ -1186,7 +1231,8 @@ namespace yy {
   "OR", "AND", "NOT", "EQUAL", "NOT_EQUAL", "GREATER", "LESS",
   "LESS_OR_EQUAL", "GREATER_OR_EQUAL", "PLUS", "MINUS", "MUL", "DIV",
   "MOD", "$accept", "scope", "close_sc", "stm", "assign", "lval", "if",
-  "while", "expr", "output", "stms", "open_sc", "program", YY_NULLPTR
+  "while", "expr1", "expr2", "expr3", "condition", "output", "stms",
+  "open_sc", "program", YY_NULLPTR
     };
     return yy_sname[yysymbol];
   }
@@ -1236,116 +1282,105 @@ namespace yy {
 
 
 
-  const signed char parser::yypact_ninf_ = -13;
+  const signed char parser::yypact_ninf_ = -20;
 
   const signed char parser::yytable_ninf_ = -1;
 
   const signed char
   parser::yypact_[] =
   {
-      51,   -13,    -5,     1,     0,   -13,   -13,     2,   -13,   -13,
-     -13,    29,    36,     0,     0,   -13,   -13,   -13,     0,    24,
-       0,   -13,   -13,   -13,    51,   -13,    64,    82,   106,   -13,
-       0,     0,     0,     0,     0,     0,     0,     0,     0,     0,
-       0,     0,     0,    46,     4,    30,    30,    95,   106,   115,
-     115,   120,   120,   120,   120,    32,    32,   -13,   -13,   -13,
-     -13,   -13,   -13,   -13,   -13
+      47,   -20,    -8,     1,     2,   -20,   -20,     6,   -20,   -20,
+     -20,    43,    15,     0,     0,   -20,   -20,     2,   -20,    14,
+       3,   -19,     2,   -20,   -20,   -20,    47,   -20,     2,    42,
+      25,    26,    36,   -20,     2,     2,     2,     2,     2,    49,
+      17,   -20,     2,     2,     2,     2,     2,     2,     2,     2,
+      46,    46,   -20,   -20,   -20,   -20,   -20,   -20,   -20,   -20,
+     -20,   -20,   -20,   -20,   -20,   -20,   -20,   -20,   -20,   -20,
+     -20
   };
 
   const signed char
   parser::yydefact_[] =
   {
        0,    14,     0,     0,     0,     6,     9,     0,    10,    11,
-      12,     2,     0,     0,     0,    29,    30,    31,     0,     0,
-       0,     4,     8,     7,     0,     1,     0,     0,    22,    34,
-       0,     0,     0,     0,     0,     0,     0,     0,     0,     0,
-       0,     0,     0,     0,     0,     0,     0,    21,    20,    23,
-      24,    25,    26,    28,    27,    15,    16,    17,    18,    19,
-      13,     5,     3,    33,    32
+      12,     2,     0,     0,     0,    23,    24,     0,    25,     0,
+      17,    21,     0,     4,     8,     7,     0,     1,     0,    35,
+       0,     0,     0,    38,     0,     0,     0,     0,     0,     0,
+       0,    28,     0,     0,     0,     0,     0,     0,     0,     0,
+       0,     0,    22,    15,    16,    18,    19,    20,    13,     5,
+       3,    27,    26,    29,    30,    31,    32,    34,    33,    37,
+      36
   };
 
   const signed char
   parser::yypgoto_[] =
   {
-     -13,    31,   -13,   -11,   -13,   -13,   -13,   -13,   -12,   -13,
-      54,   -13,   -13
+     -20,   -16,   -20,   -10,   -20,   -20,   -20,   -20,    -4,    32,
+      -5,    54,   -20,    44,   -20,   -20
   };
 
   const signed char
   parser::yydefgoto_[] =
   {
-      -1,    22,    62,     5,     6,     7,     8,     9,    19,    10,
-      11,    24,    12
+      -1,    24,    60,     5,     6,     7,     8,     9,    29,    20,
+      21,    30,    10,    11,    26,    12
   };
 
   const signed char
   parser::yytable_[] =
   {
-      23,    26,    27,    15,    16,    13,    28,     1,    43,     2,
-       3,    14,    21,    61,    17,    20,     4,    18,    47,    48,
-      49,    50,    51,    52,    53,    54,    55,    56,    57,    58,
-      59,    29,     1,    23,     2,     3,    25,    21,    21,    30,
-      31,     4,    32,    33,    34,    35,    36,    37,    38,    39,
-      40,    41,    42,    60,     1,     0,     2,     3,    40,    41,
-      42,    30,    31,     4,    32,    33,    34,    35,    36,    37,
-      38,    39,    40,    41,    42,    45,    63,    64,    44,    30,
-      31,     0,    32,    33,    34,    35,    36,    37,    38,    39,
-      40,    41,    42,    46,     0,     0,     0,    30,    31,     0,
-      32,    33,    34,    35,    36,    37,    38,    39,    40,    41,
-      42,    31,     0,    32,    33,    34,    35,    36,    37,    38,
-      39,    40,    41,    42,    32,    33,    34,    35,    36,    37,
-      38,    39,    40,    41,    42,    34,    35,    36,    37,    38,
-      39,    40,    41,    42,    38,    39,    40,    41,    42
+      19,    25,    13,    15,    16,    15,    16,    36,    37,    38,
+      17,    14,    17,    32,    18,    27,    18,    28,    39,    22,
+       1,    33,     2,     3,    41,    23,    59,    34,    35,     4,
+      25,    55,    56,    57,    69,    70,    50,    51,    61,    62,
+      63,    64,    65,    66,    67,    68,     1,    52,     2,     3,
+       1,    23,     2,     3,    23,     4,    58,    42,    43,     4,
+      44,    45,    46,    47,    48,    49,    53,    54,    31,     0,
+      40
   };
 
   const signed char
   parser::yycheck_[] =
   {
-      11,    13,    14,     3,     4,    10,    18,     3,    20,     5,
-       6,    10,     8,     9,    14,    13,    12,    17,    30,    31,
-      32,    33,    34,    35,    36,    37,    38,    39,    40,    41,
-      42,     7,     3,    44,     5,     6,     0,     8,     8,    15,
-      16,    12,    18,    19,    20,    21,    22,    23,    24,    25,
-      26,    27,    28,     7,     3,    -1,     5,     6,    26,    27,
-      28,    15,    16,    12,    18,    19,    20,    21,    22,    23,
-      24,    25,    26,    27,    28,    11,    45,    46,    24,    15,
-      16,    -1,    18,    19,    20,    21,    22,    23,    24,    25,
-      26,    27,    28,    11,    -1,    -1,    -1,    15,    16,    -1,
-      18,    19,    20,    21,    22,    23,    24,    25,    26,    27,
-      28,    16,    -1,    18,    19,    20,    21,    22,    23,    24,
-      25,    26,    27,    28,    18,    19,    20,    21,    22,    23,
-      24,    25,    26,    27,    28,    20,    21,    22,    23,    24,
-      25,    26,    27,    28,    24,    25,    26,    27,    28
+       4,    11,    10,     3,     4,     3,     4,    26,    27,    28,
+      10,    10,    10,    17,    14,     0,    14,    17,    22,    13,
+       3,     7,     5,     6,    28,     8,     9,    24,    25,    12,
+      40,    36,    37,    38,    50,    51,    11,    11,    42,    43,
+      44,    45,    46,    47,    48,    49,     3,    11,     5,     6,
+       3,     8,     5,     6,     8,    12,     7,    15,    16,    12,
+      18,    19,    20,    21,    22,    23,    34,    35,    14,    -1,
+      26
   };
 
   const signed char
   parser::yystos_[] =
   {
        0,     3,     5,     6,    12,    32,    33,    34,    35,    36,
-      38,    39,    41,    10,    10,     3,     4,    14,    17,    37,
-      13,     8,    30,    32,    40,     0,    37,    37,    37,     7,
-      15,    16,    18,    19,    20,    21,    22,    23,    24,    25,
-      26,    27,    28,    37,    39,    11,    11,    37,    37,    37,
-      37,    37,    37,    37,    37,    37,    37,    37,    37,    37,
-       7,     9,    31,    30,    30
+      41,    42,    44,    10,    10,     3,     4,    10,    14,    37,
+      38,    39,    13,     8,    30,    32,    43,     0,    17,    37,
+      40,    40,    37,     7,    24,    25,    26,    27,    28,    37,
+      42,    37,    15,    16,    18,    19,    20,    21,    22,    23,
+      11,    11,    11,    38,    38,    39,    39,    39,     7,     9,
+      31,    37,    37,    37,    37,    37,    37,    37,    37,    30,
+      30
   };
 
   const signed char
   parser::yyr1_[] =
   {
-       0,    29,    41,    30,    40,    31,    39,    39,    39,    32,
-      32,    32,    32,    33,    34,    37,    37,    37,    37,    37,
-      37,    37,    37,    37,    37,    37,    37,    37,    37,    37,
-      37,    37,    35,    36,    38
+       0,    29,    44,    30,    43,    31,    42,    42,    42,    32,
+      32,    32,    32,    33,    34,    37,    37,    37,    38,    38,
+      38,    38,    39,    39,    39,    39,    40,    40,    40,    40,
+      40,    40,    40,    40,    40,    40,    35,    36,    41
   };
 
   const signed char
   parser::yyr2_[] =
   {
        0,     2,     1,     3,     1,     1,     1,     2,     2,     1,
-       1,     1,     1,     4,     1,     3,     3,     3,     3,     3,
-       3,     3,     2,     3,     3,     3,     3,     3,     3,     1,
-       1,     1,     5,     5,     3
+       1,     1,     1,     4,     1,     3,     3,     1,     3,     3,
+       3,     1,     3,     1,     1,     1,     3,     3,     2,     3,
+       3,     3,     3,     3,     3,     1,     5,     5,     3
   };
 
 
@@ -1355,10 +1390,10 @@ namespace yy {
   const signed char
   parser::yyrline_[] =
   {
-       0,    51,    51,    53,    55,    59,    64,    65,    66,    68,
-      69,    70,    71,    73,    75,    77,    78,    79,    80,    81,
-      82,    83,    84,    85,    86,    87,    88,    89,    90,    91,
-      92,    93,    95,    97,    99
+       0,    54,    54,    56,    58,    62,    67,    68,    69,    71,
+      72,    73,    74,    76,    78,    80,    81,    82,    84,    85,
+      86,    87,    89,    90,    91,    92,    94,    95,    96,    97,
+      98,    99,   100,   101,   102,   103,   105,   107,   109
   };
 
   void
@@ -1439,9 +1474,9 @@ namespace yy {
   }
 
 } // yy
-#line 1443 "compiler.tab.cc"
+#line 1478 "compiler.tab.cc"
 
-#line 101 "compiler.y"
+#line 111 "compiler.y"
 
 
 namespace yy {

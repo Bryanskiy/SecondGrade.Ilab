@@ -382,7 +382,10 @@ namespace yy {
       // lval
       // if
       // while
-      // expr
+      // expr1
+      // expr2
+      // expr3
+      // condition
       // output
       // stms
       // open_sc
@@ -526,11 +529,14 @@ namespace yy {
         S_lval = 34,                             // lval
         S_if = 35,                               // if
         S_while = 36,                            // while
-        S_expr = 37,                             // expr
-        S_output = 38,                           // output
-        S_stms = 39,                             // stms
-        S_open_sc = 40,                          // open_sc
-        S_program = 41                           // program
+        S_expr1 = 37,                            // expr1
+        S_expr2 = 38,                            // expr2
+        S_expr3 = 39,                            // expr3
+        S_condition = 40,                        // condition
+        S_output = 41,                           // output
+        S_stms = 42,                             // stms
+        S_open_sc = 43,                          // open_sc
+        S_program = 44                           // program
       };
     };
 
@@ -572,7 +578,10 @@ namespace yy {
       case symbol_kind::S_lval: // lval
       case symbol_kind::S_if: // if
       case symbol_kind::S_while: // while
-      case symbol_kind::S_expr: // expr
+      case symbol_kind::S_expr1: // expr1
+      case symbol_kind::S_expr2: // expr2
+      case symbol_kind::S_expr3: // expr3
+      case symbol_kind::S_condition: // condition
       case symbol_kind::S_output: // output
       case symbol_kind::S_stms: // stms
       case symbol_kind::S_open_sc: // open_sc
@@ -694,7 +703,10 @@ switch (yykind)
       case symbol_kind::S_lval: // lval
       case symbol_kind::S_if: // if
       case symbol_kind::S_while: // while
-      case symbol_kind::S_expr: // expr
+      case symbol_kind::S_expr1: // expr1
+      case symbol_kind::S_expr2: // expr2
+      case symbol_kind::S_expr3: // expr3
+      case symbol_kind::S_condition: // condition
       case symbol_kind::S_output: // output
       case symbol_kind::S_stms: // stms
       case symbol_kind::S_open_sc: // open_sc
@@ -1643,9 +1655,9 @@ switch (yykind)
     /// Constants.
     enum
     {
-      yylast_ = 148,     ///< Last index in yytable_.
-      yynnts_ = 13,  ///< Number of nonterminal symbols.
-      yyfinal_ = 25 ///< Termination state number.
+      yylast_ = 70,     ///< Last index in yytable_.
+      yynnts_ = 16,  ///< Number of nonterminal symbols.
+      yyfinal_ = 27 ///< Termination state number.
     };
 
 
@@ -1656,7 +1668,7 @@ switch (yykind)
 
 
 } // yy
-#line 1660 "compiler.tab.hh"
+#line 1672 "compiler.tab.hh"
 
 
 
