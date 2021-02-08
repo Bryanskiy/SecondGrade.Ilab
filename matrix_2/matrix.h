@@ -10,7 +10,7 @@
 
 namespace matrix {
 
-long double tolerance = 1e-5;
+const long double tolerance = 1e-5;
 
 template<typename T>
 void copy_construct(T* p, const T& val) {

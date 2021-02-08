@@ -1,11 +1,14 @@
-.PHONY: all
+.PHONY: all debug
 
 RELEASE_OPTIONS = -O2 -std=c++17
+DEBUG_OPTIONS = -g -std=c++17 -D"DEBUG"
 
-all: release.out
+all: 
+	$(MAKE) -C parser
+	g++ main.cpp parser/lex.yy.cc parser/parser.tab.cc -o main.out $(RELEASE_OPTIONS)
 
-release.out:
-	g++ main.cpp -o main.out $(RELEASE_OPTIONS)
-	g++ testing/determinant_tests/random.cpp -o random.out $(RELEASE_OPTIONS)
+debug: 
+	$(MAKE) -C parser
+	g++ main.cpp parser/lex.yy.cc parser/parser.tab.cc -o main.out $(DEBUG_OPTIONS)	
 
 
