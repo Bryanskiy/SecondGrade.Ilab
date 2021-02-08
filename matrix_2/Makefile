@@ -9,6 +9,7 @@ all:
 
 debug: 
 	$(MAKE) -C parser
-	g++ main.cpp parser/lex.yy.cc parser/parser.tab.cc -o main.out $(DEBUG_OPTIONS)	
+	g++ main.cpp parser/lex.yy.cc parser/parser.tab.cc -o main.out $(DEBUG_OPTIONS)
+	g++ tests/matrix/determinant_tests/random.cpp -o matrix_determinant_random_test.out $(DEBUG_OPTIONS)
 
 

@@ -3,7 +3,7 @@
 #include <iostream>
 #include <vector>
 #include <variant>
-#include "../matrix.h"
+#include "../matrix/matrix.hpp"
 
 namespace circuit {
 
@@ -29,9 +29,10 @@ private:
 
 class circuit_t {
 public:
+    circuit_t(const std::vector<edge_t>& edges);
 
 private:
-    matrix::matrix_t<bool> incidence_matrix_;
+    matrix::matrix_t<int> incidence_matrix_;
     std::vector<edge_t> edges_;
 };
 
