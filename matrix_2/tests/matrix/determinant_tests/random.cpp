@@ -24,8 +24,8 @@ matrix::matrix_t<long double> generate_random_square_matrix(std::size_t size) {
 /* this func can change determinant sign */
 template<typename T>
 void swap_rows_and_cols(matrix::matrix_t<T>& m) {
-    std::size_t max_n = m.get_col_number();
-    std::size_t max_m = m.get_row_number();
+    std::size_t max_n = m.get_cols_number();
+    std::size_t max_m = m.get_rows_number();
 
     std::uniform_int_distribution<> dis_cols(0, max_n - 1);
     std::uniform_int_distribution<> dis_rows(0, max_m - 1);
@@ -112,7 +112,7 @@ void test_random_2(char* name, T ans) {
     }
 
     for(std::size_t i = 0; i < 10; ++i) {
-        matrix::matrix_t<long double> orthogonal = generate_orthogonal_matrix(m.get_row_number());
+        matrix::matrix_t<long double> orthogonal = generate_orthogonal_matrix(m.get_rows_number());
 
         if(std::abs(std::abs(orthogonal.det()) - 1) > matrix::tolerance) {
             std::cerr << "Incorrect orthogonal matrix" << std::endl;
