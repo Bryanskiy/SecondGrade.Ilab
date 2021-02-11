@@ -22,6 +22,7 @@ class matrix_t : private matrix_buff_t<T> {
     using matrix_buff_t<T>::construct_at;
     using matrix_buff_t<T>::at;
     using matrix_buff_t<T>::get_ptr;
+    using matrix_buff_t<T>::resize_buffer;
 
 public:
 
@@ -86,6 +87,51 @@ matrix_t<T>::matrix_t(std::size_t rows, std::size_t cols, T val /* = T() */) : m
         }
     }
 }
+
+template<typename T>
+matrix_t<T>::matrix_t(const std::initializer_list<std::initializer_list<T>>& init) : matrix_buff_t<T>(0u, 0u) {
+    std::size_t m = init.size();
+    std::size_t n = 0u;
+
+    for(const auto& row : init) {
+        n = std::max(n, row.size());
+    }
+
+    std::size_t current_n = 0u;
+    std::size_t current_m = 0u;
+    resize_buffer(m, n);
+    for(const auto& row : init) {
+        for(const auto& elem : row) {
+            construct_at(current_m, current_n, elem);
+            ++current_n;
+        }
+
+        for(std::size_t i = current_n; i < n; ++i) {
+            construct_at(current_m, i, T());
+        }
+
+        ++current_m; current_n = 0;
+    }
+}
+
+template<typename T>
+void matrix_t<T>::resize(std::size_t rows, std::size_t cols) {
+    matrix_t<T> tmp;
+    tmp.resize_buffer(rows, cols);
+
+    for(std::size_t i = 0, maxi = rows; i < maxi; ++i) {
+        for(std::size_t j = 0, maxj = cols; j < maxj; ++j) {
+            T val = T();
+            if((i < get_rows_number()) && (j < get_cols_number())) {
+               val = at(i, j); 
+            }
+
+            tmp.construct_at(i, j, val);
+        }
+    }
+
+    swap_buffers(tmp);
+}    
 
 template<typename T>
 matrix_t<T>& matrix_t<T>::operator=(const matrix_t& rhs) {

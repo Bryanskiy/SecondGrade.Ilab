@@ -14,7 +14,7 @@ protected:
     ~matrix_buff_t();
 
     void swap_buffers(matrix_buff_t& rhs) noexcept;
-
+    void resize_buffer(std::size_t rows, std::size_t cols);
     void construct_at(std::size_t row, std::size_t col, const T& elem);
 
     /* this method need only for operator[] overload, bad idia, but i don't know any other solution */
@@ -76,6 +76,12 @@ void matrix_buff_t<T>::swap_buffers(matrix_buff_t& rhs) noexcept {
     std::swap(size_, rhs.size_);
     std::swap(capacity_, rhs.capacity_);
     std::swap(matrix_size_, rhs.matrix_size_);
+}
+
+template<typename T>
+void matrix_buff_t<T>::resize_buffer(std::size_t rows, std::size_t cols) {
+    matrix_buff_t<T> tmp(rows, cols);
+    swap_buffers(tmp);
 }
 
 template<typename T>
