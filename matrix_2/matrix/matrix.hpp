@@ -15,6 +15,11 @@ namespace matrix {
 
 const long double tolerance = 1e-5;
 
+template<typename T, typename U>
+bool equal(const T& lhs, const U& rhs) {
+    return (std::abs(lhs - rhs) < tolerance); 
+}
+
 template<typename T>
 class matrix_t : private matrix_buff_t<T> {
 
@@ -63,8 +68,41 @@ std::ostream& operator<<(std::ostream& out,  const matrix::matrix_t<T>& m);
 template<typename T>
 std::istream& operator>>(std::istream& in,  matrix::matrix_t<T>& m);
 
+/*
+    ***multiplication of 2 matrices***
+
+    function contract:
+
+        1)  lhs matrix: m * r
+            rhs matrix: r * n
+
+    breach of contract - UB        
+*/
 template<typename T>
 matrix_t<T> multiplication(const matrix_t<T>& lhs, const matrix_t<T>& rhs);
+
+/* 
+    ***solve linear system***
+
+    fuction contract:
+
+        1) right matrix must be m * 1
+           left matrix must be m * n
+
+        2) return value: partial solution + fundamental matrix 
+           partial solution is a matrix m * 1
+
+    breach of contract - UB
+*/
+template<typename T>
+std::pair<matrix_t<T>, matrix_t<T>> solve_linear_system(const matrix_t<T>& left, const matrix_t<T>& right);
+
+
+template<typename T>
+void gauss_straight(matrix_t<T>& m);
+
+template<typename T>
+void gauss_reverse(matrix_t<T>& m);
 
 /* ------------------------------------------------------------------
                         IMPLEMENTATION
@@ -252,7 +290,7 @@ std::ostream& matrix::operator<<(std::ostream& out,  const matrix::matrix_t<T>& 
 
     for(std::size_t i = 0; i < m.get_rows_number(); ++i) {
         for(std::size_t j = 0; j < m.get_cols_number(); ++j) {
-            out << std::setw(8) << std::setprecision(matrix::tolerance) << m[i][j] << ' ';
+            out << std::setw(8) << m[i][j] << ' ';
         }
 
         out << std::endl;
@@ -267,8 +305,8 @@ std::istream& matrix::operator>>(std::istream& in,  matrix::matrix_t<T>& m) {
         return in;
     }
 
-    for(std::size_t i = 0, maxi = m.get_cols_number(); i < maxi; ++i) {
-        for(std::size_t j = 0, maxj = m.get_rows_number(); j < maxj; ++j) {
+    for(std::size_t i = 0, maxi = m.get_rows_number(); i < maxi; ++i) {
+        for(std::size_t j = 0, maxj = m.get_cols_number(); j < maxj; ++j) {
             in >> m[i][j];
         }
     }
@@ -278,10 +316,6 @@ std::istream& matrix::operator>>(std::istream& in,  matrix::matrix_t<T>& m) {
 
 template<typename T>
 matrix::matrix_t<T> matrix::multiplication(const matrix_t<T>& lhs, const matrix_t<T>& rhs) {
-    if(lhs.get_cols_number() != rhs.get_rows_number()) {
-        return matrix_t<T>{};
-    }
-
     std::size_t ret_m = lhs.get_rows_number();
     std::size_t ret_n = rhs.get_cols_number();
 
@@ -299,6 +333,84 @@ matrix::matrix_t<T> matrix::multiplication(const matrix_t<T>& lhs, const matrix_
     }
 
     return ret;
+}
+
+template<typename T>
+std::pair<matrix_t<T>, matrix_t<T>> solve_linear_system(const matrix_t<T>& left, const matrix_t<T>& right) {
+}
+
+template<typename T>
+void gauss_straight(matrix_t<T>& m) {
+    std::size_t current_m = 0;
+    std::size_t current_n = 0;
+
+    std::size_t max_m = m.get_rows_number();
+    std::size_t max_n = m.get_cols_number();
+
+    while((current_m < max_m) && (current_n < max_n)) {
+        std::size_t max_elem = m.max_abs_col_elem(current_n, current_m, max_m);
+        if(equal(m[max_elem][current_n], 0.0)) {
+            ++current_n;
+            continue;
+        }
+
+        if(max_elem != current_m) {
+            m.swap_rows(max_elem, current_m);
+        }
+
+        for(std::size_t i = current_m + 1; i < max_m; ++i) {
+            long double f = m[i][current_n] / m[current_m][current_n];
+            m[i][current_n] = 0.0;
+            for (std::size_t j = current_n + 1; j < max_n; ++j) {
+                m[i][j] = m[i][j] - f * m[current_m][j];
+
+                /* for accuracy of calculations */
+                if(equal(m[i][j], 0.0)) {
+                    m[i][j] = 0.0;
+                }
+            }
+        }
+
+        ++current_m;
+        ++current_n;
+    }
+}
+
+template<typename T>
+void gauss_reverse(matrix_t<T>& m) {
+    std::size_t current_m = 0;
+    std::size_t current_n = 0;
+
+    std::size_t max_m = m.get_rows_number();
+    std::size_t max_n = m.get_cols_number();
+
+    while((current_m < max_m) && (current_n < max_n)) {
+        if(equal(m[current_m][current_m], 0.0)) {
+            ++current_n;
+            continue;
+        }
+
+        for(std::size_t i = 0; i < current_m; ++i) {
+            if(equal(m[i][current_n], 0.0)) {
+                continue;
+            }
+
+            long double f = m[current_m][current_n] / m[i][current_n];
+            for (std::size_t j = current_n + 1; j < max_n; ++j) {
+                m[i][j] = f * m[i][j] - m[current_m][j];
+
+                /* for accuracy of calculations */
+                if(equal(m[i][j], 0.0)) {
+                    m[i][j] = 0.0;
+                }
+            }
+
+            m[i][current_n] = 0.0;
+        }
+
+        ++current_m;
+        ++current_n;
+    }
 }
 
 } /* namespace matrix */

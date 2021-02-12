@@ -19,12 +19,11 @@ public:
     double get_resistance() const {return resistance_;}
     double get_eds() const {return eds_;}
 
-
 private:
     std::size_t v1_, v2_;
-    double current_;
     double resistance_;
     double eds_;
+    double current_;
 };
 
 class circuit_t {
@@ -32,8 +31,13 @@ public:
     circuit_t(const std::vector<edge_t>& edges);
 
 private:
-    matrix::matrix_t<int> incidence_matrix_;
     std::vector<edge_t> edges_;
+    matrix::matrix_t<int> incidence_matrix_;
+
+#ifdef DEBUG
+public:
+    void dump() { std::cout << incidence_matrix_ << std::endl;}
+#endif
 };
 
 } /* namespace circuit */ 

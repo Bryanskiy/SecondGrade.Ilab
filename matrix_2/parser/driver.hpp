@@ -25,7 +25,10 @@ public:
         file_.open(file_name_);
         plexer_->switch_streams(file_, std::cout);
     }
-    ~driver_t() {delete plexer_;}
+    ~driver_t() {
+        delete plexer_;
+        file_.close();
+    }
 
     void push(std::size_t v1, std::size_t v2, double resistance, double voltage) {
         edges_.push_back({v1, v2, resistance, voltage});
