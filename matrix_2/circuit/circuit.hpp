@@ -29,6 +29,27 @@ private:
 class circuit_t {
 public:
     circuit_t(const std::vector<edge_t>& edges);
+    void calculate_currents();
+
+private:
+
+    /*
+     * Definition : a loop is said to be independent if it contains at least one branch which is not a part of any other independent loop.
+     * 
+     *  this definition suggests an algorithm :
+     * 
+     * 1) in infinity loop recursive call dfs to the next vertex (1 -> 2 -> ... -> last -> 1 -> ... )
+     * 2) use depth-first search for find independent cycle
+     * 3) mark every edge in independed loop
+     * 4) at least 1 time need to go to the edge, that is not present in the currently found independent cycles (i call it independent edge)
+     * 5) if we can't go anywere from all vertices - end
+    */
+    std::vector<std::vector<edge_t>> find_independent_cycles() const;
+    void dfs_cycle(std::size_t& start_v, std::size_t& prev_v, std::size_t& current_v, bool include_independent_edge, 
+                   std::vector<edge_t>& current_pass, std::vector<int>& marks) const;
+
+    void dfs_cycle_handler(std::size_t start_v, std::size_t prev_v, std::size_t current_v,  
+                   std::vector<edge_t>& current_pass, std::vector<int>& marks) const;               
 
 private:
     std::vector<edge_t> edges_;
