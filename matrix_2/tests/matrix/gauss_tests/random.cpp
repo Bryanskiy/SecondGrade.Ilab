@@ -115,6 +115,31 @@ void cases_runner() {
                                                              {0   , 1 } };
         case_run(name, {partly_solution, fundamental_matrix}); 
     }
+
+    {
+         /*  !joint system */
+         char name[] = "tests/matrix/gauss_tests/cases/case_2.txt";
+         matrix::matrix_t<long double> partly_solution;
+         matrix::matrix_t<long double> fundamental_matrix;
+         case_run(name, {partly_solution, fundamental_matrix});
+    }
+
+    {
+        /* joint, !homogeneous system m * n */
+        char name[] = "tests/matrix/gauss_tests/cases/case_3.txt";
+        matrix::matrix_t<long double> partly_solution = {{ 5.0   / 3.0}, 
+                                                         { -8.0  / 3.0}, 
+                                                         {0.0},
+                                                         {0.0},
+                                                         {0.0}};
+        matrix::matrix_t<long double> fundamental_matrix = { {  4.0 / 3.0  , -22.0 / 3.0 , -14.0 / 15.0 },
+                                                             { -22.0 / 3.0 , 32.0 / 15.0 , 23.0 / 15.0  },
+                                                             { 1           , 0           , 0            },
+                                                             { 0           , 1           , 0            },
+                                                             { 0           , 0           , 1            } };
+
+        case_run(name, {partly_solution, fundamental_matrix}); 
+    }
 }
 
 int main() {

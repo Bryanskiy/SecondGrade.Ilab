@@ -398,6 +398,21 @@ std::pair<matrix_t<T>, matrix_t<T>> solve_linear_system(const matrix_t<T>& left,
     gauss_straight(tmp);
     gauss_reverse(tmp);
 
+    /* check for joint system */
+    for(std::size_t i = 0, maxi = tmp.get_rows_number(); i < maxi; ++i) {
+        bool flag = true; /* if all elements equal to 0 - true */
+        for(std::size_t j = 0, maxj = tmp.get_cols_number() - 1; j < maxj; ++j) {
+            if(!equal(tmp[i][j], 0.0)) {
+                flag = false;
+                break;
+            }
+        }
+
+        if(flag && (!equal(tmp[i][tmp.get_cols_number() - 1], 0.0))) {
+            return std::make_pair(matrix_t<T>(0u, 0u), matrix_t<T>(0u, 0u));
+        }
+    }
+
     std::size_t current_m = 0;
     std::size_t current_n = 0;
 
