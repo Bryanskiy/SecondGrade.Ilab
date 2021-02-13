@@ -32,7 +32,6 @@ public:
     void calculate_currents();
 
 private:
-
     /*
      * Definition : a loop is said to be independent if it contains at least one branch which is not a part of any other independent loop.
      * 
@@ -54,11 +53,6 @@ private:
 private:
     std::vector<edge_t> edges_;
     matrix::matrix_t<int> incidence_matrix_;
-
-#ifdef DEBUG
-public:
-    void dump() { std::cout << incidence_matrix_ << std::endl;}
-#endif
 };
 
 } /* namespace circuit */ 

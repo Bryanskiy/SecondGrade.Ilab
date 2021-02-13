@@ -17,6 +17,38 @@ circuit_t::circuit_t(const std::vector<edge_t>& edges) : edges_(edges) {
 
 void circuit_t::calculate_currents() {
     std::vector<std::vector<edge_t>> independet_loops = find_independent_cycles();
+    std::size_t independet_loops_count = independet_loops.size();
+    matrix::matrix_t<double> system(incidence_matrix_.get_rows_number() + independet_loops_count, edges_.size());
+    matrix::matrix_t<double> right(system.get_rows_number(), 1);
+
+    /*second rule*/
+    for(std::size_t i = 0, maxi = independet_loops_count; i < maxi; ++i) {
+        edge_t prev_edge = independet_loops[0].back();
+        double eds = 0.0;
+        for(std::size_t j = 0, maxj = independet_loops[i].size(); j < maxj; ++j) {
+            edge_t curr_edge = independet_loops[i][j];
+
+            bool minus = false;
+            if(prev_edge.get_v2() != curr_edge.get_v1()) {
+                minus = true;
+            }
+
+            system[i][j] = curr_edge.get_resistance() * (minus ? (-1.0) : (1.0));
+            eds += curr_edge.get_eds() * (minus ? (-1.0) : (1.0));
+            prev_edge = curr_edge;
+        }
+        right[i][0] = eds;
+    }
+
+
+    /*first rule*/
+    for (std::size_t i = 1u, maxi = incidence_matrix_.get_rows_number(); i < maxi; ++i) {
+        for(std::size_t j = 0u, maxj = incidence_matrix_.get_cols_number(); j < maxj; ++j) {
+            if (incidence_matrix_[i][j]) {
+                system[independet_loops_count + i][j] = ((edges_[j].get_v2() == i) ? 1.0 : -1.0);
+            }
+        }
+    }
 }
 
 std::vector<std::vector<edge_t>> circuit_t::find_independent_cycles() const {
