@@ -21,7 +21,7 @@ protected:
     T* get_ptr(std::size_t row, std::size_t col) const {return array_ + col + matrix_size_.cols_ * row;}
 
     T& at(std::size_t row, std::size_t col) {return array_[col + matrix_size_.cols_ * row];}
-    const T& at(std::size_t row, std::size_t col) const {return (const_cast<matrix_buff_t<T>&>(*this)).at(row, col);}
+    const T& at(std::size_t row, std::size_t col) const {return array_[col + matrix_size_.cols_ * row];}
 
     std::size_t get_rows_number() const {return matrix_size_.rows_;}
     std::size_t get_cols_number() const {return matrix_size_.cols_;}
