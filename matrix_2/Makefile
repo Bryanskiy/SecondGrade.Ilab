@@ -11,8 +11,8 @@ all:
 debug: 
 	$(MAKE) -C parser
 	g++ main.cpp circuit/circuit.cpp parser/lex.yy.cc parser/parser.tab.cc -o main.out $(DEBUG_OPTIONS)
-	g++ tests/matrix/determinant_tests/random.cpp -o matrix_determinant_random_test.out $(DEBUG_OPTIONS)
-	g++ tests/matrix/gauss_tests/random.cpp -o matrix_gauss_random_test.out $(DEBUG_OPTIONS)
+	g++ tests/matrix/determinant_tests/tests.cpp -o matrix_determinant_tests.out $(DEBUG_OPTIONS)
+	g++ tests/matrix/gauss_tests/tests.cpp -o matrix_gauss_tests.out $(DEBUG_OPTIONS)
 	g++ tests/matrix/unit_tests/main.cpp -o matrix_unit_test.out  $(GTEST_OPTIONS)
 
 

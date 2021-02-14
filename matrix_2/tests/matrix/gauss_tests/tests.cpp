@@ -1,7 +1,9 @@
 /* ---------------------------------------------------------------------------
-This test check only gauss algorithm invariant:
+First test check only gauss algorithm invariant:
     1) after straight pass matrix transports to step matrix
     2) after reverse pass all elements in the same col before step equal to 0 
+
+Second test check 'cases' folder tests    
 -----------------------------------------------------------------------------*/
 
 #include "../../../matrix/matrix.hpp"
