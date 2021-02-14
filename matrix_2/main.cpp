@@ -11,5 +11,6 @@ int main(int argc, char** argv) {
     driver.parse();
     std::vector<circuit::edge_t> edges = driver.get_edges();
     circuit::circuit_t circuit(edges);
-    circuit.calculate_currents();                       
+    circuit.calculate_currents();   
+    circuit.print_currents();                    
 }

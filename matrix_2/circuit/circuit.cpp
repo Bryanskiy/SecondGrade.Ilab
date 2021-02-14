@@ -3,37 +3,44 @@
 namespace circuit {
 
 circuit_t::circuit_t(const std::vector<edge_t>& edges) : edges_(edges) {
+    std::size_t i = 0;
     for(const auto& edge : edges_) {
+        edges_[i].set_id(i);
         std::size_t new_cols = incidence_matrix_.get_cols_number() + 1;
         std::size_t new_rows = std::max(incidence_matrix_.get_rows_number() , std::max(edge.get_v1(), edge.get_v2() + 1));
         incidence_matrix_.resize(new_rows, new_cols);
 
         incidence_matrix_[edge.get_v1()][incidence_matrix_.get_cols_number() - 1] = 1;
-        incidence_matrix_[edge.get_v2()][incidence_matrix_.get_cols_number() - 1] = 1;  
+        incidence_matrix_[edge.get_v2()][incidence_matrix_.get_cols_number() - 1] = 1;
+        ++i;
     }
+}
 
-    std::cout << incidence_matrix_ << std::endl;
+void circuit_t::print_currents() const {
+    for(const auto& edge : edges_) {
+        std::cout << edge.get_v1() << " -- " << edge.get_v2() << ": " << edge.get_current() << " A" << std::endl; 
+    }
 }
 
 void circuit_t::calculate_currents() {
-    std::vector<std::vector<edge_t>> independet_loops = find_independent_cycles();
-    std::size_t independet_loops_count = independet_loops.size();
-    matrix::matrix_t<double> system(incidence_matrix_.get_rows_number() + independet_loops_count, edges_.size());
+    std::vector<std::vector<edge_t>> independent_cycles = find_independent_cycles();
+    std::size_t independent_cycles_count = independent_cycles.size();
+    matrix::matrix_t<double> system(incidence_matrix_.get_rows_number() + independent_cycles_count - 2, edges_.size());
     matrix::matrix_t<double> right(system.get_rows_number(), 1);
 
     /*second rule*/
-    for(std::size_t i = 0, maxi = independet_loops_count; i < maxi; ++i) {
-        edge_t prev_edge = independet_loops[0].back();
+    for(std::size_t i = 0, maxi = independent_cycles_count; i < maxi; ++i) {
+        edge_t prev_edge = independent_cycles[0].back();
         double eds = 0.0;
-        for(std::size_t j = 0, maxj = independet_loops[i].size(); j < maxj; ++j) {
-            edge_t curr_edge = independet_loops[i][j];
+        bool minus = false;
+        for(std::size_t j = 0, maxj = independent_cycles[i].size(); j < maxj; ++j) {
+            edge_t curr_edge = independent_cycles[i][j];
 
-            bool minus = false;
-            if(prev_edge.get_v2() != curr_edge.get_v1()) {
-                minus = true;
+            if((j != 0) && (prev_edge.get_v2() != curr_edge.get_v1())) {
+                minus = !minus;
             }
 
-            system[i][j] = curr_edge.get_resistance() * (minus ? (-1.0) : (1.0));
+            system[i][curr_edge.get_id()] = curr_edge.get_resistance() * (minus ? (-1.0) : (1.0));
             eds += curr_edge.get_eds() * (minus ? (-1.0) : (1.0));
             prev_edge = curr_edge;
         }
@@ -42,13 +49,25 @@ void circuit_t::calculate_currents() {
 
 
     /*first rule*/
-    for (std::size_t i = 1u, maxi = incidence_matrix_.get_rows_number(); i < maxi; ++i) {
+    for (std::size_t i = 2u, maxi = incidence_matrix_.get_rows_number(); i < maxi; ++i) {
         for(std::size_t j = 0u, maxj = incidence_matrix_.get_cols_number(); j < maxj; ++j) {
             if (incidence_matrix_[i][j]) {
-                system[independet_loops_count + i][j] = ((edges_[j].get_v2() == i) ? 1.0 : -1.0);
+                system[independent_cycles_count + i - 2][j] = ((edges_[j].get_v2() == i) ? 1.0 : -1.0);
             }
         }
     }
+#ifdef DEBUG
+    std::cout << "----------------------System----------------------" << std::endl;
+    std::cout << "Left: " << std::endl;
+    std::cout << system << std::endl;
+    std::cout << "Right: " << std::endl;
+    std::cout << right << std::endl;
+#endif
+    auto ret = matrix::solve_linear_system(system, right);
+    for(std::size_t i = 0, maxi = ret.first.get_rows_number(); i < maxi; ++i) {
+        edges_[i].set_current(ret.first[i][0]);
+    }
+
 }
 
 std::vector<std::vector<edge_t>> circuit_t::find_independent_cycles() const {
