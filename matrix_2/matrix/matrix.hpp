@@ -442,8 +442,12 @@ std::pair<matrix_t<T>, matrix_t<T>> solve_linear_system(const matrix_t<T>& left,
     }
 
     matrix_t<T> partial_solution(tmp.get_cols_number() - 1, 1);
-    for(std::size_t i = 0, maxi = tmp.get_rows_number(); i < maxi; ++i) {
+    for(std::size_t i = 0, maxi = partial_solution.get_rows_number(); i < maxi; ++i) {
         partial_solution[i][0] = tmp[i][tmp.get_cols_number() - 1]; 
+    }
+
+    if((tmp.get_cols_number() == 1) || (tmp.get_cols_number() == (rank + 1))) {
+        return {partial_solution, matrix_t<T>()};
     }
 
     matrix_t<T> fundamental_matrix(tmp.get_cols_number() - 1, tmp.get_cols_number() - rank - 1);

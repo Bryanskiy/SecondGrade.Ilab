@@ -50,11 +50,11 @@ private:
      * 5) if we can't go anywere from all vertices - end
     */
     std::vector<std::vector<edge_t>> find_independent_cycles() const;
-    void dfs_cycle(std::size_t& start_v, std::size_t& prev_v, std::size_t& current_v, bool include_independent_edge, 
-                   std::vector<edge_t>& current_pass, std::vector<int>& marks) const;
+    void dfs_cycle(std::size_t start_v, std::size_t& current_v, bool include_independent_edge, 
+                   std::vector<edge_t>& current_pass, const std::vector<int>& marks) const;
 
-    void dfs_cycle_handler(std::size_t start_v, std::size_t prev_v, std::size_t current_v,  
-                   std::vector<edge_t>& current_pass, std::vector<int>& marks) const;               
+    void dfs_cycle_handler(std::size_t start_v, std::size_t current_v,  
+                   std::vector<edge_t>& current_pass, const std::vector<int>& marks) const;               
 
 private:
     std::vector<edge_t> edges_;
