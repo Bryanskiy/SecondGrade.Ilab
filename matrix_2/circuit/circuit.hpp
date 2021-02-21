@@ -16,6 +16,17 @@ public:
     void set_id(std::size_t id) {id_ = id;} 
     void set_current(double current) {current_ = current;}
 
+    bool have_incident_vertex(const edge_t& rhs) {
+        if((get_v1() == rhs.get_v1()) || 
+           (get_v1() == rhs.get_v2()) ||
+           (get_v2() == rhs.get_v1()) ||
+           (get_v2() == rhs.get_v2())) {
+              return true;
+          }  
+
+          return false;
+    }
+
     std::size_t get_id() const {return id_;}
     std::size_t get_v1() const {return v1_;}
     std::size_t get_v2() const {return v2_;}
@@ -50,7 +61,7 @@ private:
      * 5) if we can't go anywere from all vertices - end
     */
     std::vector<std::vector<edge_t>> find_independent_cycles() const;
-    void dfs_cycle(std::size_t start_v, std::size_t& current_v, bool include_independent_edge, 
+    void dfs_cycle(std::size_t start_v, std::size_t& current_v, bool independent_edge, 
                    std::vector<edge_t>& current_pass, const std::vector<int>& marks) const;
 
     void dfs_cycle_handler(std::size_t start_v, std::size_t current_v,  

@@ -380,7 +380,7 @@ namespace yy {
       // resist
       char dummy1[sizeof (float)];
 
-      // VERTEX
+      // INTEGER
       // vertex
       char dummy2[sizeof (size_t)];
     };
@@ -431,7 +431,7 @@ namespace yy {
     END_OF_FILE = 0,               // END_OF_FILE
     YYerror = 256,                 // error
     YYUNDEF = 257,                 // "invalid token"
-    VERTEX = 258,                  // VERTEX
+    INTEGER = 258,                 // INTEGER
     DOUBLE = 259,                  // DOUBLE
     EDGE = 260,                    // "--"
     COMMA = 261,                   // ","
@@ -459,7 +459,7 @@ namespace yy {
         S_YYEOF = 0,                             // END_OF_FILE
         S_YYerror = 1,                           // error
         S_YYUNDEF = 2,                           // "invalid token"
-        S_VERTEX = 3,                            // VERTEX
+        S_INTEGER = 3,                           // INTEGER
         S_DOUBLE = 4,                            // DOUBLE
         S_EDGE = 5,                              // "--"
         S_COMMA = 6,                             // ","
@@ -515,7 +515,7 @@ namespace yy {
         value.move< float > (std::move (that.value));
         break;
 
-      case symbol_kind::S_VERTEX: // VERTEX
+      case symbol_kind::S_INTEGER: // INTEGER
       case symbol_kind::S_vertex: // vertex
         value.move< size_t > (std::move (that.value));
         break;
@@ -597,7 +597,7 @@ switch (yykind)
         value.template destroy< float > ();
         break;
 
-      case symbol_kind::S_VERTEX: // VERTEX
+      case symbol_kind::S_INTEGER: // INTEGER
       case symbol_kind::S_vertex: // vertex
         value.template destroy< size_t > ();
         break;
@@ -718,13 +718,13 @@ switch (yykind)
       symbol_type (int tok, size_t v, location_type l)
         : super_type(token_type (tok), std::move (v), std::move (l))
       {
-        YY_ASSERT (tok == token::VERTEX);
+        YY_ASSERT (tok == token::INTEGER);
       }
 #else
       symbol_type (int tok, const size_t& v, const location_type& l)
         : super_type(token_type (tok), v, l)
       {
-        YY_ASSERT (tok == token::VERTEX);
+        YY_ASSERT (tok == token::INTEGER);
       }
 #endif
     };
@@ -823,16 +823,16 @@ switch (yykind)
 #if 201103L <= YY_CPLUSPLUS
       static
       symbol_type
-      make_VERTEX (size_t v, location_type l)
+      make_INTEGER (size_t v, location_type l)
       {
-        return symbol_type (token::VERTEX, std::move (v), std::move (l));
+        return symbol_type (token::INTEGER, std::move (v), std::move (l));
       }
 #else
       static
       symbol_type
-      make_VERTEX (const size_t& v, const location_type& l)
+      make_INTEGER (const size_t& v, const location_type& l)
       {
-        return symbol_type (token::VERTEX, v, l);
+        return symbol_type (token::INTEGER, v, l);
       }
 #endif
 #if 201103L <= YY_CPLUSPLUS
@@ -1246,7 +1246,7 @@ switch (yykind)
     /// Constants.
     enum
     {
-      yylast_ = 15,     ///< Last index in yytable_.
+      yylast_ = 19,     ///< Last index in yytable_.
       yynnts_ = 7,  ///< Number of nonterminal symbols.
       yyfinal_ = 8 ///< Termination state number.
     };

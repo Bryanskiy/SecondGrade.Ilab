@@ -16,7 +16,7 @@ namespace yy { class driver_t; }
 namespace yy {parser::token_type yylex(parser::semantic_type* yylval, parser::location_type* l, driver_t* driver);}
 }
 
-%token <size_t>      VERTEX
+%token <size_t>      INTEGER
 
 /* wtf with double ??? */
        <float>       DOUBLE
@@ -35,7 +35,7 @@ namespace yy {parser::token_type yylex(parser::semantic_type* yylval, parser::lo
 %%
 
 program:  line program                                          {}
-        |   /* empty */ 	                                    {}
+        |   /* empty */ 	                                {}
 
 line:     expr LBREAK                                           {}
         |  expr END_OF_FILE                                     {}
@@ -45,11 +45,14 @@ expr :   vertex EDGE vertex COMMA resist SCOLON voltage         {
                                                                     driver->push($1, $3, $5, $7);
                                                                 }
 
-vertex: VERTEX                                                  {$$ = $1;}     
-resist: DOUBLE                                                  {$$ = $1;}    
+vertex: INTEGER                                                 {$$ = $1;}
+
+resist: DOUBLE                                                  {$$ = $1;}   
+      | INTEGER                                                 {$$ = $1;}
 
 voltage: DOUBLE V                                               {$$ = $1;}
-        | /* empty */                                           {$$ = 0.0;}
+       | INTEGER V                                              {$$ = $1;}
+       | /* empty */                                            {$$ = 0.0;}
 
 %%
 

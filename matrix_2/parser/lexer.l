@@ -19,7 +19,7 @@ LBREAK  [\n]+
 
 %%
 {UNOP}{0,1}{FDIGIT}              return yy::parser::token_type::DOUBLE;
-{UNOP}{0,1}{DIGIT}*              return yy::parser::token_type::VERTEX;
+{UNOP}{0,1}{DIGIT}*              return yy::parser::token_type::INTEGER;
 "--"                             return yy::parser::token_type::EDGE;
 ","                              return yy::parser::token_type::COMMA;
 ";"                              return yy::parser::token_type::SCOLON;

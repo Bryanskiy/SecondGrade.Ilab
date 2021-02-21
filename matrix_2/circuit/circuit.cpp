@@ -23,8 +23,19 @@ void circuit_t::print_currents() const {
 }
 
 void circuit_t::calculate_currents() {
-    std::vector<std::vector<edge_t>> independent_cycles = find_independent_cycles();
+    std::vector<std::vector<edge_t>> independent_cycles = find_independent_cycles();   
     std::size_t independent_cycles_count = independent_cycles.size();
+#ifdef DEBUG
+    std::cout << "----------------------Independent cycles----------------------" << std::endl;
+    for(std::size_t i = 0; i < independent_cycles_count; ++i) {
+        std::cout << "[" << i << "]: ";
+        for(std::size_t j = 0, maxj = independent_cycles[i].size(); j < maxj; ++j) {
+            std::cout << independent_cycles[i][j].get_v1() << " -- " << independent_cycles[i][j].get_v2() << " ";
+        }
+        std::cout << std::endl;
+    }
+#endif 
+
     matrix::matrix_t<double> system(incidence_matrix_.get_rows_number() + independent_cycles_count - 1, edges_.size());
     matrix::matrix_t<double> right(system.get_rows_number(), 1);
     
@@ -105,9 +116,27 @@ void circuit_t::dfs_cycle_handler(std::size_t start_v, std::size_t current_v,
                    std::vector<edge_t>& current_pass, const std::vector<int>& marks) const 
 {
     dfs_cycle(start_v, current_v, false, current_pass, marks);
+    if(!current_pass.size()) {
+        return;
+    }
+    /* cut : dfs find cycle with start_v vertex, but this cycle can contain more cycles, so we cut it */
+    for(std::size_t i = 2, maxi = current_pass.size() - 1; i < maxi ;++i) {
+        for(std::size_t j = 0, maxj = i - 1; j < maxj ;++j) {
+            if(current_pass[j].have_incident_vertex(current_pass[i])) {
+                if(j == 0) {
+                    current_pass = std::vector<edge_t>(current_pass.begin() + j + 1, current_pass.begin() + i + 1);
+                } else {
+                    current_pass.erase(current_pass.begin() + j + 1, current_pass.begin() + i + 1);
+                    i = 2;
+                    j = 0;
+                }    
+                return;
+            }
+        }
+    }
 }
 
-void circuit_t::dfs_cycle(std::size_t start_v, std::size_t& current_v, bool include_independent_edge, 
+void circuit_t::dfs_cycle(std::size_t start_v, std::size_t& current_v, bool independent_edge, 
                           std::vector<edge_t>& current_pass, const std::vector<int>& marks) const 
 {
     if((current_v == start_v) && (current_pass.size())) {
@@ -129,7 +158,7 @@ void circuit_t::dfs_cycle(std::size_t start_v, std::size_t& current_v, bool incl
             }
 
             /* check if we didn't find independent edge */
-            if(!include_independent_edge && marks[i]) {
+            if(!independent_edge && marks[i]) {
                 continue;
             }
 

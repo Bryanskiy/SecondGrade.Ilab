@@ -40,7 +40,7 @@ public:
 
     parser::token_type yylex(parser::location_type* l, parser::semantic_type* yylval) {
         parser::token_type token = static_cast<parser::token_type>(plexer_->yylex());
-        if(token == yy::parser::token_type::VERTEX) {
+        if(token == yy::parser::token_type::INTEGER) {
             yylval->as<int>() = std::atoi(plexer_->YYText());
         } else if(token == yy::parser::token_type::DOUBLE) {
             yylval->as<float>() = std::stof(plexer_->YYText());

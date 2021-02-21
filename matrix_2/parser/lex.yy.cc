@@ -786,7 +786,7 @@ return yy::parser::token_type::DOUBLE;
 case 2:
 YY_RULE_SETUP
 #line 22 "lexer.l"
-return yy::parser::token_type::VERTEX;
+return yy::parser::token_type::INTEGER;
 	YY_BREAK
 case 3:
 YY_RULE_SETUP

@@ -177,7 +177,7 @@ namespace yy {
         value.copy< float > (YY_MOVE (that.value));
         break;
 
-      case symbol_kind::S_VERTEX: // VERTEX
+      case symbol_kind::S_INTEGER: // INTEGER
       case symbol_kind::S_vertex: // vertex
         value.copy< size_t > (YY_MOVE (that.value));
         break;
@@ -217,7 +217,7 @@ namespace yy {
         value.move< float > (YY_MOVE (s.value));
         break;
 
-      case symbol_kind::S_VERTEX: // VERTEX
+      case symbol_kind::S_INTEGER: // INTEGER
       case symbol_kind::S_vertex: // vertex
         value.move< size_t > (YY_MOVE (s.value));
         break;
@@ -325,7 +325,7 @@ namespace yy {
         value.YY_MOVE_OR_COPY< float > (YY_MOVE (that.value));
         break;
 
-      case symbol_kind::S_VERTEX: // VERTEX
+      case symbol_kind::S_INTEGER: // INTEGER
       case symbol_kind::S_vertex: // vertex
         value.YY_MOVE_OR_COPY< size_t > (YY_MOVE (that.value));
         break;
@@ -351,7 +351,7 @@ namespace yy {
         value.move< float > (YY_MOVE (that.value));
         break;
 
-      case symbol_kind::S_VERTEX: // VERTEX
+      case symbol_kind::S_INTEGER: // INTEGER
       case symbol_kind::S_vertex: // vertex
         value.move< size_t > (YY_MOVE (that.value));
         break;
@@ -377,7 +377,7 @@ namespace yy {
         value.copy< float > (that.value);
         break;
 
-      case symbol_kind::S_VERTEX: // VERTEX
+      case symbol_kind::S_INTEGER: // INTEGER
       case symbol_kind::S_vertex: // vertex
         value.copy< size_t > (that.value);
         break;
@@ -402,7 +402,7 @@ namespace yy {
         value.move< float > (that.value);
         break;
 
-      case symbol_kind::S_VERTEX: // VERTEX
+      case symbol_kind::S_INTEGER: // INTEGER
       case symbol_kind::S_vertex: // vertex
         value.move< size_t > (that.value);
         break;
@@ -671,7 +671,7 @@ namespace yy {
         yylhs.value.emplace< float > ();
         break;
 
-      case symbol_kind::S_VERTEX: // VERTEX
+      case symbol_kind::S_INTEGER: // INTEGER
       case symbol_kind::S_vertex: // vertex
         yylhs.value.emplace< size_t > ();
         break;
@@ -704,7 +704,7 @@ namespace yy {
 
   case 3: // program: %empty
 #line 38 "parser.y"
-                                                                    {}
+                                                                {}
 #line 709 "parser.tab.cc"
     break;
 
@@ -734,32 +734,44 @@ namespace yy {
 #line 735 "parser.tab.cc"
     break;
 
-  case 8: // vertex: VERTEX
+  case 8: // vertex: INTEGER
 #line 48 "parser.y"
                                                                 {yylhs.value.as < size_t > () = yystack_[0].value.as < size_t > ();}
 #line 741 "parser.tab.cc"
     break;
 
   case 9: // resist: DOUBLE
-#line 49 "parser.y"
+#line 50 "parser.y"
                                                                 {yylhs.value.as < float > () = yystack_[0].value.as < float > ();}
 #line 747 "parser.tab.cc"
     break;
 
-  case 10: // voltage: DOUBLE "V"
+  case 10: // resist: INTEGER
 #line 51 "parser.y"
-                                                                {yylhs.value.as < float > () = yystack_[1].value.as < float > ();}
+                                                                {yylhs.value.as < float > () = yystack_[0].value.as < size_t > ();}
 #line 753 "parser.tab.cc"
     break;
 
-  case 11: // voltage: %empty
-#line 52 "parser.y"
-                                                                {yylhs.value.as < float > () = 0.0;}
+  case 11: // voltage: DOUBLE "V"
+#line 53 "parser.y"
+                                                                {yylhs.value.as < float > () = yystack_[1].value.as < float > ();}
 #line 759 "parser.tab.cc"
     break;
 
+  case 12: // voltage: INTEGER "V"
+#line 54 "parser.y"
+                                                                {yylhs.value.as < float > () = yystack_[1].value.as < size_t > ();}
+#line 765 "parser.tab.cc"
+    break;
 
-#line 763 "parser.tab.cc"
+  case 13: // voltage: %empty
+#line 55 "parser.y"
+                                                                {yylhs.value.as < float > () = 0.0;}
+#line 771 "parser.tab.cc"
+    break;
+
+
+#line 775 "parser.tab.cc"
 
             default:
               break;
@@ -941,7 +953,7 @@ namespace yy {
   {
     static const char *const yy_sname[] =
     {
-    "END_OF_FILE", "error", "invalid token", "VERTEX", "DOUBLE", "--", ",",
+    "END_OF_FILE", "error", "invalid token", "INTEGER", "DOUBLE", "--", ",",
   ";", "V", "\\n", "$accept", "voltage", "resist", "vertex", "program",
   "line", "expr", YY_NULLPTR
     };
@@ -993,69 +1005,72 @@ namespace yy {
 
 
 
-  const signed char parser::yypact_ninf_ = -4;
+  const signed char parser::yypact_ninf_ = -3;
 
   const signed char parser::yytable_ninf_ = -1;
 
   const signed char
   parser::yypact_[] =
   {
-      -2,    -4,    -4,    -3,     3,    -2,     0,     1,    -4,    -4,
-      -4,    -4,    -1,     2,    -4,     4,     6,     5,    -4,    -4
+      -2,    -3,    -3,     3,     6,    -2,     0,     7,    -3,    -3,
+      -3,    -3,     5,    -1,    -3,    -3,     8,     1,     4,     9,
+      -3,    -3,    -3
   };
 
   const signed char
   parser::yydefact_[] =
   {
        3,     8,     6,     0,     0,     3,     0,     0,     1,     2,
-       5,     4,     0,     0,     9,     0,    11,     0,     7,    10
+       5,     4,     0,     0,    10,     9,     0,    13,     0,     0,
+       7,    12,    11
   };
 
   const signed char
   parser::yypgoto_[] =
   {
-      -4,    -4,    -4,     7,    10,    -4,    -4
+      -3,    -3,    -3,    11,    14,    -3,    -3
   };
 
   const signed char
   parser::yydefgoto_[] =
   {
-      -1,    18,    15,     3,     4,     5,     6
+      -1,    20,    16,     3,     4,     5,     6
   };
 
   const signed char
   parser::yytable_[] =
   {
-      10,     1,     7,     8,     1,    13,    14,     2,     0,    11,
-      17,    16,     0,    19,    12,     9
+      10,     1,    14,    15,    18,    19,     8,     2,     7,    11,
+       1,    13,    21,     0,     0,    17,     0,    22,    12,     9
   };
 
   const signed char
   parser::yycheck_[] =
   {
-       0,     3,     5,     0,     3,     6,     4,     9,    -1,     9,
-       4,     7,    -1,     8,     7,     5
+       0,     3,     3,     4,     3,     4,     0,     9,     5,     9,
+       3,     6,     8,    -1,    -1,     7,    -1,     8,     7,     5
   };
 
   const signed char
   parser::yystos_[] =
   {
        0,     3,     9,    13,    14,    15,    16,     5,     0,    14,
-       0,     9,    13,     6,     4,    12,     7,     4,    11,     8
+       0,     9,    13,     6,     3,     4,    12,     7,     3,     4,
+      11,     8,     8
   };
 
   const signed char
   parser::yyr1_[] =
   {
        0,    10,    14,    14,    15,    15,    15,    16,    13,    12,
-      11,    11
+      12,    11,    11,    11
   };
 
   const signed char
   parser::yyr2_[] =
   {
        0,     2,     2,     0,     2,     2,     1,     7,     1,     1,
-       2,     0
+       1,     2,     2,     0
   };
 
 
@@ -1065,8 +1080,8 @@ namespace yy {
   const signed char
   parser::yyrline_[] =
   {
-       0,    37,    37,    38,    40,    41,    42,    44,    48,    49,
-      51,    52
+       0,    37,    37,    38,    40,    41,    42,    44,    48,    50,
+      51,    53,    54,    55
   };
 
   void
@@ -1145,9 +1160,9 @@ namespace yy {
   }
 
 } // yy
-#line 1149 "parser.tab.cc"
+#line 1164 "parser.tab.cc"
 
-#line 54 "parser.y"
+#line 57 "parser.y"
 
 
 namespace yy {
