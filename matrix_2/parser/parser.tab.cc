@@ -1,8 +1,8 @@
-// A Bison parser, made by GNU Bison 3.7.1.
+// A Bison parser, made by GNU Bison 3.7.5.312-f0811.
 
 // Skeleton implementation for Bison LALR(1) parsers in C++
 
-// Copyright (C) 2002-2015, 2018-2020 Free Software Foundation, Inc.
+// Copyright (C) 2002-2015, 2018-2021 Free Software Foundation, Inc.
 
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
@@ -15,7 +15,7 @@
 // GNU General Public License for more details.
 
 // You should have received a copy of the GNU General Public License
-// along with this program.  If not, see <http://www.gnu.org/licenses/>.
+// along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 // As a special exception, you may create a larger work that contains
 // part or all of the Bison parser skeleton and distribute that work
@@ -124,7 +124,7 @@ namespace yy {parser::token_type yylex(parser::semantic_type* yylval, parser::lo
 #else // !YYDEBUG
 
 # define YYCDEBUG if (false) std::cerr
-# define YY_SYMBOL_PRINT(Title, Symbol)  YYUSE (Symbol)
+# define YY_SYMBOL_PRINT(Title, Symbol)  YY_USE (Symbol)
 # define YY_REDUCE_PRINT(Rule)           static_cast<void> (0)
 # define YY_STACK_PRINT()                static_cast<void> (0)
 
@@ -172,8 +172,8 @@ namespace yy {
     switch (this->kind ())
     {
       case symbol_kind::S_DOUBLE: // DOUBLE
-      case symbol_kind::S_voltage: // voltage
       case symbol_kind::S_resist: // resist
+      case symbol_kind::S_voltage: // voltage
         value.copy< float > (YY_MOVE (that.value));
         break;
 
@@ -212,8 +212,8 @@ namespace yy {
     switch (this->kind ())
     {
       case symbol_kind::S_DOUBLE: // DOUBLE
-      case symbol_kind::S_voltage: // voltage
       case symbol_kind::S_resist: // resist
+      case symbol_kind::S_voltage: // voltage
         value.move< float > (YY_MOVE (s.value));
         break;
 
@@ -251,7 +251,7 @@ namespace yy {
   {}
 
   void
-  parser::by_kind::clear ()
+  parser::by_kind::clear () YY_NOEXCEPT
   {
     kind_ = symbol_kind::S_YYEMPTY;
   }
@@ -320,8 +320,8 @@ namespace yy {
     switch (that.kind ())
     {
       case symbol_kind::S_DOUBLE: // DOUBLE
-      case symbol_kind::S_voltage: // voltage
       case symbol_kind::S_resist: // resist
+      case symbol_kind::S_voltage: // voltage
         value.YY_MOVE_OR_COPY< float > (YY_MOVE (that.value));
         break;
 
@@ -346,8 +346,8 @@ namespace yy {
     switch (that.kind ())
     {
       case symbol_kind::S_DOUBLE: // DOUBLE
-      case symbol_kind::S_voltage: // voltage
       case symbol_kind::S_resist: // resist
+      case symbol_kind::S_voltage: // voltage
         value.move< float > (YY_MOVE (that.value));
         break;
 
@@ -372,8 +372,8 @@ namespace yy {
     switch (that.kind ())
     {
       case symbol_kind::S_DOUBLE: // DOUBLE
-      case symbol_kind::S_voltage: // voltage
       case symbol_kind::S_resist: // resist
+      case symbol_kind::S_voltage: // voltage
         value.copy< float > (that.value);
         break;
 
@@ -397,8 +397,8 @@ namespace yy {
     switch (that.kind ())
     {
       case symbol_kind::S_DOUBLE: // DOUBLE
-      case symbol_kind::S_voltage: // voltage
       case symbol_kind::S_resist: // resist
+      case symbol_kind::S_voltage: // voltage
         value.move< float > (that.value);
         break;
 
@@ -432,7 +432,7 @@ namespace yy {
   parser::yy_print_ (std::ostream& yyo, const basic_symbol<Base>& yysym) const
   {
     std::ostream& yyoutput = yyo;
-    YYUSE (yyoutput);
+    YY_USE (yyoutput);
     if (yysym.empty ())
       yyo << "empty symbol";
     else
@@ -441,7 +441,7 @@ namespace yy {
         yyo << (yykind < YYNTOKENS ? "token" : "nterm")
             << ' ' << yysym.name () << " ("
             << yysym.location << ": ";
-        YYUSE (yykind);
+        YY_USE (yykind);
         yyo << ')';
       }
   }
@@ -666,8 +666,8 @@ namespace yy {
       switch (yyr1_[yyn])
     {
       case symbol_kind::S_DOUBLE: // DOUBLE
-      case symbol_kind::S_voltage: // voltage
       case symbol_kind::S_resist: // resist
+      case symbol_kind::S_voltage: // voltage
         yylhs.value.emplace< float > ();
         break;
 
@@ -954,8 +954,8 @@ namespace yy {
     static const char *const yy_sname[] =
     {
     "END_OF_FILE", "error", "invalid token", "INTEGER", "DOUBLE", "--", ",",
-  ";", "V", "\\n", "$accept", "voltage", "resist", "vertex", "program",
-  "line", "expr", YY_NULLPTR
+  ";", "V", "\\n", "$accept", "program", "line", "expr", "vertex",
+  "resist", "voltage", YY_NULLPTR
     };
     return yy_sname[yysymbol];
   }
@@ -1012,58 +1012,58 @@ namespace yy {
   const signed char
   parser::yypact_[] =
   {
-      -2,    -3,    -3,     3,     6,    -2,     0,     7,    -3,    -3,
-      -3,    -3,     5,    -1,    -3,    -3,     8,     1,     4,     9,
+      -2,    -3,    -3,     6,    -2,     0,     3,    -3,    -3,    -3,
+      -3,     7,     5,    -1,    -3,    -3,     8,     1,     4,     9,
       -3,    -3,    -3
   };
 
   const signed char
   parser::yydefact_[] =
   {
-       3,     8,     6,     0,     0,     3,     0,     0,     1,     2,
-       5,     4,     0,     0,    10,     9,     0,    13,     0,     0,
+       3,     8,     6,     0,     3,     0,     0,     1,     2,     5,
+       4,     0,     0,     0,    10,     9,     0,    13,     0,     0,
        7,    12,    11
   };
 
   const signed char
   parser::yypgoto_[] =
   {
-      -3,    -3,    -3,    11,    14,    -3,    -3
+      -3,    10,    -3,    -3,     2,    -3,    -3
   };
 
   const signed char
   parser::yydefgoto_[] =
   {
-      -1,    20,    16,     3,     4,     5,     6
+       0,     3,     4,     5,     6,    16,    20
   };
 
   const signed char
   parser::yytable_[] =
   {
-      10,     1,    14,    15,    18,    19,     8,     2,     7,    11,
-       1,    13,    21,     0,     0,    17,     0,    22,    12,     9
+       9,     1,    14,    15,    18,    19,     7,     2,    11,    10,
+       1,    13,    21,    12,     8,    17,     0,    22
   };
 
   const signed char
   parser::yycheck_[] =
   {
        0,     3,     3,     4,     3,     4,     0,     9,     5,     9,
-       3,     6,     8,    -1,    -1,     7,    -1,     8,     7,     5
+       3,     6,     8,    11,     4,     7,    -1,     8
   };
 
   const signed char
   parser::yystos_[] =
   {
-       0,     3,     9,    13,    14,    15,    16,     5,     0,    14,
-       0,     9,    13,     6,     3,     4,    12,     7,     3,     4,
-      11,     8,     8
+       0,     3,     9,    11,    12,    13,    14,     0,    11,     0,
+       9,     5,    14,     6,     3,     4,    15,     7,     3,     4,
+      16,     8,     8
   };
 
   const signed char
   parser::yyr1_[] =
   {
-       0,    10,    14,    14,    15,    15,    15,    16,    13,    12,
-      12,    11,    11,    11
+       0,    10,    11,    11,    12,    12,    12,    13,    14,    15,
+      15,    16,    16,    16
   };
 
   const signed char
@@ -1154,7 +1154,7 @@ namespace yy {
     if (t <= 0)
       return symbol_kind::S_YYEOF;
     else if (t <= code_max)
-      return YY_CAST (symbol_kind_type, translate_table[t]);
+      return static_cast <symbol_kind_type> (translate_table[t]);
     else
       return symbol_kind::S_YYUNDEF;
   }

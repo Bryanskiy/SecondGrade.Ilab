@@ -2,10 +2,14 @@
 
 #include <iostream>
 #include <vector>
-#include <variant>
+#include <optional>
 #include "../matrix/matrix.hpp"
 
 namespace circuit {
+
+/*---------------------------------------------------------------------------------
+                                EDGE
+-----------------------------------------------------------------------------------*/
 
 class edge_t {
 public:
@@ -16,15 +20,13 @@ public:
     void set_id(std::size_t id) {id_ = id;} 
     void set_current(double current) {current_ = current;}
 
-    bool have_incident_vertex(const edge_t& rhs) {
-        if((get_v1() == rhs.get_v1()) || 
-           (get_v1() == rhs.get_v2()) ||
-           (get_v2() == rhs.get_v1()) ||
-           (get_v2() == rhs.get_v2())) {
-              return true;
-          }  
+    std::optional<std::size_t> have_incident_vertex(const edge_t& rhs) {
+        if      (get_v1() == rhs.get_v1()) { return get_v1(); }
+        else if (get_v1() == rhs.get_v2()) { return get_v2(); }
+        else if (get_v2() == rhs.get_v1()) { return get_v2(); }
+        else if (get_v2() == rhs.get_v2()) { return get_v2(); }  
 
-          return false;
+        return std::optional<std::size_t>();
     }
 
     std::size_t get_id() const {return id_;}
@@ -42,6 +44,12 @@ private:
     double current_;
 };
 
+bool operator==(const edge_t& lhs, const edge_t& rhs);
+
+/*---------------------------------------------------------------------------------
+                                CIRCUIT 
+-----------------------------------------------------------------------------------*/
+
 class circuit_t {
 public:
     circuit_t(const std::vector<edge_t>& edges);
@@ -49,23 +57,10 @@ public:
     void print_currents() const;
 
 private:
-    /*
-     * Definition : a loop is said to be independent if it contains at least one branch which is not a part of any other independent loop.
-     * 
-     *  this definition suggests an algorithm :
-     * 
-     * 1) in infinity loop recursive call dfs to the next vertex (1 -> 2 -> ... -> last -> 1 -> ... )
-     * 2) use depth-first search for find independent cycle
-     * 3) mark every edge in independed loop
-     * 4) at least 1 time need to go to the edge, that is not present in the currently found independent cycles (i call it independent edge)
-     * 5) if we can't go anywere from all vertices - end
-    */
-    std::vector<std::vector<edge_t>> find_independent_cycles() const;
-    void dfs_cycle(std::size_t start_v, std::size_t& current_v, bool independent_edge, 
-                   std::vector<edge_t>& current_pass, const std::vector<int>& marks) const;
 
-    void dfs_cycle_handler(std::size_t start_v, std::size_t current_v,  
-                   std::vector<edge_t>& current_pass, const std::vector<int>& marks) const;               
+    std::vector<std::vector<edge_t>> find_cycles() const;       
+    std::vector<edge_t> dfs_cycle_handler(const edge_t& edge) const;     
+    void dfs_cycle(std::size_t start_v, std::size_t current_v, std::vector<edge_t>& current_pass) const;
 
 private:
     std::vector<edge_t> edges_;

@@ -2,6 +2,19 @@
 
 namespace circuit {
 
+/*---------------------------------------------------------------------------------
+                                EDGE
+-----------------------------------------------------------------------------------*/
+
+bool operator==(const edge_t& lhs, const edge_t& rhs) {
+    return lhs.get_id() == rhs.get_id();
+}
+
+/*---------------------------------------------------------------------------------
+                                CIRCUIT 
+-----------------------------------------------------------------------------------*/
+
+
 circuit_t::circuit_t(const std::vector<edge_t>& edges) : edges_(edges) {
     std::size_t i = 0;
     for(const auto& edge : edges_) {
@@ -23,7 +36,7 @@ void circuit_t::print_currents() const {
 }
 
 void circuit_t::calculate_currents() {
-    std::vector<std::vector<edge_t>> independent_cycles = find_independent_cycles();   
+    std::vector<std::vector<edge_t>> independent_cycles = find_cycles();   
     std::size_t independent_cycles_count = independent_cycles.size();
 #ifdef DEBUG
     std::cout << "----------------------Independent cycles----------------------" << std::endl;
@@ -43,16 +56,20 @@ void circuit_t::calculate_currents() {
     for(std::size_t i = 0, maxi = independent_cycles_count; i < maxi; ++i) {
         edge_t prev_edge = independent_cycles[i].back();
         double eds = 0.0;
-        bool minus = false;
+        float sign = 1.0;
         for(std::size_t j = 0, maxj = independent_cycles[i].size(); j < maxj; ++j) {
             edge_t curr_edge = independent_cycles[i][j];
 
-            if((j != 0) && (prev_edge.get_v2() != curr_edge.get_v1())) {
-                minus = !minus;
+            std::size_t incidence_vertex = curr_edge.have_incident_vertex(prev_edge).value();
+
+            if((prev_edge.get_v1() == incidence_vertex) && (curr_edge.get_v1() == incidence_vertex)) {
+                sign *= -1.0;
+            } else if((prev_edge.get_v2() == incidence_vertex) && (curr_edge.get_v2() == incidence_vertex)) {
+                sign *= -1.0;
             }
 
-            system[i][curr_edge.get_id()] = curr_edge.get_resistance() * (minus ? (-1.0) : (1.0));
-            eds += curr_edge.get_eds() * (minus ? (-1.0) : (1.0));
+            system[i][curr_edge.get_id()] = curr_edge.get_resistance() * sign;
+            eds += curr_edge.get_eds() * sign;
             prev_edge = curr_edge;
         }
         right[i][0] = eds;
@@ -60,7 +77,6 @@ void circuit_t::calculate_currents() {
 
 
     /*first rule*/
-    
     for (std::size_t i = 1u, maxi = incidence_matrix_.get_rows_number(); i < maxi; ++i) {
         for(std::size_t j = 0u, maxj = incidence_matrix_.get_cols_number(); j < maxj; ++j) {
             if (incidence_matrix_[i][j]) {
@@ -83,82 +99,40 @@ void circuit_t::calculate_currents() {
     }    
 }
 
-std::vector<std::vector<edge_t>> circuit_t::find_independent_cycles() const {
+std::vector<std::vector<edge_t>> circuit_t::find_cycles() const {
     std::vector<std::vector<edge_t>> ret;
-    std::vector<int> marks(edges_.size());
-    std::size_t current_vertex = 0u;
-    std::size_t scip_count = 0u;
-    while(1) {
-        if(scip_count == incidence_matrix_.get_rows_number()) {
-            return ret;
+    for(const auto& edge : edges_) {
+        auto cycle = dfs_cycle_handler(edge);
+        if(!cycle.empty()) {
+            ret.push_back(cycle);
         }
-
-        std::size_t next_vertex = (current_vertex + 1) % incidence_matrix_.get_rows_number();
-        std::vector<edge_t> current_pass;
-        dfs_cycle_handler(next_vertex, next_vertex, current_pass, marks);
-        if(!current_pass.size()) {
-            ++scip_count;
-        } else {
-            ret.push_back(current_pass);
-            scip_count = 0u;
-            for(std::size_t i = 0, maxi = current_pass.size(); i < maxi; ++i) {
-                marks[current_pass[i].get_id()] = 1;
-            }
-        }
-
-        current_vertex = next_vertex;
     }
 
-    return std::vector<std::vector<edge_t>>();
+    return ret;
 }
 
-void circuit_t::dfs_cycle_handler(std::size_t start_v, std::size_t current_v, 
-                   std::vector<edge_t>& current_pass, const std::vector<int>& marks) const 
-{
-    dfs_cycle(start_v, current_v, false, current_pass, marks);
-    if(!current_pass.size()) {
-        return;
-    }
-    /* cut : dfs find cycle with start_v vertex, but this cycle can contain more cycles, so we cut it */
-    for(std::size_t i = 2, maxi = current_pass.size() - 1; i < maxi ;++i) {
-        for(std::size_t j = 0, maxj = i - 1; j < maxj ;++j) {
-            if(current_pass[j].have_incident_vertex(current_pass[i])) {
-                if(j == 0) {
-                    current_pass = std::vector<edge_t>(current_pass.begin() + j + 1, current_pass.begin() + i + 1);
-                } else {
-                    current_pass.erase(current_pass.begin() + j + 1, current_pass.begin() + i + 1);
-                    i = 2;
-                    j = 0;
-                }    
-                return;
-            }
-        }
-    }
-}
+std::vector<edge_t> circuit_t::dfs_cycle_handler(const edge_t& edge) const {
+    std::vector<edge_t> ret{edge};
+    dfs_cycle(edge.get_v1(), edge.get_v2(), ret);
+    return ret;
+}    
 
-void circuit_t::dfs_cycle(std::size_t start_v, std::size_t& current_v, bool independent_edge, 
-                          std::vector<edge_t>& current_pass, const std::vector<int>& marks) const 
+
+void circuit_t::dfs_cycle(std::size_t start_v, std::size_t current_v, std::vector<edge_t>& current_pass) const
 {
-    if((current_v == start_v) && (current_pass.size())) {
+    if((start_v == current_v) && (!current_pass.empty())) {
         return;
     }
 
-    std::size_t prev_edge = edges_.size();
-    if(current_pass.size()) {
-        prev_edge = current_pass.back().get_id();
-    }
+
+    edge_t prev_edge = current_pass.back();
 
     for(std::size_t i = 0, max = incidence_matrix_.get_cols_number(); i < max; ++i) {
         /* if pass to i edge exist */
         if(incidence_matrix_[current_v][i] == 1) {
 
             /* check if we come from this edge */
-            if(prev_edge == i) {
-                continue;
-            }
-
-            /* check if we didn't find independent edge */
-            if(!independent_edge && marks[i]) {
+            if(prev_edge == edges_[i]) {
                 continue;
             }
 
@@ -176,16 +150,11 @@ void circuit_t::dfs_cycle(std::size_t start_v, std::size_t& current_v, bool inde
 
             std::vector<edge_t> copy_pass = current_pass;
             copy_pass.push_back(edges_[i]);
-            std::size_t current_v_copy = current_v;
-            current_v = (edges_[i].get_v1() == current_v) ? edges_[i].get_v2() : edges_[i].get_v1();
-            dfs_cycle(start_v, current_v, true, copy_pass, marks);
 
-            if(!copy_pass.size()) {
-                current_v = current_v_copy;
-                continue;
-            }
+            std::size_t next_v = (edges_[i].get_v1() == current_v) ? edges_[i].get_v2() : edges_[i].get_v1();
+            dfs_cycle(start_v, next_v, copy_pass);
 
-            if(current_v == start_v) {
+            if(!copy_pass.empty()) {
                 current_pass = copy_pass;
                 return;
             }

@@ -1,8 +1,8 @@
-// A Bison parser, made by GNU Bison 3.7.1.
+// A Bison parser, made by GNU Bison 3.7.5.312-f0811.
 
 // Skeleton interface for Bison LALR(1) parsers in C++
 
-// Copyright (C) 2002-2015, 2018-2020 Free Software Foundation, Inc.
+// Copyright (C) 2002-2015, 2018-2021 Free Software Foundation, Inc.
 
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
@@ -15,7 +15,7 @@
 // GNU General Public License for more details.
 
 // You should have received a copy of the GNU General Public License
-// along with this program.  If not, see <http://www.gnu.org/licenses/>.
+// along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 // As a special exception, you may create a larger work that contains
 // part or all of the Bison parser skeleton and distribute that work
@@ -96,11 +96,6 @@ namespace yy { class driver_t; }
 #endif
 # include "location.hh"
 
-#ifndef YY_ASSERT
-# include <cassert>
-# define YY_ASSERT assert
-#endif
-
 
 #ifndef YY_ATTRIBUTE_PURE
 # if defined __GNUC__ && 2 < __GNUC__ + (96 <= __GNUC_MINOR__)
@@ -120,17 +115,23 @@ namespace yy { class driver_t; }
 
 /* Suppress unused-variable warnings by "using" E.  */
 #if ! defined lint || defined __GNUC__
-# define YYUSE(E) ((void) (E))
+# define YY_USE(E) ((void) (E))
 #else
-# define YYUSE(E) /* empty */
+# define YY_USE(E) /* empty */
 #endif
 
-#if defined __GNUC__ && ! defined __ICC && 407 <= __GNUC__ * 100 + __GNUC_MINOR__
 /* Suppress an incorrect diagnostic about yylval being uninitialized.  */
-# define YY_IGNORE_MAYBE_UNINITIALIZED_BEGIN                            \
+#if defined __GNUC__ && ! defined __ICC && 406 <= __GNUC__ * 100 + __GNUC_MINOR__
+# if __GNUC__ * 100 + __GNUC_MINOR__ < 407
+#  define YY_IGNORE_MAYBE_UNINITIALIZED_BEGIN                           \
+    _Pragma ("GCC diagnostic push")                                     \
+    _Pragma ("GCC diagnostic ignored \"-Wuninitialized\"")
+# else
+#  define YY_IGNORE_MAYBE_UNINITIALIZED_BEGIN                           \
     _Pragma ("GCC diagnostic push")                                     \
     _Pragma ("GCC diagnostic ignored \"-Wuninitialized\"")              \
     _Pragma ("GCC diagnostic ignored \"-Wmaybe-uninitialized\"")
+# endif
 # define YY_IGNORE_MAYBE_UNINITIALIZED_END      \
     _Pragma ("GCC diagnostic pop")
 #else
@@ -183,7 +184,7 @@ namespace yy { class driver_t; }
 #endif
 
 namespace yy {
-#line 187 "parser.tab.hh"
+#line 188 "parser.tab.hh"
 
 
 
@@ -192,40 +193,44 @@ namespace yy {
   class parser
   {
   public:
-#ifndef YYSTYPE
+#ifdef YYSTYPE
+# ifdef __GNUC__
+#  pragma GCC message "bison: do not #define YYSTYPE in C++, use %define api.value.type"
+# endif
+    typedef YYSTYPE value_type;
+#else
   /// A buffer to store and retrieve objects.
   ///
   /// Sort of a variant, but does not keep track of the nature
   /// of the stored data, since that knowledge is available
   /// via the current parser state.
-  class semantic_type
+  class value_type
   {
   public:
     /// Type of *this.
-    typedef semantic_type self_type;
+    typedef value_type self_type;
 
     /// Empty construction.
-    semantic_type () YY_NOEXCEPT
-      : yybuffer_ ()
+    value_type () YY_NOEXCEPT
+      : yyraw_ ()
     {}
 
     /// Construct and fill.
     template <typename T>
-    semantic_type (YY_RVREF (T) t)
+    value_type (YY_RVREF (T) t)
     {
-      YY_ASSERT (sizeof (T) <= size);
       new (yyas_<T> ()) T (YY_MOVE (t));
     }
 
 #if 201103L <= YY_CPLUSPLUS
     /// Non copyable.
-    semantic_type (const self_type&) = delete;
+    value_type (const self_type&) = delete;
     /// Non copyable.
     self_type& operator= (const self_type&) = delete;
 #endif
 
     /// Destruction, allowed only if empty.
-    ~semantic_type () YY_NOEXCEPT
+    ~value_type () YY_NOEXCEPT
     {}
 
 # if 201103L <= YY_CPLUSPLUS
@@ -349,7 +354,7 @@ namespace yy {
   private:
 #if YY_CPLUSPLUS < 201103L
     /// Non copyable.
-    semantic_type (const self_type&);
+    value_type (const self_type&);
     /// Non copyable.
     self_type& operator= (const self_type&);
 #endif
@@ -359,7 +364,7 @@ namespace yy {
     T*
     yyas_ () YY_NOEXCEPT
     {
-      void *yyp = yybuffer_.yyraw;
+      void *yyp = yyraw_;
       return static_cast<T*> (yyp);
      }
 
@@ -368,7 +373,7 @@ namespace yy {
     const T*
     yyas_ () const YY_NOEXCEPT
     {
-      const void *yyp = yybuffer_.yyraw;
+      const void *yyp = yyraw_;
       return static_cast<const T*> (yyp);
      }
 
@@ -376,8 +381,8 @@ namespace yy {
     union union_type
     {
       // DOUBLE
-      // voltage
       // resist
+      // voltage
       char dummy1[sizeof (float)];
 
       // INTEGER
@@ -392,15 +397,15 @@ namespace yy {
     union
     {
       /// Strongest alignment constraints.
-      long double yyalign_me;
+      long double yyalign_me_;
       /// A buffer large enough to store any of the semantic values.
-      char yyraw[size];
-    } yybuffer_;
+      char yyraw_[size];
+    };
   };
 
-#else
-    typedef YYSTYPE semantic_type;
 #endif
+    /// Backward compatibility (Bison 3.8).
+    typedef value_type semantic_type;
     /// Symbol locations.
     typedef location location_type;
 
@@ -467,12 +472,12 @@ namespace yy {
         S_V = 8,                                 // "V"
         S_LBREAK = 9,                            // "\\n"
         S_YYACCEPT = 10,                         // $accept
-        S_voltage = 11,                          // voltage
-        S_resist = 12,                           // resist
-        S_vertex = 13,                           // vertex
-        S_program = 14,                          // program
-        S_line = 15,                             // line
-        S_expr = 16                              // expr
+        S_program = 11,                          // program
+        S_line = 12,                             // line
+        S_expr = 13,                             // expr
+        S_vertex = 14,                           // vertex
+        S_resist = 15,                           // resist
+        S_voltage = 16                           // voltage
       };
     };
 
@@ -510,8 +515,8 @@ namespace yy {
         switch (this->kind ())
     {
       case symbol_kind::S_DOUBLE: // DOUBLE
-      case symbol_kind::S_voltage: // voltage
       case symbol_kind::S_resist: // resist
+      case symbol_kind::S_voltage: // voltage
         value.move< float > (std::move (that.value));
         break;
 
@@ -530,7 +535,7 @@ namespace yy {
       /// Copy constructor.
       basic_symbol (const basic_symbol& that);
 
-      /// Constructor for valueless symbols, and symbols from each type.
+      /// Constructors for typed symbols.
 #if 201103L <= YY_CPLUSPLUS
       basic_symbol (typename Base::kind_type t, location_type&& l)
         : Base (t)
@@ -542,6 +547,7 @@ namespace yy {
         , location (l)
       {}
 #endif
+
 #if 201103L <= YY_CPLUSPLUS
       basic_symbol (typename Base::kind_type t, float&& v, location_type&& l)
         : Base (t)
@@ -555,6 +561,7 @@ namespace yy {
         , location (l)
       {}
 #endif
+
 #if 201103L <= YY_CPLUSPLUS
       basic_symbol (typename Base::kind_type t, size_t&& v, location_type&& l)
         : Base (t)
@@ -576,7 +583,7 @@ namespace yy {
       }
 
       /// Destroy contents, and record that is empty.
-      void clear ()
+      void clear () YY_NOEXCEPT
       {
         // User destructor.
         symbol_kind_type yykind = this->kind ();
@@ -592,8 +599,8 @@ namespace yy {
 switch (yykind)
     {
       case symbol_kind::S_DOUBLE: // DOUBLE
-      case symbol_kind::S_voltage: // voltage
       case symbol_kind::S_resist: // resist
+      case symbol_kind::S_voltage: // voltage
         value.template destroy< float > ();
         break;
 
@@ -625,7 +632,7 @@ switch (yykind)
       void move (basic_symbol& s);
 
       /// The semantic value.
-      semantic_type value;
+      value_type value;
 
       /// The location.
       location_type location;
@@ -658,7 +665,7 @@ switch (yykind)
       by_kind (kind_type t);
 
       /// Record that this symbol is empty.
-      void clear ();
+      void clear () YY_NOEXCEPT;
 
       /// Steal the symbol kind from \a that.
       void move (by_kind& that);
@@ -691,42 +698,27 @@ switch (yykind)
 #if 201103L <= YY_CPLUSPLUS
       symbol_type (int tok, location_type l)
         : super_type(token_type (tok), std::move (l))
-      {
-        YY_ASSERT (tok == token::END_OF_FILE || tok == token::YYerror || tok == token::YYUNDEF || tok == token::EDGE || tok == token::COMMA || tok == token::SCOLON || tok == token::V || tok == token::LBREAK);
-      }
 #else
       symbol_type (int tok, const location_type& l)
         : super_type(token_type (tok), l)
-      {
-        YY_ASSERT (tok == token::END_OF_FILE || tok == token::YYerror || tok == token::YYUNDEF || tok == token::EDGE || tok == token::COMMA || tok == token::SCOLON || tok == token::V || tok == token::LBREAK);
-      }
 #endif
+      {}
 #if 201103L <= YY_CPLUSPLUS
       symbol_type (int tok, float v, location_type l)
         : super_type(token_type (tok), std::move (v), std::move (l))
-      {
-        YY_ASSERT (tok == token::DOUBLE);
-      }
 #else
       symbol_type (int tok, const float& v, const location_type& l)
         : super_type(token_type (tok), v, l)
-      {
-        YY_ASSERT (tok == token::DOUBLE);
-      }
 #endif
+      {}
 #if 201103L <= YY_CPLUSPLUS
       symbol_type (int tok, size_t v, location_type l)
         : super_type(token_type (tok), std::move (v), std::move (l))
-      {
-        YY_ASSERT (tok == token::INTEGER);
-      }
 #else
       symbol_type (int tok, const size_t& v, const location_type& l)
         : super_type(token_type (tok), v, l)
-      {
-        YY_ASSERT (tok == token::INTEGER);
-      }
 #endif
+      {}
     };
 
     /// Build a parser object.
@@ -931,9 +923,9 @@ switch (yykind)
     {
     public:
       context (const parser& yyparser, const symbol_type& yyla);
-      const symbol_type& lookahead () const { return yyla_; }
-      symbol_kind_type token () const { return yyla_.kind (); }
-      const location_type& location () const { return yyla_.location; }
+      const symbol_type& lookahead () const YY_NOEXCEPT { return yyla_; }
+      symbol_kind_type token () const YY_NOEXCEPT { return yyla_.kind (); }
+      const location_type& location () const YY_NOEXCEPT { return yyla_.location; }
 
       /// Put in YYARG at most YYARGN of the expected tokens, and return the
       /// number of tokens stored in YYARG.  If YYARG is null, return the
@@ -1006,14 +998,14 @@ switch (yykind)
 
     static const signed char yycheck_[];
 
-    // YYSTOS[STATE-NUM] -- The (internal number of the) accessing
-    // symbol of state STATE-NUM.
+    // YYSTOS[STATE-NUM] -- The symbol kind of the accessing symbol of
+    // state STATE-NUM.
     static const signed char yystos_[];
 
-    // YYR1[YYN] -- Symbol number of symbol that rule YYN derives.
+    // YYR1[RULE-NUM] -- Symbol kind of the left-hand side of rule RULE-NUM.
     static const signed char yyr1_[];
 
-    // YYR2[YYN] -- Number of symbols on the right hand side of rule YYN.
+    // YYR2[RULE-NUM] -- Number of symbols on the right-hand side of rule RULE-NUM.
     static const signed char yyr2_[];
 
 
@@ -1246,9 +1238,9 @@ switch (yykind)
     /// Constants.
     enum
     {
-      yylast_ = 19,     ///< Last index in yytable_.
+      yylast_ = 17,     ///< Last index in yytable_.
       yynnts_ = 7,  ///< Number of nonterminal symbols.
-      yyfinal_ = 8 ///< Termination state number.
+      yyfinal_ = 7 ///< Termination state number.
     };
 
 
@@ -1259,7 +1251,7 @@ switch (yykind)
 
 
 } // yy
-#line 1263 "parser.tab.hh"
+#line 1255 "parser.tab.hh"
 
 
 
