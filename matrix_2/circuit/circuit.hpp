@@ -14,8 +14,8 @@ namespace circuit {
 class edge_t {
 public:
 
-    edge_t(std::size_t v1, std::size_t v2, double resistance, double eds) :
-        v1_(v1), v2_(v2), resistance_(resistance), eds_(eds) {}
+    edge_t(std::size_t v1, std::size_t v2, double resistance, double eds, double current = 0.0) :
+        v1_(v1), v2_(v2), resistance_(resistance), eds_(eds), current_(current) {}
 
     void set_id(std::size_t id) {id_ = id;} 
     void set_current(double current) {current_ = current;}
@@ -55,6 +55,7 @@ public:
     circuit_t(const std::vector<edge_t>& edges);
     void calculate_currents();
     void print_currents() const;
+    std::vector<edge_t> get_edges() const {return edges_;}
 
 private:
 

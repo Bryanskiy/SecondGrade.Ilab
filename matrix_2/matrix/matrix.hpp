@@ -261,7 +261,7 @@ template<typename T>
 T matrix::matrix_t<T>::det() const {
     long double ret = 1.0;
 
-    matrix_t<long double> copy = *this;
+    matrix_t<double> copy = *this;
 
     std::size_t current_m = 0;
     std::size_t current_n = 0;
