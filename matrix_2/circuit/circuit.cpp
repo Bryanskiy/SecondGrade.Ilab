@@ -3,14 +3,6 @@
 namespace circuit {
 
 /*---------------------------------------------------------------------------------
-                                EDGE
------------------------------------------------------------------------------------*/
-
-bool operator==(const edge_t& lhs, const edge_t& rhs) {
-    return lhs.get_id() == rhs.get_id();
-}
-
-/*---------------------------------------------------------------------------------
                                 CIRCUIT 
 -----------------------------------------------------------------------------------*/
 
@@ -132,7 +124,7 @@ void circuit_t::dfs_cycle(std::size_t start_v, std::size_t current_v, std::vecto
         if(incidence_matrix_[current_v][i] == 1) {
 
             /* check if we come from this edge */
-            if(prev_edge == edges_[i]) {
+            if(prev_edge.get_id() == edges_[i].get_id()) {
                 continue;
             }
 

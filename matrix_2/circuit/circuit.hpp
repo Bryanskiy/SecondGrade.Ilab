@@ -11,7 +11,7 @@ namespace circuit {
                                 EDGE
 -----------------------------------------------------------------------------------*/
 
-class edge_t {
+class edge_t final {
 public:
 
     edge_t(std::size_t v1, std::size_t v2, double resistance, double eds, double current = 0.0) :
@@ -44,13 +44,11 @@ private:
     double current_;
 };
 
-bool operator==(const edge_t& lhs, const edge_t& rhs);
-
 /*---------------------------------------------------------------------------------
                                 CIRCUIT 
 -----------------------------------------------------------------------------------*/
 
-class circuit_t {
+class circuit_t final {
 public:
     circuit_t(const std::vector<edge_t>& edges);
     void calculate_currents();

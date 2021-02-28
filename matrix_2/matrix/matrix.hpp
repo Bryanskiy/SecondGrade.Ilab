@@ -21,7 +21,7 @@ bool equal(const T& lhs, const U& rhs) {
 }
 
 template<typename T>
-class matrix_t : private matrix_buff_t<T> {
+class matrix_t final : private matrix_buff_t<T> {
 
     using matrix_buff_t<T>::swap_buffers;
     using matrix_buff_t<T>::construct_at;
