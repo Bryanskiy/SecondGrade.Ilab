@@ -7,27 +7,58 @@ namespace circuit {
 -----------------------------------------------------------------------------------*/
 
 
-circuit_t::circuit_t(const std::vector<edge_t>& edges) : edges_(edges) {
-    std::size_t i = 0;
-    for(const auto& edge : edges_) {
-        edges_[i].set_id(i);
-        std::size_t new_cols = incidence_matrix_.get_cols_number() + 1;
-        std::size_t new_rows = std::max(incidence_matrix_.get_rows_number() , std::max(edge.get_v1(), edge.get_v2() + 1));
-        incidence_matrix_.resize(new_rows, new_cols);
+circuit_t::circuit_t(const matrix::matrix_t<double>& resistance_matrix, const matrix::matrix_t<double>& eds_matrix, const matrix::matrix_t<int>& edges_matrix) {
+    
+    incidence_matrix_.resize(edges_matrix.get_rows_number(), edges_matrix.get_cols_number());
+    for(std::size_t i = 0, maxi = incidence_matrix_.get_rows_number(); i < maxi; ++i) {
+        for(std::size_t j = 0, maxj = incidence_matrix_.get_cols_number(); j < maxj; ++j) {
+            if(edges_matrix[i][j]) {
+                incidence_matrix_[i][j] = 1u;
+            }
+        }
+    }
 
-        incidence_matrix_[edge.get_v1()][incidence_matrix_.get_cols_number() - 1] = 1;
-        incidence_matrix_[edge.get_v2()][incidence_matrix_.get_cols_number() - 1] = 1;
-        ++i;
+    for(std::size_t i = 0, maxi = incidence_matrix_.get_cols_number(); i < maxi; ++i) {
+        std::size_t v1 = 0u, v2 = 0u;
+
+        bool flag = false;
+        for(std::size_t j = 0, maxj = incidence_matrix_.get_rows_number(); j < maxj; ++j) {
+            if(edges_matrix[j][i] == 1) {
+                v1 = j;    
+            }
+            
+            else if (edges_matrix[j][i] == 2) {
+                v2 = j;
+            }
+
+        }
+
+        if(v1 == 0) {
+            v1 = v2;
+        } else if(v2 == 0) {
+            v2 = v1;
+        }
+
+        double resistance = resistance_matrix[v1][i];
+        double eds = eds_matrix[v1][i];
+
+        edges_.push_back({v1, v2, resistance, eds});
+        edges_.back().set_id(i);
     }
 }
 
-void circuit_t::print_currents() const {
-    for(const auto& edge : edges_) {
-        std::cout << edge.get_v1() << " -- " << edge.get_v2() << ": " << edge.get_current() << " A" << std::endl; 
+matrix::matrix_t<double> circuit_t::get_currents() const {
+    matrix::matrix_t<double> ret(incidence_matrix_.get_rows_number(), incidence_matrix_.get_cols_number());
+    for(std::size_t i = 0, maxi = ret.get_rows_number(); i < maxi; ++i) {
+        for(std::size_t j = 0, maxj = ret.get_cols_number(); j < maxj; ++j) {
+            ret[i][j] = (incidence_matrix_[i][j]) ? edges_[j].get_current() : 0.0;
+        }
     }
+
+    return ret;
 }
 
-void circuit_t::calculate_currents() {
+bool circuit_t::calculate_currents() {
     std::vector<std::vector<edge_t>> independent_cycles = find_cycles();   
     std::size_t independent_cycles_count = independent_cycles.size();
 #ifdef DEBUG
@@ -86,12 +117,18 @@ void circuit_t::calculate_currents() {
     std::cout << right << std::endl;
 #endif
     auto ret = matrix::solve_linear_system(system, right);
+    if(ret.first.get_elements_number() == 0) {
+        return false;
+    }
+
     for(std::size_t i = 0, maxi = ret.first.get_rows_number(); i < maxi; ++i) {
         edges_[i].set_current(ret.first[i][0]);
-    }    
+    }
+
+    return true;
 }
 
-std::vector<std::vector<edge_t>> circuit_t::find_cycles() const {
+std::vector<std::vector<circuit_t::edge_t>> circuit_t::find_cycles() const {
     std::vector<std::vector<edge_t>> ret;
     for(const auto& edge : edges_) {
         auto cycle = dfs_cycle_handler(edge);
@@ -103,7 +140,7 @@ std::vector<std::vector<edge_t>> circuit_t::find_cycles() const {
     return ret;
 }
 
-std::vector<edge_t> circuit_t::dfs_cycle_handler(const edge_t& edge) const {
+std::vector<circuit_t::edge_t> circuit_t::dfs_cycle_handler(const edge_t& edge) const {
     std::vector<edge_t> ret{edge};
     dfs_cycle(edge.get_v1(), edge.get_v2(), ret);
     return ret;
@@ -116,12 +153,11 @@ void circuit_t::dfs_cycle(std::size_t start_v, std::size_t current_v, std::vecto
         return;
     }
 
-
     edge_t prev_edge = current_pass.back();
 
     for(std::size_t i = 0, max = incidence_matrix_.get_cols_number(); i < max; ++i) {
         /* if pass to i edge exist */
-        if(incidence_matrix_[current_v][i] == 1) {
+        if(incidence_matrix_[current_v][i]) {
 
             /* check if we come from this edge */
             if(prev_edge.get_id() == edges_[i].get_id()) {

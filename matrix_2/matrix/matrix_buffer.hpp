@@ -25,7 +25,7 @@ protected:
 
     std::size_t get_rows_number() const {return matrix_size_.rows_;}
     std::size_t get_cols_number() const {return matrix_size_.cols_;}
-    std::size_t get_elements_number() const {return capacity_;}
+    std::size_t get_elements_number() const {return size_;}
 
 private:
 
@@ -39,8 +39,8 @@ private:
     std::size_t size_; /* number of constructed elements */
     std::size_t capacity_;
     struct matrix_size_t {
-        std::size_t rows_;
-        std::size_t cols_;
+        std::size_t rows_ = 0;
+        std::size_t cols_ = 0;
     } matrix_size_;
 
 }; /* matrix_buff_t */

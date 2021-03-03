@@ -14,7 +14,6 @@ debug:
 
 tests:
 	g++ tests/matrix/main.cpp -o matrix_tests.out $(RELEASE_OPTIONS) $(GTEST_OPTIONS)
-	g++ tests/circuit/circuit_random_test.cpp circuit/circuit.cpp -o circuit_tests.out $(RELEASE_OPTIONS)
 
 
 

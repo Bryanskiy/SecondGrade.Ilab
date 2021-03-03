@@ -51,7 +51,7 @@ public:
 
             1) *this : p * q
                m     : p * 1
-            2) 0 <= idx <= m.get_cols_number() - 1   
+            2) 0 <= idx <= m.get_cols_number()
             
     */
     void insert_col(std::size_t idx, const matrix_t<T>& m);
@@ -408,7 +408,7 @@ std::pair<matrix_t<T>, matrix_t<T>> solve_linear_system(const matrix_t<T>& left,
             }
         }
 
-        if(flag && (!equal(tmp[i][tmp.get_cols_number() - 1], 0.0))) {
+        if((flag && !equal(tmp[i][tmp.get_cols_number() - 1], 0.0))) {
             return std::make_pair(matrix_t<T>(0u, 0u), matrix_t<T>(0u, 0u));
         }
     }

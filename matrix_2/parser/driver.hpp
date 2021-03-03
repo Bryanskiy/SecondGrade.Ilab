@@ -1,9 +1,10 @@
 #pragma once
 
 #include <fstream>
+#include <algorithm>
 
 #include "mylexer.hpp"
-#include "../circuit/circuit.hpp"
+#include "../matrix/matrix.hpp"
 
 struct color_t {
 static const char* set_black() {return "\e[0;30m";}    
@@ -31,11 +32,33 @@ public:
     }
 
     void push(std::size_t v1, std::size_t v2, double resistance, double voltage) {
-        edges_.push_back({v1, v2, resistance, voltage});
+        std::size_t new_cols = eds_matrix_.get_cols_number() + 1;
+        std::size_t new_rows = std::max(eds_matrix_.get_rows_number() , std::max(v1, v2) + 1);
+
+        eds_matrix_.resize(new_rows, new_cols);
+        resistance_matrix_.resize(new_rows, new_cols);
+        edges_matrix_.resize(new_rows, new_cols);
+
+        eds_matrix_[v1][eds_matrix_.get_cols_number() - 1] = voltage;
+        eds_matrix_[v2][eds_matrix_.get_cols_number() - 1] = voltage;
+
+        resistance_matrix_[v1][resistance_matrix_.get_cols_number() - 1] = resistance;
+        resistance_matrix_[v2][resistance_matrix_.get_cols_number() - 1] = resistance;
+
+        edges_matrix_[v1][edges_matrix_.get_cols_number() - 1] = 1;
+        edges_matrix_[v2][edges_matrix_.get_cols_number() - 1] = 2;
     }
 
-    std::vector<circuit::edge_t> get_edges() const {
-        return edges_;
+    matrix::matrix_t<double> get_resistance_matrix() const {
+        return resistance_matrix_;
+    }
+
+    matrix::matrix_t<double> get_eds_matrix() const {
+        return eds_matrix_;
+    }
+
+    matrix::matrix_t<int> get_edges_matrix() const {
+        return edges_matrix_;
     }
 
     parser::token_type yylex(parser::location_type* l, parser::semantic_type* yylval) {
@@ -83,7 +106,9 @@ private:
     std::ifstream file_;
     const char* file_name_ = nullptr;
     mylexer_t* plexer_;
-    std::vector<circuit::edge_t> edges_;
+    matrix::matrix_t<double> eds_matrix_;
+    matrix::matrix_t<double> resistance_matrix_;
+    matrix::matrix_t<int>    edges_matrix_;
 };
 
 
