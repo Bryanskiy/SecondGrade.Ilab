@@ -70,11 +70,11 @@ gpuKMP_t::gpuKMP_t() {
 }
 
 void gpuKMP_t::match() {
+    //---------------------------------------------------------------
     auto prepaired_patterns = prepare_pattern_data();
 
     std::vector<std::size_t> preffix_funcs(prepaired_patterns.first.size());
 
-    //cl::Buffer text_buffer(context_, CL_MEM_READ_ONLY, text_.size() * sizeof(text_[0]));
     cl::Buffer patterns_buffer(context_, CL_MEM_READ_ONLY, prepaired_patterns.first.size() * sizeof(prepaired_patterns.first[0]));
     cl::Buffer indices_buffer(context_, CL_MEM_READ_ONLY, prepaired_patterns.second.size() * sizeof(prepaired_patterns.second[0]));
     cl::Buffer preffix_buffer(context_, CL_MEM_READ_WRITE, preffix_funcs.size() * sizeof(std::size_t));
@@ -88,20 +88,40 @@ void gpuKMP_t::match() {
     cl::NDRange global_size(patterns_.size());
     cl::NDRange local_size(1);
 
-    cl::Kernel kernel(program_, "preffix");
+    cl::Kernel preffix_kernel(program_, "preffix");
     //kernel.setArg(0, text_buffer);
-    kernel.setArg(0, patterns_buffer);
-    kernel.setArg(1, indices_buffer);
-    kernel.setArg(2, preffix_buffer);
+    preffix_kernel.setArg(0, patterns_buffer);
+    preffix_kernel.setArg(1, indices_buffer);
+    preffix_kernel.setArg(2, preffix_buffer);
 
-    cl::Event event;
-    queue_.enqueueNDRangeKernel(kernel, offset, global_size, local_size, NULL, &event);
-    event.wait();
+    cl::Event preffix_event;
+    queue_.enqueueNDRangeKernel(preffix_kernel, offset, global_size, local_size, NULL, &preffix_event);
+    preffix_event.wait();
 
-    auto map_data = (std::size_t*)queue_.enqueueMapBuffer(preffix_buffer, CL_TRUE, CL_MAP_READ, 0, preffix_funcs.size() * sizeof(std::size_t));
-    for (size_t i = 0; i < preffix_funcs.size(); i++) {
-        preffix_funcs[i] = map_data[i];
-    }    
+    //---------------------------------------------------------------
+    cl::Buffer text_buffer(context_, CL_MEM_READ_ONLY, text_.size() * sizeof(text_[0]));
+    std::vector<std::size_t> ans_vector(text_.size() * patterns_.size());
+    cl::Buffer ans_buffer(context_, CL_MEM_WRITE_ONLY, ans_vector.size() * sizeof(ans_vector[0]));
+
+    queue_.enqueueWriteBuffer(text_buffer, CL_TRUE, 0, text_.size() * sizeof(text_[0]), text_.data());
+    queue_.enqueueWriteBuffer(ans_buffer, CL_TRUE, 0, ans_vector.size() * sizeof(ans_vector[0]), ans_vector.data());
+
+    cl::Kernel kmp_kernel(program_, "kmp");
+    kmp_kernel.setArg(0, text_buffer);
+    kmp_kernel.setArg(1, text_.size());
+    kmp_kernel.setArg(2, patterns_buffer);
+    kmp_kernel.setArg(3, indices_buffer);
+    kmp_kernel.setArg(4, preffix_buffer);
+    kmp_kernel.setArg(5, ans_buffer);
+
+    cl::Event kmp_event;
+    queue_.enqueueNDRangeKernel(kmp_kernel, offset, global_size, local_size, NULL, &kmp_event);
+    kmp_event.wait();
+
+    auto map_data = (std::size_t*)queue_.enqueueMapBuffer(ans_buffer, CL_TRUE, CL_MAP_READ, 0, ans_vector.size() * sizeof(ans_vector[0]));
+    for (size_t i = 0; i < ans_vector.size(); i++) {
+         std::cout << map_data[i] << " ";
+     }   
 }
 
 std::pair<std::string, std::vector<std::size_t>> gpuKMP_t::prepare_pattern_data() const {
