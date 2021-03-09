@@ -6,6 +6,7 @@ namespace pm {
 --------------------------------------------------------*/
 
 void pmCPU_t::match() {
+    Timer_t timer;
     matches_.resize(patterns_.size());
     for(std::size_t i = 0, maxi = patterns_.size(); i < maxi; ++i) {
         std::string::size_type pos = 0u;
@@ -19,6 +20,8 @@ void pmCPU_t::match() {
             pos += 1;
         }
     }
+
+    time_ = timer.get_time().count();
 }
 
 /* ----------------------------------------------------- 
@@ -58,6 +61,17 @@ void pmGPU_t::build_program(const char* file_name) {
     }    
 }
 
+void pmGPU_t::enqueue_kernel(cl::Kernel& kernel, cl::NDRange& offset, cl::NDRange& global_size, cl::NDRange& local_size) {
+    cl::Event event;
+    queue_.enqueueNDRangeKernel(kernel, offset, global_size, local_size, NULL, &event);
+
+    event.wait();
+
+    std::size_t start = event.getProfilingInfo<CL_PROFILING_COMMAND_START>();
+    std::size_t end = event.getProfilingInfo<CL_PROFILING_COMMAND_END>();
+    gpu_time_ += (end - start) / 1000;
+}
+
 /* ----------------------------------------------------- 
                  GPU KMP
 --------------------------------------------------------*/
@@ -70,6 +84,7 @@ gpuKMP_t::gpuKMP_t() {
 }
 
 void gpuKMP_t::match() {
+    Timer_t timer;
     //---------------------------------------------------------------
     auto prepaired_patterns = prepare_pattern_data();
 
@@ -94,9 +109,7 @@ void gpuKMP_t::match() {
     preffix_kernel.setArg(1, indices_buffer);
     preffix_kernel.setArg(2, preffix_buffer);
 
-    cl::Event preffix_event;
-    queue_.enqueueNDRangeKernel(preffix_kernel, offset, global_size, local_size, NULL, &preffix_event);
-    preffix_event.wait();
+    enqueue_kernel(preffix_kernel, offset, global_size, local_size);
 
     //---------------------------------------------------------------
     cl::Buffer text_buffer(context_, CL_MEM_READ_ONLY, text_.size() * sizeof(text_[0]));
@@ -114,14 +127,29 @@ void gpuKMP_t::match() {
     kmp_kernel.setArg(4, preffix_buffer);
     kmp_kernel.setArg(5, ans_buffer);
 
-    cl::Event kmp_event;
-    queue_.enqueueNDRangeKernel(kmp_kernel, offset, global_size, local_size, NULL, &kmp_event);
-    kmp_event.wait();
+    enqueue_kernel(kmp_kernel, offset, global_size, local_size);
 
     auto map_data = (std::size_t*)queue_.enqueueMapBuffer(ans_buffer, CL_TRUE, CL_MAP_READ, 0, ans_vector.size() * sizeof(ans_vector[0]));
-    for (size_t i = 0; i < ans_vector.size(); i++) {
-         std::cout << map_data[i] << " ";
-     }   
+    write_answer(map_data, patterns_.size());
+    
+    time_ = timer.get_time().count();
+}
+
+void gpuKMP_t::write_answer(std::size_t* arr, std::size_t arr_size) {
+    matches_.resize(patterns_.size());
+    for(std::size_t i = 0, maxi = patterns_.size(); i < maxi; ++i) {
+        std::size_t j = 0;
+        for(;;) {
+            std::size_t tmp = arr[text_.size() * i + j];
+
+            if(tmp == 0) {
+                break;
+            }
+
+            matches_[i].push_back(tmp - 1);
+            ++j;
+        }
+    }
 }
 
 std::pair<std::string, std::vector<std::size_t>> gpuKMP_t::prepare_pattern_data() const {
