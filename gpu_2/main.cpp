@@ -37,10 +37,6 @@ int main() {
     }    
     auto ans = matcher.get_matches();
     for(std::size_t i = 0, maxi = ans.size(); i < maxi; ++i) {
-        for(std::size_t j = 0, maxj = ans[i].size(); j < maxj; ++j) {
-            std::cout << ans[i][j] << " ";
-        }
-
-        std::cout << std::endl;
+        std::cout << i + 1 << " " << ans[i].size() << std::endl;
     }
 }
