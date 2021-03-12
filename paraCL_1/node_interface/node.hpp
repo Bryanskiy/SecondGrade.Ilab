@@ -4,90 +4,134 @@
 #include <map>
 #include <string>
 #include <typeinfo>
+#include <unordered_map>
 #include <vector>
 
-#include "Inode.hpp"
+#include "node.hpp"
 
-namespace Inode {
+namespace node {
 
-class integer_t final : public Inode_t {
-private:    
-    int val_;
-public:
-    int calc() override {return val_;}
-    integer_t(int val) : val_(val) {}
+enum class operator_type {
+    /* arithm */
+    plus_,
+    minus_,
+    div_,
+    mod_,
+    mult_,
+
+    /* logic */
+    and_,
+    or_,
+    not_,
+    equal_,
+    not_equal_,
+    greater_,
+    less_,
+    greater_or_equal_,
+    less_or_equal_,
+
+    /* assign */
+    assign_,
+
+    /* io */
+    input_,
+    output_
 };
 
-class decl_t final : public Inode_t {
-private:    
-    int val_;
+
+/* -------------------------------------------------- */
+class node_t {
 public:
-    int calc() override {return val_;};
-    decl_t(int val) : val_(val) {}
-    decl_t() = default;
-    void set(int val) {val_ = val;}
+    virtual int execute() = 0;
+    virtual ~node_t() {};
 };
 
-class scope_t final : public Iscope_t {
-private:    
-    std::vector<Inode_t*> branches_;
-    Iscope_t* prev_scope_;
+/* -------------------------------------------------- */
+class scope_t final : public node_t {
 public:
-    int calc() override;
+    scope_t(scope_t* parent) : parent_scope_(parent) {}
 
-    Iscope_t* duplicate() override {return new scope_t(this);}
-    Iscope_t* get_prev() const override {return prev_scope_;}
-    void add_branch(Inode_t* branch) override {branches_.push_back(branch);}
-    virtual Inode_t* add(const std::string& name) override;
-    virtual Inode_t* visible(const std::string& name) override; 
+    int execute() override;
+    scope_t* get_parent() const {return parent_scope_;}
+    void add_branch(node_t* node) {branches_.push_back(node);}
 
-    scope_t(scope_t* prev_scope) : prev_scope_(prev_scope) {}
+    node_t* search_global(const std::string& variable) const;
+    node_t* search_local(const std::string& variable) const;
+    void make_visible(const std::string& variable, node_t* node) {table_[variable] = node;}
+
     ~scope_t() override;
-};
-
-class bin_op_t final : public Inode_t {
 private:    
-    Inode_t* lhs_;
-    Inode_t* rhs_;
-    bin_op op_;
-public:
-    int calc() override;
+    scope_t* parent_scope_ = nullptr;
 
-    bin_op_t(Inode_t* lhs, bin_op op, Inode_t* rhs) : lhs_(lhs), op_(op), rhs_(rhs) {}
-    ~bin_op_t() override;
+    std::unordered_map<std::string, node_t*> table_;
+    std::vector<node_t*> branches_;
 };
 
-class unary_op_t final : public Inode_t {
+/* -------------------------------------------------- */
+class operator_t final : public node_t {
+public:
+    operator_t(node_t* lhs, operator_type op, node_t* rhs) : lhs_(lhs), op_(op), rhs_(rhs) {};
+    int execute() override;
+    ~operator_t() override {
+        if(lhs_ != nullptr) delete lhs_;
+        if(rhs_ != nullptr) delete rhs_;
+    };
+
 private:    
-    Inode_t* node_;
-    unary_op op_;
-public:
-    int calc() override;
-
-    unary_op_t(Inode_t* node, unary_op op) : node_(node), op_(op) {}
-    ~unary_op_t() override;    
+    node_t* lhs_ = nullptr;
+    node_t* rhs_ = nullptr;
+    operator_type op_;    
 };
 
-class if_t final : public Inode_t {
-private:
-    Inode_t* condition_;
-    Inode_t* scope_;
-
+/* -------------------------------------------------- */
+class integer_t final : public node_t {
 public:
-    int calc() override;
+   integer_t(int value) : value_(value) {};
+    int execute() override {return value_;}
+   ~integer_t() {};
 
-    if_t(Inode_t* condition, Inode_t* scope) : condition_(condition), scope_(scope) {} 
+private:
+    const int value_;
 };
 
-class while_t final : public Inode_t {
-private:
-    Inode_t* condition_;
-    Inode_t* scope_;
-
+/* -------------------------------------------------- */
+class variable_t final : public node_t {
 public:
-    int calc() override;
 
-    while_t(Inode_t* condition, Inode_t* scope) : condition_(condition), scope_(scope) {}
+    variable_t() = default;
+    ~variable_t() override {};
+
+    void set(int value) {value_ = value;}
+    int execute() override {return value_;}
+private:
+    int value_;    
+};
+
+
+/* -------------------------------------------------- */
+class if_t final : public node_t {
+public:
+    if_t(node_t* condition, node_t* scope) : condition_(condition), scope_(scope) {}
+    ~if_t() override {delete condition_; delete scope_;};
+
+    int execute() override;
+private:
+    node_t* condition_;
+    node_t* scope_;     
+};
+
+
+/* -------------------------------------------------- */
+class while_t final : public node_t {
+public:
+    while_t(node_t* condition, node_t* scope) : condition_(condition), scope_(scope) {}
+    ~while_t() override {delete condition_; delete scope_;};
+
+    int execute() override;
+
+private:
+    node_t* condition_;
+    node_t* scope_;    
 };
 
 }

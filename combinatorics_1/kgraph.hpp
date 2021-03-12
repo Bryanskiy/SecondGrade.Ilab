@@ -77,11 +77,7 @@ void kgraph_t<VT, ET>::push_edge(std::size_t v1, std::size_t v2, const ET& edge_
         graph_[user2internal_[v1]].prev = graph_.size();
         graph_[last_essense].next = graph_.size();
         graph_.push_back({v1, user2internal_[v1], last_essense});
-    }
-
- #ifdef DEBUG
-    dump(std::cout);
-#endif     
+    }    
 
     /* second essesnse */
     {
@@ -89,12 +85,7 @@ void kgraph_t<VT, ET>::push_edge(std::size_t v1, std::size_t v2, const ET& edge_
         graph_[user2internal_[v2]].prev = graph_.size();
         graph_[last_essense].next = graph_.size();
         graph_.push_back({v2, user2internal_[v2], last_essense});
-    }
-
-#ifdef DEBUG
-    dump(std::cout);
-#endif 
-      
+    }    
 }
 
 template<typename VT, typename ET>

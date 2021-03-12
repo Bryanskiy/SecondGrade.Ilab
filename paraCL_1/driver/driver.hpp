@@ -4,9 +4,8 @@
 #include <string>
 #include <fstream>
 
-#include "../node_interface/Inode.hpp"
+#include "../node_interface/node.hpp"
 #include "../parser/compiler.tab.hh"
-#include "../parser/mylexer.hpp"
 
 
 namespace yy {
@@ -23,7 +22,7 @@ namespace yy {
     private:
         const std::string file_name_ = "std::cin";
         std::vector<std::string> code_lines_;
-        mylexer_t* plexer_;
+        yyFlexLexer* plexer_;
         std::ifstream file_;
     };
 }

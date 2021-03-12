@@ -1,18 +1,17 @@
 #include "driver.hpp"
 
-Inode::Iscope_t* current_scope;
-yy::location current_location;
+node::scope_t* current_scope = nullptr;
 
 namespace yy {
 
 driver_t::driver_t() {
-    plexer_ = new mylexer_t;
-    current_scope = Inode::make_scope();
+    plexer_ = new yyFlexLexer;
+    current_scope = new node::scope_t(nullptr);
 }
 
 driver_t::driver_t(const char* file_name) : file_name_(file_name) {
-    plexer_ = new mylexer_t;
-    current_scope = Inode::make_scope();
+    plexer_ = new yyFlexLexer;
+    current_scope = new node::scope_t(nullptr);
 
     file_.open(file_name_);
     std::ifstream tmp(file_name_);
@@ -27,7 +26,7 @@ driver_t::driver_t(const char* file_name) : file_name_(file_name) {
 
 parser::token_type driver_t::yylex(parser::location_type* l, parser::semantic_type* yylval) {
     parser::token_type token = static_cast<parser::token_type>(plexer_->yylex());
-    if(token == yy::parser::token_type::NAME) {
+    if(token == yy::parser::token_type::VARIABLE) {
         std::string name(plexer_->YYText());
         parser::semantic_type tmp;
         tmp.as<std::string>() = name;
@@ -37,43 +36,12 @@ parser::token_type driver_t::yylex(parser::location_type* l, parser::semantic_ty
     }
 
     /* lexer update current location after plexer_->yylex() and token match */
-    *l = plexer_->get_current_location();
 
     return token;
 }
 
 void driver_t::report_syntax_error(parser::context const& ctx) const {
-    int res = 0;
-    std::cerr << color_t::set_red() << "-----------------[Syntax error]---------------------" << color_t::reset() << std::endl <<
-    color_t::set_cyan() << "LOCATION: " << color_t::reset() << file_name_ <<  " : " << 
-    plexer_->get_current_line() << " line" << std::endl;
 
-    enum { TOKENMAX = 26 };
-    parser::symbol_kind_type expected_tokens[TOKENMAX];
-    int expected_tokens_count = ctx.expected_tokens(expected_tokens, TOKENMAX);
-
-    std::cerr << color_t::set_cyan() << "Expected: " << color_t::reset();
-    for (int i = 0; i < expected_tokens_count; i++) {
-        if (i != 0) { 
-            std::cerr << " or "; 
-        }
-
-        std::cerr << "<" << parser::symbol_name(expected_tokens[i]) << ">";
-    }
-    std::cerr << color_t::set_cyan() << " before " << color_t::reset() << "<" << parser::symbol_name(ctx.token()) << ">" << std::endl;
-    std::cerr << color_t::set_cyan() << "LINE: " << color_t::reset() << code_lines_[plexer_->get_current_line() - 1] << std::endl;
-    std::cerr << "      " << color_t::set_red();
-
-    yy::location loc = ctx.location();
-    for (size_t i = 0; i < loc.end.column; i++) {
-        if (i == ctx.lookahead().location.begin.line - 1) {
-            std::cerr << '^';
-        }
-        else {
-            std::cerr << '~';
-        }
-    }
-    std::cerr << color_t::reset();
 }
 
 bool driver_t::parse() {
@@ -84,6 +52,7 @@ bool driver_t::parse() {
 
 driver_t::~driver_t() {
     delete plexer_;
+    delete current_scope;
 }
 
 }
