@@ -1,16 +1,17 @@
 %option c++
-%option noyywrap nounput noinput
+%option noyywrap nounput noinput batch debug
 %option yylineno
+%option yyclass="mylexer_t"
 %{
 #include "compiler.tab.hh"
+#include "mylexer.hpp"
+
+#define YY_USER_ACTION update_location();
 %}
 
-UNOP              [\+\-]
-DIGIT             [0-9]
-NON_ZERO_DIGIT    [1-9]
-WS                [ \t\n\v]+
-INTEGER           {UNOP}{0,1}{NON_ZERO_DIGIT}{DIGIT}*
-NAME              [a-zA-Z][a-zA-Z0-9]*
+WS [ \t\n\v]+
+INTEGER [0]|[1-9][0-9]*
+NAME [a-zA-Z][a-zA-Z0-9]*
 
 %%
 "while"     return yy::parser::token_type::WHILE;
@@ -41,12 +42,13 @@ NAME              [a-zA-Z][a-zA-Z0-9]*
 
 "+"         return yy::parser::token_type::PLUS;
 "-"         return yy::parser::token_type::MINUS;
+
 "*"         return yy::parser::token_type::MUL;
 "/"         return yy::parser::token_type::DIV;
 "%"         return yy::parser::token_type::MOD;
 
 {WS}        
 {INTEGER}   return yy::parser::token_type::INTEGER;
-{NAME}      return yy::parser::token_type::VARIABLE;
+{NAME}      return yy::parser::token_type::NAME;
                 
 %%

@@ -1,4 +1,0 @@
-1
-VK_LAYER_KHRONOS_validation
-1
-VK_KHR_swapchain

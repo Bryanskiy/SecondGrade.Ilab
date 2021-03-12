@@ -1,132 +1,157 @@
 #include "node.hpp"
+#include "symtab.hpp"
 
-namespace node {
+namespace Inode {
 
-/* -------------------------------------------------- */
+symtab_t global_table;
+
+/* constructors */ 
+Inode_t* make_value(int val) {return new integer_t{val};}
+Inode_t* make_decl() {return new decl_t;}
+Inode_t* make_bin_op(Inode_t* lhs, bin_op op, Inode_t* rhs) {return new bin_op_t{lhs, op, rhs};}
+Inode_t* make_unary_op(Inode_t* node, unary_op op) {return new unary_op_t{node, op};}
+Inode_t* make_unary_op(unary_op op, Inode_t* node) {return make_unary_op(node, op);}
+Inode_t* make_if(Inode_t* condition, Inode_t* scope) {return new if_t{condition, scope};}
+Inode_t* make_while(Inode_t* condition, Inode_t* scope) {return new while_t{condition, scope};}
+Iscope_t* make_scope() {return new scope_t{nullptr};}
 
 
-int scope_t::execute() {
+int scope_t::calc() {
     for(const auto& branch : branches_) {
-        branch->execute();
+        branch->calc();
     }
 
     return 0;
 }
 
-node_t* scope_t::search_global(const std::string& variable) const {
-    node_t* ret = nullptr;
-    if(table_.find(variable) != table_.end()) {
-        return table_.at(variable);
-    } 
-
-    if(parent_scope_) {
-        ret = parent_scope_->search_global(variable);
+Inode_t* scope_t::add(const std::string& name) {
+    Inode_t* node = visible(name);
+    if(node) {
+        return node;
     }
 
-    return ret;
+    Inode_t* decl = make_decl();
+    global_table.add(this, name, decl);
+    return decl;
 }
 
-node_t* scope_t::search_local(const std::string& variable) const {
-    node_t* ret = nullptr;
-    if(table_.find(variable) != table_.end()) {
-        ret = table_.at(variable);
+Inode_t* scope_t::visible(const std::string& name) {
+    Inode_t* ret = global_table.exists(this, name);
+    if(ret) {
+        return ret;
+    }
+
+    if(prev_scope_) {
+        ret = prev_scope_->visible(name);
     }
 
     return ret;
 }
 
 scope_t::~scope_t() {
-    for (auto& node : branches_) {
-        delete node;
-    }    
+    for(const auto& x : branches_) {
+        delete x;
+    }
+
+    global_table.free(this);
 }
 
-/* -------------------------------------------------- */
-
-int operator_t::execute() {
+int bin_op_t::calc() {
     int ret = 0;
     switch(op_) {
-        case operator_type::plus_:
-            return lhs_->execute() + rhs_->execute();
+        case bin_op::plus_:
+            return lhs_->calc() + rhs_->calc();
 
-        case operator_type::minus_:
-            return lhs_->execute() - rhs_->execute();
+        case bin_op::minus_:
+            return lhs_->calc() - rhs_->calc();
 
-        case operator_type::greater_:
-            return lhs_->execute() > rhs_->execute();
+        case bin_op::greater_:
+            return lhs_->calc() > rhs_->calc();
 
-        case operator_type::less_:
-            return lhs_->execute() < rhs_->execute();
+        case bin_op::less_:
+            return lhs_->calc() < rhs_->calc();
 
-        case operator_type::greater_or_equal_:
-            return rhs_->execute() >= rhs_->execute();
+        case bin_op::greater_or_equal_:
+            return rhs_->calc() >= rhs_->calc();
 
-        case operator_type::less_or_equal_:
-            return lhs_->execute() <= rhs_->execute();
+        case bin_op::less_or_equal_:
+            return lhs_->calc() <= rhs_->calc();
 
-        case operator_type::assign_:
-            ret = rhs_->execute();
-            dynamic_cast<variable_t*>(lhs_)->set(ret);
+        case bin_op::assign_:
+            ret = rhs_->calc();
+            dynamic_cast<decl_t*>(lhs_)->set(ret);
             return ret;
 
-        case operator_type::equal_:
-            return lhs_->execute() == rhs_->execute();
+        case bin_op::equal_:
+            return lhs_->calc() == rhs_->calc();
 
-        case operator_type::not_equal_: 
-            return lhs_->execute() != rhs_->execute();
+        case bin_op::not_equal_: 
+            return lhs_->calc() != rhs_->calc();
         
 
-        case operator_type::and_:
-            return lhs_->execute() && rhs_->execute();
+        case bin_op::and_:
+            return lhs_->calc() && rhs_->calc();
 
-        case operator_type::or_:
-            return lhs_->execute() || rhs_->execute();
+        case bin_op::or_:
+            return lhs_->calc() || rhs_->calc();
 
-        case operator_type::div_:
-            return lhs_->execute() / rhs_->execute();
+        case bin_op::div_:
+            return lhs_->calc() / rhs_->calc();
             break;
 
-        case operator_type::mult_:
-            return lhs_->execute() * rhs_->execute();
+        case bin_op::mult_:
+            return lhs_->calc() * rhs_->calc();
             break;
 
-        case operator_type::mod_:
-            return lhs_->execute() % rhs_->execute();
+        case bin_op::mod_:
+            return lhs_->calc() % rhs_->calc();
             break;
+    }
 
-        case operator_type::output_:
-            std::cout << rhs_->execute() << ::std::endl;
+    return 0;
+}
+
+
+int unary_op_t::calc() {
+    int ret;
+    switch(op_) {
+        case unary_op::output_:
+            std::cout << node_->calc() << ::std::endl;
             return 0;
 
-        case operator_type::input_:
+        case unary_op::input_:
             std::cin >> ret;
             return ret;
 
-        case operator_type::not_:
-            return !static_cast<bool>(lhs_->execute());    
+        case unary_op::not_:
+            return !static_cast<bool>(node_->calc());
     }
 
     return 0;
 }
 
-/* -------------------------------------------------- */
-
-int while_t::execute() {
-    while(condition_->execute()) {
-        scope_->execute();
-    }
-
-    return 0;
+bin_op_t::~bin_op_t() {
+    delete lhs_;
+    delete rhs_;
 }
 
-/* -------------------------------------------------- */
+unary_op_t::~unary_op_t() {
+    delete node_;
+}
 
-int if_t::execute() {
-    if(condition_->execute()) {
-        scope_->execute();
+int if_t::calc() {
+    if(condition_->calc()) {
+        scope_->calc();
     }
     
     return 0;
 }
 
+int while_t::calc() {
+    while(condition_->calc()) {
+        scope_->calc();
+    }
+
+    return 0;
+}
 }
