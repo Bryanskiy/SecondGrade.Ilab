@@ -81,6 +81,7 @@ public:
     void pushVertex(glm::vec3 pos, glm::vec3 color, glm::vec3 normal, uint64_t entityId) {vertices.push_back({pos, color, normal});}
     void pushModelInfo(const glm::mat4& model) {storageModelData.push_back({model});}
     void updateCameraMatrices(const glm::mat4& view, const glm::mat4& proj) {cameraMatrices.view = view, cameraMatrices.proj = proj;}
+    void setModelData(std::size_t idx, const glm::mat4& modelMat) {storageModelData[idx].model = modelMat;}
 
 private:
 

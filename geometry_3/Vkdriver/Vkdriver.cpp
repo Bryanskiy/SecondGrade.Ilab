@@ -791,11 +791,12 @@ void Vkdriver::updateUniformBuffer(uint32_t currentImage) {
     memcpy(data, &uc, sizeof(uc));
     vkUnmapMemory(device, uniformCameraBuffersMemory[currentImage]);
 
-    storageModelData.resize(vertices.size() / 3);
-    for(std::size_t i = 0, maxi = storageModelData.size(); i < maxi; ++i) {
-        storageModelData[i] = {glm::rotate(glm::mat4(1.f), glm::radians(time * (i + 1) * 10), {0.f, 0.f, 1.f})};
-    }
+    data = nullptr;
     vkMapMemory(device, storageModelBuffersMemory[currentImage], 0, sizeof(StorageModel) * storageModelData.size(), 0, &data);
+    auto* pModelData = static_cast<StorageModel*>(data);
+    for (size_t i = 0, mi = storageModelData.size(); i < mi; i++) {
+        pModelData[i] = storageModelData.at(i);
+    }
     memcpy(data, storageModelData.data(), sizeof(StorageModel) * storageModelData.size());    
     vkUnmapMemory(device, storageModelBuffersMemory[currentImage]);
 }

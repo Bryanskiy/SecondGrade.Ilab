@@ -16,7 +16,7 @@ void App::triangleHandler::update(float time) {
     }
 }
 
-void App::pushTriangle(const lingeo::triangle_t<3>& triangle, glm::vec3 posRotation, glm::vec3 dirRotation, std::size_t lifeTime, float speedRotation) {
+void App::pushTriangle(const lingeo::triangle_t<3>& triangle, glm::vec3 posRotation, glm::vec3 dirRotation, float lifeTime, float speedRotation) {
     triangleHandler obj;
     obj.triangle_ = triangle;
     obj.posRotation_ = posRotation;
@@ -52,7 +52,7 @@ void App::init() {
             driver_.pushVertex(pos, {0.0, 1.0, 0.0}, format_normat, i);
         }
 
-        //driver_.pushModelInfo(triangles_[i].getModelMatrix());
+        driver_.pushModelInfo(triangles_[i].getModelMatrix());
     }
     driver_.initVulkan();
 }
@@ -63,16 +63,34 @@ void App::run() {
 
     auto startTime = std::chrono::high_resolution_clock::now();    
     while (!glfwWindowShouldClose(window_)) {
+
         auto currentTime = std::chrono::high_resolution_clock::now();
 		float time = std::chrono::duration<float, std::chrono::seconds::period>(currentTime - startTime).count();
 		startTime = currentTime;
+
         glfwPollEvents();
+
         camera_.update(time, window_);
-        driver_.updateCameraMatrices(camera_.getViewMatrix(), camera_.getProjMatrix());
+        updateModels(time);
+        updateDriver();
+
         driver_.drawFrame();
     }
 
     driver_.wait();
+}
+
+void App::updateDriver() {
+    driver_.updateCameraMatrices(camera_.getViewMatrix(), camera_.getProjMatrix());
+    for(std::size_t i = 0, maxi = triangles_.size(); i < maxi; ++i) {
+        driver_.setModelData(i, triangles_[i].getModelMatrix());
+    }
+}
+
+void App::updateModels(float time) {
+    for(std::size_t i = 0, maxi = triangles_.size(); i < maxi; ++i) {
+        triangles_[i].update(time);
+    }
 }
 
 /* static */ void App::framebufferResizeCallback(GLFWwindow* window, int width, int height) {
@@ -90,7 +108,6 @@ void App::run() {
     } else if (button == GLFW_MOUSE_BUTTON_LEFT && action == GLFW_RELEASE) {
         glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_NORMAL);
     }
-
 }
 
 /* static */ void App::keyCallback(GLFWwindow* window, int key, int scancode, int action, int mode) {

@@ -21,7 +21,7 @@ public:
     void run();
 
     void pushTriangle(const lingeo::triangle_t<3>& triangle, glm::vec3 posRotation, 
-                       glm::vec3 dirRotation, std::size_t lifeTime, float speedRotation);              
+                       glm::vec3 dirRotation, float lifeTime, float speedRotation);              
 private:
 
     struct triangleHandler {
@@ -46,8 +46,8 @@ private:
     vkdriver::Vkdriver              driver_;
 
 private:
-    void sendDataToDriver() const;
-    void update(float time);
+    void updateDriver();
+    void updateModels(float time);
     static void framebufferResizeCallback(GLFWwindow* window, int width, int height);
     static void mouseButtonCallback(GLFWwindow* window, int button, int action, int mods);    
     static void keyCallback(GLFWwindow* window, int key, int scancode, int action, int mode);
