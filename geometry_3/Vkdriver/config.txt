@@ -1,0 +1,5 @@
+1
+VK_LAYER_KHRONOS_validation
+2
+VK_KHR_swapchain
+VK_KHR_shader_draw_parameters

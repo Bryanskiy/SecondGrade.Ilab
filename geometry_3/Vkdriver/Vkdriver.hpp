@@ -21,9 +21,9 @@
 namespace vkdriver {
 
 struct Vertex {
-    glm::vec3 pos;
-    glm::vec3 color;
-    glm::vec3 normal;
+    alignas(16) glm::vec3 pos;
+    alignas(16) glm::vec3 color;
+    alignas(16) glm::vec3 normal;
 
     static VkVertexInputBindingDescription getBindingDescription() {
         VkVertexInputBindingDescription bindingDescription{};
@@ -56,15 +56,13 @@ struct Vertex {
     }
 };
 
-struct UniformBufferObject {
-    glm::mat4 model;
-    glm::mat4 view;
-    glm::mat4 proj;
+struct UniformCamera {
+    alignas(16) glm::mat4 view;
+    alignas(16) glm::mat4 proj;
 };
 
-struct UniformCamera {
-    glm::mat4 view;
-    glm::mat4 proj;
+struct StorageModel {
+    alignas(16) glm::mat4 model;
 };
 
 class Vkdriver final {
@@ -81,6 +79,7 @@ public:
     void wait() {vkDeviceWaitIdle(device);}  
     void initVulkan();
     void pushVertex(glm::vec3 pos, glm::vec3 color, glm::vec3 normal, uint64_t entityId) {vertices.push_back({pos, color, normal});}
+    void pushModelInfo(const glm::mat4& model) {storageModelData.push_back({model});}
     void updateCameraMatrices(const glm::mat4& view, const glm::mat4& proj) {cameraMatrices.view = view, cameraMatrices.proj = proj;}
 
 private:
@@ -117,6 +116,10 @@ const bool enableValidationLayers = true;
         std::vector<VkPresentModeKHR> presentModes;
     };
 
+    size_t                          currentFrame = 0;
+    const int                       MAX_FRAMES_IN_FLIGHT = 2;
+    bool                            framebufferResized = false;
+
     GLFWwindow*                     window = nullptr;
     VkInstance                      instance;
     VkDebugUtilsMessengerEXT        debugMessenger;
@@ -124,34 +127,44 @@ const bool enableValidationLayers = true;
     VkDevice                        device;
     VkQueue                         queue;
     VkSurfaceKHR                    surface;
+
     VkSwapchainKHR                  swapChain;
     std::vector<VkImage>            swapChainImages;
     VkFormat                        swapChainImageFormat;
     VkExtent2D                      swapChainExtent;
     std::vector<VkImageView>        swapChainImageViews;
+    std::vector<VkFramebuffer>      swapChainFramebuffers;   
+
     VkRenderPass                    renderPass;
     VkPipelineLayout                pipelineLayout;
     VkPipeline                      graphicsPipeline;
-    std::vector<VkFramebuffer>      swapChainFramebuffers;
+
     VkCommandPool                   commandPool;
     std::vector<VkCommandBuffer>    commandBuffers;
+
     std::vector<VkSemaphore>        imageAvailableSemaphores;
     std::vector<VkSemaphore>        renderFinishedSemaphores;
     std::vector<VkFence>            inFlightFences;
     std::vector<VkFence>            imagesInFlight;
-    size_t                          currentFrame = 0;
-    const int                       MAX_FRAMES_IN_FLIGHT = 2;
-    bool                            framebufferResized = false;
+
     VkBuffer                        vertexBuffer;
     VkDeviceMemory                  vertexBufferMemory;
+
     VkDescriptorSetLayout           descriptorSetLayout;
-    std::vector<VkBuffer>           uniformBuffers;
-    std::vector<VkDeviceMemory>     uniformBuffersMemory;
     VkDescriptorPool                descriptorPool;
     std::vector<VkDescriptorSet>    descriptorSets;
+
+    std::vector<VkBuffer>           uniformCameraBuffers;
+    std::vector<VkDeviceMemory>     uniformCameraBuffersMemory;
+
+    std::vector<VkBuffer>           storageModelBuffers;
+    std::vector<VkDeviceMemory>     storageModelBuffersMemory;
+    std::vector<StorageModel>       storageModelData;
+
     VkImage                         depthImage;
     VkDeviceMemory                  depthImageMemory;
     VkImageView                     depthImageView;
+
     std::vector<Vertex>             vertices;
     ConfigData                      configData;
     UniformCamera                   cameraMatrices;
@@ -175,7 +188,7 @@ const bool enableValidationLayers = true;
     void                            createImageViews();
     void                            cleanup();
     void                            recreateSwapChain();
-    void                            createUniformBuffers();
+    void                            createGpuBuffers();
     void                            createDescriptorPool();
     void                            createDescriptorSets();
     void                            updateUniformBuffer(uint32_t currentImage);

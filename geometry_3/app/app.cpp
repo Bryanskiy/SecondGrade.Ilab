@@ -2,6 +2,20 @@
 
 namespace trap {
 
+glm::mat4 App::triangleHandler::getModelMatrix() const {
+    glm::mat4 translationMatrix = glm::translate(glm::mat4(1.f), posRotation_);
+    glm::mat4 res = glm::rotate(translationMatrix, glm::radians(angle_), dirRotation_);
+    return res;
+}
+
+void App::triangleHandler::update(float time) {
+    lifeTime_ -= time;
+
+    if (lifeTime_ > 0.f) {
+        angle_ += speedRotation_ * std::min(time, lifeTime_);
+    }
+}
+
 void App::pushTriangle(const lingeo::triangle_t<3>& triangle, glm::vec3 posRotation, glm::vec3 dirRotation, std::size_t lifeTime, float speedRotation) {
     triangleHandler obj;
     obj.triangle_ = triangle;
@@ -32,9 +46,13 @@ void App::init() {
         auto normal = lingeo::plane_t(triangles_[i].triangle_[0], triangles_[i].triangle_[1], triangles_[i].triangle_[2]).normal();
         glm::vec3 format_normat = {normal[0], normal[1], normal[2]};
         for(std::size_t j = 0, maxj = 3; j < maxj; ++j) {
-            glm::vec3 pos = {triangles_[i].triangle_[j][0], triangles_[i].triangle_[j][1], triangles_[i].triangle_[j][2]};
+            glm::vec3 pos = {triangles_[i].triangle_[j][0] - triangles_[i].posRotation_[0], 
+                             triangles_[i].triangle_[j][1] - triangles_[i].posRotation_[0], 
+                             triangles_[i].triangle_[j][2] - triangles_[i].posRotation_[0]};
             driver_.pushVertex(pos, {0.0, 1.0, 0.0}, format_normat, i);
         }
+
+        //driver_.pushModelInfo(triangles_[i].getModelMatrix());
     }
     driver_.initVulkan();
 }

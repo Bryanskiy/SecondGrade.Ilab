@@ -24,45 +24,11 @@ public:
 
 	void setAspect(float width, float height) {aspect = width / height;}
 
-    void update(float time, GLFWwindow* window) {
-
-        int wHeight = 0, wWidth = 0;
-		glfwGetWindowSize(window, &wWidth, &wHeight);
-		if (glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_LEFT) == GLFW_PRESS) {
-			double x = 0, y = 0;
-			glfwGetCursorPos(window, &x, &y);
-			const float dx = wWidth / 2.f - x;
-			const float dy = wHeight / 2.f - y;
-
-			turnInHorizontalPlane(glm::radians(90.f * dx / wWidth));
-			turnInVerticalPlane(glm::radians(90.f * dy / wHeight));
-
-			glfwSetCursorPos(window, wWidth / 2.0, wHeight / 2.0);
-		}
-
-		if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS) {
-			moveInDirection(time * speed);
-		}
-		if (glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS) {
-			moveInDirection(-time * speed);
-		}
-		if (glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS) {
-			movePerpendicularDirection(-time * speed);
-		}
-		if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS) {
-			movePerpendicularDirection(time * speed);
-		}			
-		if (glfwGetKey(window, GLFW_KEY_SPACE) == GLFW_PRESS) {
-			moveUp(time * speed);
-		}
-		if ( glfwGetKey(window, GLFW_KEY_LEFT_SHIFT) == GLFW_PRESS) {
-			moveUp(-time * speed);
-		}
-    }
+    void update(float time, GLFWwindow* window);
 
 private:
-    glm::vec3 position = {1, 1, 1};
-    glm::vec3 direction = {1, 1, 1};
+    glm::vec3 position = {2, 2, 2};
+    glm::vec3 direction = {-1, -1, -1};
 
 	glm::vec3 upVector = glm::vec3(0.f, 0.f, 1.f);
 	float viewAngle = 45.f;
@@ -70,7 +36,7 @@ private:
 	float near = 0.1f;
 	float far = 1000.f;
     float speed = 5.f;
-
+private:
     void moveInDirection(float distance) { position += distance * direction;}
     void moveUp(float distance) {position += distance * upVector;}
     void movePerpendicularDirection(float distance) {
