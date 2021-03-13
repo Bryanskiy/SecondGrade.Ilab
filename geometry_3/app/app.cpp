@@ -44,11 +44,14 @@ void App::init() {
     driver_.setWindow(window_);
     for(std::size_t i = 0, maxi = triangles_.size(); i < maxi; ++i) {
         auto normal = lingeo::plane_t(triangles_[i].triangle_[0], triangles_[i].triangle_[1], triangles_[i].triangle_[2]).normal();
-        glm::vec3 format_normat = {normal[0], normal[1], normal[2]};
+        glm::vec3 format_normat = {normal[0] - triangles_[i].posRotation_[0], 
+                                   normal[1] - triangles_[i].posRotation_[1], 
+                                   normal[2] - triangles_[i].posRotation_[2]};
+                                   
         for(std::size_t j = 0, maxj = 3; j < maxj; ++j) {
             glm::vec3 pos = {triangles_[i].triangle_[j][0] - triangles_[i].posRotation_[0], 
-                             triangles_[i].triangle_[j][1] - triangles_[i].posRotation_[0], 
-                             triangles_[i].triangle_[j][2] - triangles_[i].posRotation_[0]};
+                             triangles_[i].triangle_[j][1] - triangles_[i].posRotation_[1], 
+                             triangles_[i].triangle_[j][2] - triangles_[i].posRotation_[2]};
             driver_.pushVertex(pos, {0.0, 1.0, 0.0}, format_normat, i);
         }
 

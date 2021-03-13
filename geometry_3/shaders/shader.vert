@@ -20,10 +20,13 @@ layout(location = 1) in vec3 inColor;
 layout(location = 2) in vec3 inNormal;
 layout(location = 0) out vec3 fragColor;
 
-const vec3 light = normalize(vec3(0.0, -1.0, -1.0));
+const vec4 light = normalize(vec4(-1.0, -1.0, -1.0, 0.0));
 const float minLight = 0.2;
 
 void main() {
     gl_Position = uc.proj * uc.view * StorageModelInfo[ gl_BaseInstance ].model * vec4(inPosition, 1.0);
-    fragColor = inColor * min(1.f, max(minLight, abs(dot(light, normalize(inNormal)))));
+
+    vec4 validNormal = StorageModelInfo[ gl_BaseInstance ].model * vec4(inNormal, 0.f);
+
+    fragColor = inColor * min(1.f, max(minLight, abs(dot(light, normalize(validNormal)))));
 }
