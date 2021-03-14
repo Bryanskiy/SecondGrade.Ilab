@@ -10,6 +10,7 @@ layout(binding = 0) uniform UniformCamera {
 //-----------------------------------------------------------
 struct StorageModel {
     mat4 model;
+    vec3 color;
 };
 layout(set = 0, binding = 1) readonly buffer Model {
     StorageModel StorageModelInfo[];
@@ -34,11 +35,12 @@ const float minLight = 0.2;
 
 void main() {
     mat4 modelMatrix = StorageModelInfo[ gl_BaseInstance ].model;
+    vec3 modelColor  = StorageModelInfo[ gl_BaseInstance ].color;
     vec4 validNormal = StorageModelInfo[ gl_BaseInstance ].model * vec4(inNormal, 0.f);
     vec4 worldCoords = modelMatrix * vec4(inPosition, 1.0);
 
-    StorageWCoordsInfo[gl_VertexIndex].coords = vec3(1, 2, 3);
+    StorageWCoordsInfo[gl_VertexIndex].coords = worldCoords.xyz;
 
     gl_Position = uc.proj * uc.view * worldCoords;
-    fragColor = inColor * min(1.f, max(minLight, abs(dot(light, normalize(validNormal)))));
+    fragColor = modelColor * min(1.f, max(minLight, abs(dot(light, normalize(validNormal)))));
 }

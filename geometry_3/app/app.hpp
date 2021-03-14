@@ -36,7 +36,6 @@ private:
         float speedRotation_;
 
         glm::mat4 getModelMatrix() const;
-        void update(float time);
     };
 
 private:

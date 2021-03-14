@@ -15,7 +15,7 @@ int main() {
 
     trap::App app;
     for(std::size_t i = 0; i < triangle_count; ++i) {
-        glm::vec3 A, B, C, rotationFst, rotationScd;
+        glm::vec3 rotationFst, rotationScd;
         std::size_t lifeTime;
         float speedRotation;
 

@@ -78,6 +78,8 @@ Vkdriver::ConfigData::~ConfigData() {
 }
 
 void Vkdriver::initVulkan() {
+    StorageWCoordsData.resize(vertices.size());
+
     createInstance();
     setupDebugMessenger();
     createSurface();
@@ -836,9 +838,6 @@ void Vkdriver::drawFrame() {
 
     updateUniformBuffer(imageIndex);
     updateWorldCoords(imageIndex);
-    for(std::size_t i = 0, maxi = vertices.size(); i < maxi; ++i) {
-        std::cout << StorageWCoordsData[i].coordinates.x << " " << StorageWCoordsData[i].coordinates.y << " " << StorageWCoordsData[i].coordinates.z << std::endl;
-    }
 
     VkSubmitInfo submitInfo{};
     submitInfo.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;

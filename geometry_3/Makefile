@@ -1,4 +1,4 @@
-CFLAGS = -std=c++17 -g
+CFLAGS = -std=c++17 -O2 -D"NDEBUG"
 LDFLAGS = -lglfw -lvulkan -ldl -lpthread -lX11 -lXrandr -lXi
 
 VulkanTest: main.cpp

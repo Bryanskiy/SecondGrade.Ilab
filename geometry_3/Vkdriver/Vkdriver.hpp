@@ -63,6 +63,7 @@ struct UniformCamera {
 
 struct StorageModel {
     alignas(16) glm::mat4 model;
+    alignas(16) glm::vec3 color;
 };
 
 struct StorageWCoords {
@@ -86,6 +87,13 @@ public:
     void pushModelInfo(const glm::mat4& model) {storageModelData.push_back({model});}
     void updateCameraMatrices(const glm::mat4& view, const glm::mat4& proj) {cameraMatrices.view = view, cameraMatrices.proj = proj;}
     void setModelData(std::size_t idx, const glm::mat4& modelMat) {storageModelData[idx].model = modelMat;}
+    std::vector<glm::vec3> getWorldCoordinates(std::size_t idx) {return {StorageWCoordsData[idx * 3].coordinates, 
+                                                                         StorageWCoordsData[idx * 3 + 1].coordinates, 
+                                                                         StorageWCoordsData[idx * 3 + 2].coordinates};} 
+
+    void setColor(std::size_t idx, const glm::vec3& color) {
+        storageModelData[idx].color = color;
+    }                                                                     
 
 private:
 
