@@ -734,9 +734,9 @@ void Vkdriver::createCommandBuffers() {
         VkDeviceSize offsets[] = {0};
         vkCmdBindVertexBuffers(commandBuffers[i], 0, 1, vertexBuffers, offsets);
 
-        uint32_t dynamicOffsets[] = {0};
+        uint32_t dynamicOffsets[] = {0, 0};
 
-        vkCmdBindDescriptorSets(commandBuffers[i], VK_PIPELINE_BIND_POINT_GRAPHICS, pipelineLayout, 0, 1, &descriptorSets[i], 1, dynamicOffsets);
+        vkCmdBindDescriptorSets(commandBuffers[i], VK_PIPELINE_BIND_POINT_GRAPHICS, pipelineLayout, 0, 1, &descriptorSets[i], 2, dynamicOffsets);
 
 		size_t numVec = vertices.size();
         for (size_t curT = 1; curT * 3 <= numVec; curT++) {
@@ -801,6 +801,20 @@ void Vkdriver::updateUniformBuffer(uint32_t currentImage) {
     vkUnmapMemory(device, storageModelBuffersMemory[currentImage]);
 }
 
+void Vkdriver::updateWorldCoords(uint32_t currentImage) {
+    void* data = nullptr; 
+    StorageWCoordsData.resize(vertices.size());
+
+    vkMapMemory(device, StorageWCoordsBuffersMemory[currentImage], 0,
+                sizeof(StorageWCoords) * vertices.size(), 0, &data);
+
+    auto* pOutData = static_cast<StorageWCoords*>(data);
+    for (size_t i = 0, mi = vertices.size(); i < mi; ++i) {
+        StorageWCoordsData[i].coordinates = pOutData[i].coordinates;
+    }
+    vkUnmapMemory(device, StorageWCoordsBuffersMemory[currentImage]);
+}
+
 void Vkdriver::drawFrame() {
     vkWaitForFences(device, 1, &inFlightFences[currentFrame], VK_TRUE, UINT64_MAX);
 
@@ -821,6 +835,10 @@ void Vkdriver::drawFrame() {
     imagesInFlight[imageIndex] = inFlightFences[currentFrame];
 
     updateUniformBuffer(imageIndex);
+    updateWorldCoords(imageIndex);
+    for(std::size_t i = 0, maxi = vertices.size(); i < maxi; ++i) {
+        std::cout << StorageWCoordsData[i].coordinates.x << " " << StorageWCoordsData[i].coordinates.y << " " << StorageWCoordsData[i].coordinates.z << std::endl;
+    }
 
     VkSubmitInfo submitInfo{};
     submitInfo.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
@@ -975,14 +993,22 @@ void Vkdriver::createDescriptorSetLayout() {
     entityLayoutBinding.stageFlags         = VK_SHADER_STAGE_VERTEX_BIT;
     entityLayoutBinding.pImmutableSamplers = nullptr;    
 
+    VkDescriptorSetLayoutBinding CoordsLayoutBinding = {};
+    CoordsLayoutBinding.binding            = 2;
+    CoordsLayoutBinding.descriptorType     = VK_DESCRIPTOR_TYPE_STORAGE_BUFFER_DYNAMIC;
+    CoordsLayoutBinding.descriptorCount    = 1;
+    CoordsLayoutBinding.stageFlags         = VK_SHADER_STAGE_VERTEX_BIT;
+    CoordsLayoutBinding.pImmutableSamplers = nullptr;        
+
     VkDescriptorSetLayoutBinding bindings[] {
         cameraLayoutBinding,
         entityLayoutBinding,
+        CoordsLayoutBinding
     };
 
     VkDescriptorSetLayoutCreateInfo layoutInfo{};
     layoutInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO;
-    layoutInfo.bindingCount = 2;
+    layoutInfo.bindingCount = 3;
     layoutInfo.pBindings = bindings;
 
     if (vkCreateDescriptorSetLayout(device, &layoutInfo, nullptr, &descriptorSetLayout) != VK_SUCCESS) {
@@ -992,25 +1018,42 @@ void Vkdriver::createDescriptorSetLayout() {
 
 void Vkdriver::createGpuBuffers() {
 
-    VkDeviceSize uniformCameraSize = sizeof(UniformCamera);
-    uniformCameraBuffers.resize(swapChainImages.size());
-    uniformCameraBuffersMemory.resize(swapChainImages.size());
+    {
+        VkDeviceSize uniformCameraSize = sizeof(UniformCamera);
+        uniformCameraBuffers.resize(swapChainImages.size());
+        uniformCameraBuffersMemory.resize(swapChainImages.size());
 
-    for (size_t i = 0; i < swapChainImages.size(); i++) {
-        createBuffer(uniformCameraSize, VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT, 
-                     VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT, 
-                     uniformCameraBuffers[i], uniformCameraBuffersMemory[i]);
+        for (size_t i = 0; i < swapChainImages.size(); i++) {
+            createBuffer(uniformCameraSize, VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT, 
+                         VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT, 
+                         uniformCameraBuffers[i], uniformCameraBuffersMemory[i]);
+        }
     }
 
-    VkDeviceSize storageModelSize = sizeof(StorageModel) * vertices.size() / 3;
-    storageModelBuffers.resize(swapChainImages.size());
-    storageModelBuffersMemory.resize(swapChainImages.size());
+    {
+        VkDeviceSize storageModelSize = sizeof(StorageModel) * vertices.size() / 3;
+        storageModelBuffers.resize(swapChainImages.size());
+        storageModelBuffersMemory.resize(swapChainImages.size());
 
-    for (size_t i = 0; i < swapChainImages.size(); i++) {
-        createBuffer(storageModelSize, VK_BUFFER_USAGE_STORAGE_BUFFER_BIT, 
-                     VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT, 
-                     storageModelBuffers[i], storageModelBuffersMemory[i]);
-    }
+        for (size_t i = 0; i < swapChainImages.size(); i++) {
+            createBuffer(storageModelSize, VK_BUFFER_USAGE_STORAGE_BUFFER_BIT, 
+                         VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT, 
+                         storageModelBuffers[i], storageModelBuffersMemory[i]);
+        }
+    }    
+
+    {
+
+        VkDeviceSize StorageWCoordsSize = sizeof(StorageWCoords) * vertices.size();
+        StorageWCoordsBuffers.resize(swapChainImages.size());
+        StorageWCoordsBuffersMemory.resize(swapChainImages.size());
+
+        for (size_t i = 0; i < swapChainImages.size(); i++) {
+            createBuffer(StorageWCoordsSize, VK_BUFFER_USAGE_STORAGE_BUFFER_BIT, 
+                         VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT, 
+                         StorageWCoordsBuffers[i], StorageWCoordsBuffersMemory[i]);
+        }                 
+    }                 
 }    
 
 void Vkdriver::createDescriptorPool() {
@@ -1022,14 +1065,19 @@ void Vkdriver::createDescriptorPool() {
     poolSizeModel.type = VK_DESCRIPTOR_TYPE_STORAGE_BUFFER_DYNAMIC;
     poolSizeModel.descriptorCount = static_cast<uint32_t> (swapChainImages.size());
 
+    VkDescriptorPoolSize poolSizeWCoords = {};
+    poolSizeWCoords.type = VK_DESCRIPTOR_TYPE_STORAGE_BUFFER_DYNAMIC;
+    poolSizeWCoords.descriptorCount = static_cast<uint32_t> (swapChainImages.size());
+
     VkDescriptorPoolSize poolSizes[] = {
         poolSizeCamera,
         poolSizeModel,
+        poolSizeWCoords,
     };
 
     VkDescriptorPoolCreateInfo poolInfo{};
     poolInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_POOL_CREATE_INFO;
-    poolInfo.poolSizeCount = 2;
+    poolInfo.poolSizeCount = 3;
     poolInfo.pPoolSizes = poolSizes;
     poolInfo.maxSets = static_cast<uint32_t>(swapChainImages.size());
 
@@ -1085,12 +1133,30 @@ void Vkdriver::createDescriptorSets() {
         descriptorWriteEntity.pTexelBufferView = nullptr;     
 
 
+        //----------------------------------------------------------
+        VkDescriptorBufferInfo bufferCoordsInfo = {};
+        bufferCoordsInfo.buffer = StorageWCoordsBuffers[i];
+        bufferCoordsInfo.offset = 0;
+        bufferCoordsInfo.range = sizeof(StorageWCoords) * vertices.size();
+
+        VkWriteDescriptorSet descriptorWriteCoords = {};
+        descriptorWriteCoords.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
+        descriptorWriteCoords.dstSet = descriptorSets[i];
+        descriptorWriteCoords.dstBinding = 2;
+        descriptorWriteCoords.dstArrayElement = 0;
+        descriptorWriteCoords.descriptorType = VK_DESCRIPTOR_TYPE_STORAGE_BUFFER_DYNAMIC;
+        descriptorWriteCoords.descriptorCount = 1;
+        descriptorWriteCoords.pBufferInfo = &bufferCoordsInfo;
+        descriptorWriteCoords.pImageInfo = nullptr;
+        descriptorWriteCoords.pTexelBufferView = nullptr; 
+
         VkWriteDescriptorSet descriptorWrites[] = {
             descriptorWriteCamera,
             descriptorWriteEntity,
+            descriptorWriteCoords
         };
 
-        vkUpdateDescriptorSets(device, 2, descriptorWrites, 0, nullptr);
+        vkUpdateDescriptorSets(device, 3, descriptorWrites, 0, nullptr);
     }
 }
 
@@ -1234,6 +1300,9 @@ void Vkdriver::cleanupSwapChain() {
 
         vkDestroyBuffer(device, storageModelBuffers[i], nullptr);
         vkFreeMemory(device, storageModelBuffersMemory[i], nullptr);
+
+        vkDestroyBuffer(device, StorageWCoordsBuffers[i], nullptr);
+        vkFreeMemory(device, StorageWCoordsBuffersMemory[i], nullptr);
     }
 
     vkDestroyDescriptorPool(device, descriptorPool, nullptr);

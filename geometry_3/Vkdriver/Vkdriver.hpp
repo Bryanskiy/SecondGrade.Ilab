@@ -65,6 +65,10 @@ struct StorageModel {
     alignas(16) glm::mat4 model;
 };
 
+struct StorageWCoords {
+    alignas(16) glm::vec3 coordinates;
+};
+
 class Vkdriver final {
 public:
     Vkdriver() = default;
@@ -162,6 +166,10 @@ const bool enableValidationLayers = true;
     std::vector<VkDeviceMemory>     storageModelBuffersMemory;
     std::vector<StorageModel>       storageModelData;
 
+    std::vector<VkBuffer>           StorageWCoordsBuffers;
+    std::vector<VkDeviceMemory>     StorageWCoordsBuffersMemory;
+    std::vector<StorageWCoords>     StorageWCoordsData;
+
     VkImage                         depthImage;
     VkDeviceMemory                  depthImageMemory;
     VkImageView                     depthImageView;
@@ -192,6 +200,7 @@ const bool enableValidationLayers = true;
     void                            createGpuBuffers();
     void                            createDescriptorPool();
     void                            createDescriptorSets();
+    void                            updateWorldCoords(uint32_t currentImage);
     void                            updateUniformBuffer(uint32_t currentImage);
     void                            createBuffer(VkDeviceSize size, VkBufferUsageFlags usage, VkMemoryPropertyFlags properties, VkBuffer& buffer, VkDeviceMemory& bufferMemory);
     void                            copyBuffer(VkBuffer srcBuffer, VkBuffer dstBuffer, VkDeviceSize size);
