@@ -2,22 +2,32 @@
 
 namespace trap {
 
+ App::triangleHandler::triangleHandler(const lingeo::triangle_t<3>& triangle, const glm::vec3& posRotation, const glm::vec3& dirRotation, 
+                                       const glm::vec3& color, float lifeTime, float angle, float speedRotation) : 
+triangle_(triangle), posRotation_(posRotation), dirRotation_(dirRotation), color_(color), lifeTime_(lifeTime), angle_(angle), speedRotation_(speedRotation) {}
+
 glm::mat4 App::triangleHandler::getModelMatrix() const {
     glm::mat4 translationMatrix = glm::translate(glm::mat4(1.f), posRotation_);
     glm::mat4 res = glm::rotate(translationMatrix, glm::radians(angle_), dirRotation_);
     return res;
 }
 
-void App::pushTriangle(const lingeo::triangle_t<3>& triangle, glm::vec3 posRotation, glm::vec3 dirRotation, float lifeTime, float speedRotation) {
-    triangleHandler obj;
-    obj.triangle_ = triangle;
-    obj.posRotation_ = posRotation;
-    obj.dirRotation_ = dirRotation;
-    obj.color_ = {0.0, 0.0, 1.0};
-    obj.lifeTime_ = lifeTime;
-    obj.angle_ = 0.0;
-    obj.speedRotation_ = speedRotation;
+void App::triangleHandler::update(const std::vector<glm::vec3>& wCoords, float time) {
+    lifeTime_ -= time;
 
+    if (lifeTime_ > 0.f) {
+        angle_ += speedRotation_ * std::min(time, lifeTime_);
+    }
+
+    for(std::size_t p = 0; p < 3; ++p) {
+        for(std::size_t c = 0; c < 3; ++c) {
+            triangle_[p][c] = wCoords[p][c];
+        }
+    }
+}
+
+void App::pushTriangle(const lingeo::triangle_t<3>& triangle, glm::vec3 posRotation, glm::vec3 dirRotation, float lifeTime, float speedRotation) {
+    triangleHandler obj(triangle, posRotation, dirRotation, {0.0, 0.0, 1.0}, lifeTime, 0, speedRotation);
     triangles_.push_back(obj);
 }
 
@@ -35,19 +45,23 @@ void App::init() {
     /* init vulkan */
     driver_.setWindow(window_);
     for(std::size_t i = 0, maxi = triangles_.size(); i < maxi; ++i) {
-        auto normal = lingeo::plane_t(triangles_[i].triangle_[0], triangles_[i].triangle_[1], triangles_[i].triangle_[2]).normal();
-        glm::vec3 format_normat = {normal[0] - triangles_[i].posRotation_[0], 
-                                   normal[1] - triangles_[i].posRotation_[1], 
-                                   normal[2] - triangles_[i].posRotation_[2]};
+
+        auto triangle = triangles_[i].getTriangle();
+        auto posRotation = triangles_[i].getPosRotation();
+
+        auto normal = lingeo::plane_t(triangle[0], triangle[1], triangle[2]).normal();
+        glm::vec3 format_normat = {normal[0] - posRotation[0], 
+                                   normal[1] - posRotation[1], 
+                                   normal[2] - posRotation[2]};
                                    
         for(std::size_t j = 0, maxj = 3; j < maxj; ++j) {
-            glm::vec3 pos = {triangles_[i].triangle_[j][0] - triangles_[i].posRotation_[0], 
-                             triangles_[i].triangle_[j][1] - triangles_[i].posRotation_[1], 
-                             triangles_[i].triangle_[j][2] - triangles_[i].posRotation_[2]};
+            glm::vec3 pos = {triangle[j][0] - posRotation[0], 
+                             triangle[j][1] - posRotation[1], 
+                             triangle[j][2] - posRotation[2]};
             driver_.pushVertex(pos, {0.0, 1.0, 0.0}, format_normat, i);
         }
 
-        driver_.pushModelInfo(triangles_[i].getModelMatrix());
+        driver_.pushModelMatrix(triangles_[i].getModelMatrix());
     }
     driver_.initVulkan();
 }
@@ -76,10 +90,10 @@ void App::run() {
 }
 
 void App::updateDriver() {
-    driver_.updateCameraMatrices(camera_.getViewMatrix(), camera_.getProjMatrix());
+    driver_.setCameraMatrices(camera_.getViewMatrix(), camera_.getProjMatrix());
     for(std::size_t i = 0, maxi = triangles_.size(); i < maxi; ++i) {
-        driver_.setModelData(i, triangles_[i].getModelMatrix());
-        driver_.setColor(i, triangles_[i].color_);
+        driver_.setModelMatrix(i, triangles_[i].getModelMatrix());
+        driver_.setColor(i, triangles_[i].getColor());
     }
 }
 
@@ -90,36 +104,15 @@ void App::updateModels(float time) {
     x_max = y_max = z_max = std::numeric_limits<long double>::min();
 
     for(std::size_t i = 0, maxi = triangles_.size(); i < maxi; ++i) {
-        {
-            triangles_[i].lifeTime_ -= time;
-
-            if (triangles_[i].lifeTime_ > 0.f) {
-                triangles_[i].angle_ += triangles_[i].speedRotation_ * std::min(time, triangles_[i].lifeTime_);
-            }
-        }
-
         auto newWorldCoordinates = driver_.getWorldCoordinates(i);
-        for(std::size_t p = 0; p < 3; ++p) {
-            for(std::size_t c = 0; c < 3; ++c) {
-                triangles_[i].triangle_[p][c] = newWorldCoordinates[p][c];
-            }
-
-            if(newWorldCoordinates[p][0] < x_min) {x_min = newWorldCoordinates[p][0];} 
-            else if(newWorldCoordinates[p][0] > x_max) {x_max = newWorldCoordinates[p][0];}
-
-            if(newWorldCoordinates[p][1] < y_min) {y_min = newWorldCoordinates[p][1];} 
-            else if(newWorldCoordinates[p][1] > y_max) {y_max = newWorldCoordinates[p][1];}
-
-            if(newWorldCoordinates[p][2] < z_min) {z_min = newWorldCoordinates[p][2];} 
-            else if(newWorldCoordinates[p][2] > z_max) {z_max = newWorldCoordinates[p][1];}
-        }
+        triangles_[i].update(newWorldCoordinates, time);
     }
 
     octt::space_t space{x_min, x_max, y_min, y_max, z_min, z_max};
     octt::octtree_t<lingeo::triangle_t<3>> octree(space);
 
     for(std::size_t i = 0, maxi = triangles_.size(); i < maxi; ++i) {
-        octree.insert(i, triangles_[i].triangle_);
+        octree.insert(i, triangles_[i].getTriangle());
     }
 
     auto indices = octree.get_intersections();
@@ -127,10 +120,10 @@ void App::updateModels(float time) {
     std::size_t k = 0;
     for(std::size_t i = 0, maxi = triangles_.size(); i < maxi; ++i) {
          if((k < indices.size()) && (i == indices[k])) {
-             triangles_[i].color_ = {1.0, 0.0, 0.0};
+             triangles_[i].setColor({1.0, 0.0, 0.0});
              ++k;
          } else {
-             triangles_[i].color_ = {0.0, 0.0, 1.0};
+             triangles_[i].setColor({0.0, 0.0, 1.0});
         }
     }
 }

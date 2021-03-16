@@ -24,18 +24,29 @@ public:
                        glm::vec3 dirRotation, float lifeTime, float speedRotation);              
 private:
 
-    struct triangleHandler {
-        lingeo::triangle_t<3> triangle_; /* world coords */
+    class triangleHandler {
+        public:
+            triangleHandler(const lingeo::triangle_t<3>& triangle, const glm::vec3& posRotation, const glm::vec3& dirRotation, 
+                            const glm::vec3& color, float lifeTime, float angle, float speedRotation);
 
-        glm::vec3 posRotation_;
-        glm::vec3 dirRotation_;        
-        glm::vec3 color_ = {1.0, 1.0, 1.0};
+            glm::mat4 getModelMatrix() const;
+            void update(const std::vector<glm::vec3>& wCoords, float time);
+            void setColor(const glm::vec3& color) {color_ = color;}
 
-        float lifeTime_; /* in sec */
-        float angle_;
-        float speedRotation_;
+            lingeo::triangle_t<3> getTriangle() const {return triangle_;}
+            glm::vec3 getPosRotation() const {return posRotation_;}
+            glm::vec3 getColor() const {return color_;}
 
-        glm::mat4 getModelMatrix() const;
+        private:
+            lingeo::triangle_t<3> triangle_; /* world coords */
+
+            glm::vec3 posRotation_;
+            glm::vec3 dirRotation_;        
+            glm::vec3 color_ = {1.0, 1.0, 1.0};
+
+            float lifeTime_; /* in sec */
+            float angle_;
+            float speedRotation_;
     };
 
 private:
@@ -47,9 +58,11 @@ private:
 private:
     void updateDriver();
     void updateModels(float time);
+
     static void framebufferResizeCallback(GLFWwindow* window, int width, int height);
     static void mouseButtonCallback(GLFWwindow* window, int button, int action, int mods);    
     static void keyCallback(GLFWwindow* window, int key, int scancode, int action, int mode);
+
     void init();
 };
 

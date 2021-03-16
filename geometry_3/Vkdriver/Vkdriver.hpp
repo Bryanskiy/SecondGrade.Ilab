@@ -78,22 +78,26 @@ public:
 
     ~Vkdriver();
 
+    void initVulkan();
+
     void setWindow(GLFWwindow* window_) {window = window_;}
     void setResizeFlag() { framebufferResized = true; }
-    void drawFrame(); 
-    void wait() {vkDeviceWaitIdle(device);}  
-    void initVulkan();
-    void pushVertex(glm::vec3 pos, glm::vec3 color, glm::vec3 normal, uint64_t entityId) {vertices.push_back({pos, color, normal});}
-    void pushModelInfo(const glm::mat4& model) {storageModelData.push_back({model});}
-    void updateCameraMatrices(const glm::mat4& view, const glm::mat4& proj) {cameraMatrices.view = view, cameraMatrices.proj = proj;}
-    void setModelData(std::size_t idx, const glm::mat4& modelMat) {storageModelData[idx].model = modelMat;}
+    void setColor(std::size_t idx, const glm::vec3& color) { storageModelData[idx].color = color; }  
+    void setModelMatrix(std::size_t idx, const glm::mat4& modelMat) {storageModelData[idx].model = modelMat;}       
+    void setCameraMatrices(const glm::mat4& view, const glm::mat4& proj) {cameraMatrices.view = view, cameraMatrices.proj = proj;}
+
     std::vector<glm::vec3> getWorldCoordinates(std::size_t idx) {return {StorageWCoordsData[idx * 3].coordinates, 
                                                                          StorageWCoordsData[idx * 3 + 1].coordinates, 
                                                                          StorageWCoordsData[idx * 3 + 2].coordinates};} 
 
-    void setColor(std::size_t idx, const glm::vec3& color) {
-        storageModelData[idx].color = color;
-    }                                                                     
+    void drawFrame(); 
+    void wait() {vkDeviceWaitIdle(device);}  
+
+    void pushVertex(const glm::vec3& pos, const glm::vec3& color, const glm::vec3& normal, uint64_t entityId) {vertices.push_back({pos, color, normal});}
+    void pushModelMatrix(const glm::mat4& model) {storageModelData.push_back({model});}
+
+
+                                                            
 
 private:
 
