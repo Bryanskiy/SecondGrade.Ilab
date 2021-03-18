@@ -36,7 +36,7 @@ const float minLight = 0.2;
 void main() {
     mat4 modelMatrix = StorageModelInfo[ gl_BaseInstance ].model;
     vec3 modelColor  = StorageModelInfo[ gl_BaseInstance ].color;
-    vec4 validNormal = StorageModelInfo[ gl_BaseInstance ].model * vec4(inNormal, 0.f);
+    vec4 validNormal = modelMatrix * vec4(inNormal, 0.f);
     vec4 worldCoords = modelMatrix * vec4(inPosition, 1.0);
 
     StorageWCoordsInfo[gl_VertexIndex].coords = worldCoords.xyz;
