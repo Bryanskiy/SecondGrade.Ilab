@@ -16,21 +16,12 @@ namespace octt {
         space_t();
         space_t(std::initializer_list<long double> init);
 
-        long double &operator[](std::size_t idx);
-        const long double &operator[](std::size_t idx) const;
-
-
-        void set_Vmin(long double V);
-        long double get_Vmin() const;
-
-        long double V() const;
+        long double &operator[](std::size_t idx) { return borders_[idx]; }
+        const long double &operator[](std::size_t idx) const { return borders_[idx];}
 
     private:
         std::array<long double, 6> borders_; // borders arr: {xmin, xmax, ymin, ymax, zmin, zmax}
-        int V_min_; // V of elementary space area, how to make it static?
     };
-
-    space_t create(const std::vector<lingeo::triangle_t<3>>& elements);
 }
 
 
@@ -41,24 +32,24 @@ namespace octt {
     class node_t {
     public:
         node_t();
-        node_t(const space_t &space);
+        node_t(const space_t &space, uint8_t height);
         ~node_t() = default;
 
-        void find_intersections(std::vector<std::size_t>& index_v) const;
-        void insert(std::size_t i, const T &elem);
-
+        void insert(T* elem);
+        void fill_intersection();    
         std::size_t children_count() const;
-
         void del();
 
     private:
-        bool check_collision(const T& elem);
 
-        void insert(std::size_t i, bool intersect, const T &elem);
+        static constexpr uint8_t max_height_ = 3;
 
-        std::array<node_t<T> *, 8> children_;
-        std::vector<std::pair<bool, std::pair<std::size_t, T>>> elements_;
+        void fill_collision(T* elem);
+
+        std::array<node_t<T>*, 8> children_;
+        std::vector<T*> elements_;
         space_t space_;
+        uint8_t height_;
     };
 }
 
@@ -67,30 +58,27 @@ octt::node_t<T>::node_t() {
     for(std::size_t i = 0, max = children_.size(); i < max; ++i) {
         children_[i] = nullptr;
     }
+
+    height_ = 0;
 }
 
 template<typename T>
-octt::node_t<T>::node_t(const octt::space_t &space) : node_t() {
+octt::node_t<T>::node_t(const octt::space_t& space, uint8_t height) : node_t() {
     space_ = space;
+    height_ = height;
 }
 
 template<typename T>
-void octt::node_t<T>::insert(std::size_t i, const T &elem) {
-    insert(i, false, elem);
-}
-
-template<typename T>
-void octt::node_t<T>::insert(std::size_t i, bool intersect, const T &elem) {
-    if(space_.get_Vmin() > space_.V()) {
-        bool flag = check_collision(elem);
-        elements_.push_back({flag || intersect, {i, elem}});
+void octt::node_t<T>::insert(T* elem) {
+    if(height_ >= max_height_) {
+        elements_.push_back(elem);
         return;
     }
 
     std::pair<long double, long double> proj[3];
-    proj[0] = elem.projection_i(0);
-    proj[1] = elem.projection_i(1);
-    proj[2] = elem.projection_i(2);
+    proj[0] = elem->projection_i(0);
+    proj[1] = elem->projection_i(1);
+    proj[2] = elem->projection_i(2);
 
     long double x_mid = (space_[0] + space_[1]) / 2.0;
     long double y_mid = (space_[2] + space_[3]) / 2.0;
@@ -123,62 +111,56 @@ void octt::node_t<T>::insert(std::size_t i, bool intersect, const T &elem) {
         new_space[0] = x_mid, new_space[2] = y_mid, new_space[4] = z_mid;
         idx = 7;
     } else {
-        bool flag = check_collision(elem);
-        elements_.push_back({flag || intersect, {i, elem}});
+        elements_.push_back(elem);
         return;
     }
 
     if(children_[idx] == nullptr) {
-        children_[idx] = new node_t<T>(new_space);
+        children_[idx] = new node_t<T>(new_space, height_ + 1);
     }
 
-    for(std::size_t i = 0; i < elements_.size(); ++i) {
-        if(lingeo::intersection(elements_[i].second.second, elem)) {
-            elements_[i].first = true;
-            intersect = true;
-        }
-    }
-
-    children_[idx]->insert(i, intersect, elem);
+    children_[idx]->insert(elem);
 }
 
 template<typename T>
-void octt::node_t<T>::find_intersections(std::vector<std::size_t>& index_v) const {
-    for(std::size_t i = 0, max = elements_.size(); i < max; ++i) {
-        if(elements_[i].first == true) {
-            index_v.push_back(elements_[i].second.first);
+void octt::node_t<T>::fill_intersection() {
+    for(std::size_t i = 0, maxi = elements_.size(); i < maxi; ++i) {
+        for(std::size_t j = i + 1, maxj = maxi; j < maxj; ++j) {
+            if(lingeo::intersection(elements_[i]->getTriangle(), elements_[j]->getTriangle())) {
+                elements_[i]->setColor({1.0, 0.0, 0.0});
+                elements_[j]->setColor({1.0, 0.0, 0.0});
+            }
+        }
+
+
+        for(std::size_t j = 0, maxj = children_.size(); j < maxj; ++j) {
+             if(children_[j] != nullptr) {
+                children_[j]->fill_collision(elements_[i]);
+            }
         }
     }
 
-    for(std::size_t i = 0, max = children_.size(); i < max; ++i) {
+    for(std::size_t i = 0, maxi = children_.size(); i < maxi; ++i) {
         if(children_[i] != nullptr) {
-            children_[i]->find_intersections(index_v);
+            children_[i]->fill_intersection();
         }
     }
 }
 
 template<typename T>
-bool octt::node_t<T>::check_collision(const T &elem){
-    bool flag1 = false;
-    for(std::size_t i = 0, max = elements_.size(); i < max; ++i) {
-        if(lingeo::intersection(elements_[i].second.second, elem)) {
-            elements_[i].first = true;
-            flag1 = true;
+void octt::node_t<T>::fill_collision(T* elem) {
+    for(std::size_t i = 0, maxi = elements_.size(); i < maxi; ++i) {
+        if(lingeo::intersection(elem->getTriangle(), elements_[i]->getTriangle())) {
+            elements_[i]->setColor({1.0, 0.0, 0.0});
+            elem->setColor({1.0, 0.0, 0.0});
         }
     }
 
-    if(space_.get_Vmin() > space_.V()) {
-        return flag1;
-    }
-
-    bool flag2 = false;
-    for(std::size_t i = 0, max = children_.size(); i < max; ++i) {
+    for(std::size_t i = 0, maxi = children_.size(); i < maxi; ++i) {
         if(children_[i] != nullptr) {
-            flag2 = children_[i]->check_collision(elem);
+            children_[i]->fill_collision(elem);
         }
-    }
-
-    return flag1 || flag2;
+    }    
 }
 
 template<typename T>
@@ -223,13 +205,11 @@ namespace octt {
     template<typename T>
     class octtree_t {
     public:
-        octtree_t();
         octtree_t(const space_t& space);
         ~octtree_t();
 
-        std::vector<std::size_t> get_intersections() const;
-
-        void insert(std::size_t i, const T &elem);
+        void insert(T* elem);
+        void fill_intersection();
 
     private:
         node_t<T> *root;
@@ -237,13 +217,8 @@ namespace octt {
 }
 
 template<typename T>
-octt::octtree_t<T>::octtree_t() {
-    root = new node_t<T>;
-}
-
-template<typename T>
 octt::octtree_t<T>::octtree_t(const octt::space_t& space) {
-    root = new node_t<T>(space);
+    root = new node_t<T>(space, 0);
 }
 
 template<typename T>
@@ -253,14 +228,11 @@ octt::octtree_t<T>::~octtree_t() {
 }
 
 template<typename T>
-std::vector<std::size_t> octt::octtree_t<T>::get_intersections() const {
-    std::vector<std::size_t> index_v;
-    root->find_intersections(index_v);
-    std::sort(index_v.begin(), index_v.end());
-    return index_v;
+void octt::octtree_t<T>::insert(T* elem) {
+    root->insert(elem);
 }
 
 template<typename T>
-void octt::octtree_t<T>::insert(std::size_t i, const T &elem) {
-    root->insert(i, elem);
+void octt::octtree_t<T>::fill_intersection() {
+    root->fill_intersection();
 }

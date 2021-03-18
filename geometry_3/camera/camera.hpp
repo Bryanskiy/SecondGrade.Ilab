@@ -27,8 +27,8 @@ public:
     void update(float time, GLFWwindow* window);
 
 private:
-    glm::vec3 position = {2, 2, 2};
-    glm::vec3 direction = {-1, -1, -1};
+    glm::vec3 position = {0, 0, 0};
+    glm::vec3 direction = {1, 1, 1};
 
 	glm::vec3 upVector = glm::vec3(0.f, 0.f, 1.f);
 	float viewAngle = 45.f;

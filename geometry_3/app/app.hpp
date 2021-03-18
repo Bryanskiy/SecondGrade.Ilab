@@ -37,6 +37,8 @@ private:
             glm::vec3 getPosRotation() const {return posRotation_;}
             glm::vec3 getColor() const {return color_;}
 
+            auto projection_i(std::size_t i) {return triangle_.projection_i(i);}
+
         private:
             lingeo::triangle_t<3> triangle_; /* world coords */
 

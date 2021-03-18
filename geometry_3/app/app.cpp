@@ -24,6 +24,8 @@ void App::triangleHandler::update(const std::vector<glm::vec3>& wCoords, float t
             triangle_[p][c] = wCoords[p][c];
         }
     }
+
+    setColor({0.0, 0.0, 1.0});
 }
 
 void App::pushTriangle(const lingeo::triangle_t<3>& triangle, glm::vec3 posRotation, glm::vec3 dirRotation, float lifeTime, float speedRotation) {
@@ -70,6 +72,12 @@ void App::init() {
 void App::run() {
     init();
 
+    driver_.drawFrame();
+    driver_.drawFrame();
+    driver_.drawFrame();
+    driver_.drawFrame();
+    driver_.drawFrame();
+
     auto startTime = std::chrono::high_resolution_clock::now();    
     while (!glfwWindowShouldClose(window_)) {
 
@@ -106,26 +114,34 @@ void App::updateModels(float time) {
     for(std::size_t i = 0, maxi = triangles_.size(); i < maxi; ++i) {
         auto newWorldCoordinates = driver_.getWorldCoordinates(i);
         triangles_[i].update(newWorldCoordinates, time);
+
+        auto x_proj = triangles_[i].projection_i(0);
+        x_min = std::min(x_proj.first, x_min); x_max = std::max(x_proj.second, x_max);
+
+        auto y_proj = triangles_[i].projection_i(1);
+        y_min = std::min(y_proj.first, y_min); y_max = std::max(y_proj.second, y_max);
+
+        auto z_proj = triangles_[i].projection_i(2);
+        y_min = std::min(y_proj.first, y_min); y_max = std::max(y_proj.second, y_max);
     }
 
     octt::space_t space{x_min, x_max, y_min, y_max, z_min, z_max};
-    octt::octtree_t<lingeo::triangle_t<3>> octree(space);
+    octt::octtree_t<triangleHandler> octree(space);
 
     for(std::size_t i = 0, maxi = triangles_.size(); i < maxi; ++i) {
-        octree.insert(i, triangles_[i].getTriangle());
+        octree.insert(&(triangles_[i]));
     }
 
-    auto indices = octree.get_intersections();
+    octree.fill_intersection();
 
-    std::size_t k = 0;
-    for(std::size_t i = 0, maxi = triangles_.size(); i < maxi; ++i) {
-         if((k < indices.size()) && (i == indices[k])) {
-             triangles_[i].setColor({1.0, 0.0, 0.0});
-             ++k;
-         } else {
-             triangles_[i].setColor({0.0, 0.0, 1.0});
-        }
-    }
+    // for(std::size_t i = 0, maxi = triangles_.size(); i < maxi; ++i) {
+    //       for(std::size_t j = i + 1, maxj = maxi; j < maxj; ++j) {
+    //           if(lingeo::intersection(triangles_[i].getTriangle(), triangles_[j].getTriangle())) {
+    //               triangles_[i].setColor({1.0, 0.0, 0.0});
+    //               triangles_[j].setColor({1.0, 0.0, 0.0});
+    //           }
+    //       }
+    //  }
 }
 
 /* static */ void App::framebufferResizeCallback(GLFWwindow* window, int width, int height) {
