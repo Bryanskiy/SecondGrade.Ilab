@@ -4,7 +4,7 @@
 #include <string>
 #include <fstream>
 
-#include "../node_interface/Inode.hpp"
+#include "../node_interface/node.hpp"
 #include "../parser/compiler.tab.hh"
 #include "../parser/mylexer.hpp"
 
@@ -29,9 +29,9 @@ namespace yy {
 }
 
 struct color_t {
-static const char* set_black() {return "\e[0;30m";}    
-static const char* set_red() {return "\e[0;31m";}
-static const char* set_green() {return "\e[0;92m";}
-static const char* set_cyan() {return "\e[0;96m";}
-static const char* reset() {return "\e[0m";}
+    static const char* set_black() {return "\e[0;30m";}    
+    static const char* set_red() {return "\e[0;31m";}
+    static const char* set_green() {return "\e[0;92m";}
+    static const char* set_cyan() {return "\e[0;96m";}
+    static const char* reset() {return "\e[0m";}
 };

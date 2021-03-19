@@ -1,6 +1,6 @@
 #include "driver.hpp"
 
-Inode::Iscope_t* current_scope;
+Inode::scope_t* current_scope;
 yy::location current_location;
 
 namespace yy {

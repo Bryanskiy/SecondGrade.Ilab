@@ -1,19 +1,16 @@
 #include "node.hpp"
-#include "symtab.hpp"
 
 namespace Inode {
 
-symtab_t global_table;
-
 /* constructors */ 
-Inode_t* make_value(int val) {return new integer_t{val};}
-Inode_t* make_decl() {return new decl_t;}
-Inode_t* make_bin_op(Inode_t* lhs, bin_op op, Inode_t* rhs) {return new bin_op_t{lhs, op, rhs};}
-Inode_t* make_unary_op(Inode_t* node, unary_op op) {return new unary_op_t{node, op};}
-Inode_t* make_unary_op(unary_op op, Inode_t* node) {return make_unary_op(node, op);}
-Inode_t* make_if(Inode_t* condition, Inode_t* scope) {return new if_t{condition, scope};}
-Inode_t* make_while(Inode_t* condition, Inode_t* scope) {return new while_t{condition, scope};}
-Iscope_t* make_scope() {return new scope_t{nullptr};}
+node_t* make_value(int val) {return new integer_t{val};}
+decl_t* make_decl() {return new decl_t;}
+node_t* make_bin_op(node_t* lhs, bin_op op, node_t* rhs) {return new bin_op_t{lhs, op, rhs};}
+node_t* make_unary_op(node_t* node, unary_op op) {return new unary_op_t{node, op};}
+node_t* make_unary_op(unary_op op, node_t* node) {return make_unary_op(node, op);}
+node_t* make_if(node_t* condition, node_t* scope) {return new if_t{condition, scope};}
+node_t* make_while(node_t* condition, node_t* scope) {return new while_t{condition, scope};}
+scope_t* make_scope() {return new scope_t{nullptr};}
 
 
 int scope_t::calc() {
@@ -24,21 +21,23 @@ int scope_t::calc() {
     return 0;
 }
 
-Inode_t* scope_t::add(const std::string& name) {
-    Inode_t* node = visible(name);
+node_t* scope_t::add(const std::string& name) {
+    node_t* node = visible(name);
     if(node) {
         return node;
     }
 
-    Inode_t* decl = make_decl();
-    global_table.add(this, name, decl);
+    decl_t* decl = make_decl();
+    symtab_[name] = decl;
     return decl;
 }
 
-Inode_t* scope_t::visible(const std::string& name) {
-    Inode_t* ret = global_table.exists(this, name);
-    if(ret) {
-        return ret;
+node_t* scope_t::visible(const std::string& name) const {
+    node_t* ret = nullptr;
+    auto it = symtab_.find(name);
+
+    if(it != symtab_.end()) {
+        return it->second;
     }
 
     if(prev_scope_) {
@@ -52,8 +51,6 @@ scope_t::~scope_t() {
     for(const auto& x : branches_) {
         delete x;
     }
-
-    global_table.free(this);
 }
 
 int bin_op_t::calc() {

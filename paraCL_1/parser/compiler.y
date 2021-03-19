@@ -8,15 +8,15 @@
 %locations
 
 %code requires {
-#include <string>
-#include "../node_interface/Inode.hpp"
-namespace yy { class driver_t; }
+    #include <string>
+    #include "../node_interface/node.hpp"
+    namespace yy { class driver_t; }
 }
 
 %code {
-#include "../driver/driver.hpp"
-extern Inode::Iscope_t* current_scope;
-namespace yy {parser::token_type yylex(parser::semantic_type* yylval, parser::location_type* l, driver_t* driver);}
+    #include "../driver/driver.hpp"
+    extern Inode::scope_t* current_scope;
+    namespace yy {parser::token_type yylex(parser::semantic_type* yylval, parser::location_type* l, driver_t* driver);}
 }
 
 %token <std::string> NAME 
@@ -34,20 +34,20 @@ namespace yy {parser::token_type yylex(parser::semantic_type* yylval, parser::lo
 %left PLUS MINUS
 %left MUL DIV MOD
 
-%nterm<Inode::Iscope_t*> scope
-%nterm<Inode::Iscope_t*> close_sc
-%nterm<Inode::Inode_t*> stm
-%nterm<Inode::Inode_t*>  assign
-%nterm<Inode::Inode_t*>  lval
-%nterm<Inode::Inode_t*>  if 
-%nterm<Inode::Inode_t*>  while
-%nterm<Inode::Inode_t*>  expr1
-%nterm<Inode::Inode_t*>  expr2
-%nterm<Inode::Inode_t*>  expr3
-%nterm<Inode::Inode_t*>  condition
-%nterm<Inode::Inode_t*>  output 
-%nterm<Inode::Inode_t*> stms
-%nterm<Inode::Inode_t*> open_sc
+%nterm<Inode::scope_t*> scope
+%nterm<Inode::scope_t*> close_sc
+%nterm<Inode::node_t*> stm
+%nterm<Inode::node_t*>  assign
+%nterm<Inode::node_t*>  lval
+%nterm<Inode::node_t*>  if 
+%nterm<Inode::node_t*>  while
+%nterm<Inode::node_t*>  expr1
+%nterm<Inode::node_t*>  expr2
+%nterm<Inode::node_t*>  expr3
+%nterm<Inode::node_t*>  condition
+%nterm<Inode::node_t*>  output 
+%nterm<Inode::node_t*> stms
+%nterm<Inode::node_t*> open_sc
 
 %%
 
@@ -75,7 +75,7 @@ stm:        assign                              {$$ = $1;};
 
 assign:     lval ASSIGN expr1 SCOLON            {$$ = Inode::make_bin_op($1, Inode::bin_op::assign_, $3);};
 
-lval:       NAME                                {$$ = current_scope->add($1);};
+lval:       NAME                                {$$ = current_scope->add($1);}
 
 expr1:       expr2 PLUS expr2                   {$$ = Inode::make_bin_op($1, Inode::bin_op::plus_, $3);};
            | expr2 MINUS expr2                  {$$ = Inode::make_bin_op($1, Inode::bin_op::minus_, $3);};
