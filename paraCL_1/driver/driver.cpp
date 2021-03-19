@@ -7,12 +7,12 @@ namespace yy {
 
 driver_t::driver_t() {
     plexer_ = new mylexer_t;
-    current_scope = Inode::make_scope();
+    current_scope = new Inode::scope_t(nullptr);
 }
 
 driver_t::driver_t(const char* file_name) : file_name_(file_name) {
     plexer_ = new mylexer_t;
-    current_scope = Inode::make_scope();
+    current_scope = new Inode::scope_t(nullptr);
 
     file_.open(file_name_);
     std::ifstream tmp(file_name_);

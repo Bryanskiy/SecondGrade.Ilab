@@ -830,221 +830,219 @@ namespace yy {
 
   case 4: // open_sc: LCB
 #line 58 "compiler.y"
-                                                {
-                                                    current_scope = current_scope->duplicate();
-                                                }
-#line 837 "compiler.tab.cc"
+                                                { current_scope = new Inode::scope_t(current_scope); }
+#line 835 "compiler.tab.cc"
     break;
 
   case 5: // close_sc: RCB
-#line 62 "compiler.y"
+#line 60 "compiler.y"
                                                 {
                                                     yylhs.value.as < Inode::scope_t* > () = current_scope;
                                                     current_scope = current_scope->get_prev();
                                                 }
-#line 846 "compiler.tab.cc"
+#line 844 "compiler.tab.cc"
     break;
 
   case 6: // stms: stm
-#line 67 "compiler.y"
+#line 65 "compiler.y"
                                                 {current_scope->add_branch(yystack_[0].value.as < Inode::node_t* > ());}
-#line 852 "compiler.tab.cc"
+#line 850 "compiler.tab.cc"
     break;
 
   case 7: // stms: stms stm
-#line 68 "compiler.y"
+#line 66 "compiler.y"
                                                 {current_scope->add_branch(yystack_[0].value.as < Inode::node_t* > ());}
-#line 858 "compiler.tab.cc"
+#line 856 "compiler.tab.cc"
     break;
 
   case 8: // stms: stms scope
-#line 69 "compiler.y"
+#line 67 "compiler.y"
                                                 {current_scope->add_branch(yystack_[0].value.as < Inode::scope_t* > ());}
-#line 864 "compiler.tab.cc"
+#line 862 "compiler.tab.cc"
     break;
 
   case 9: // stm: assign
-#line 71 "compiler.y"
+#line 69 "compiler.y"
                                                 {yylhs.value.as < Inode::node_t* > () = yystack_[0].value.as < Inode::node_t* > ();}
-#line 870 "compiler.tab.cc"
+#line 868 "compiler.tab.cc"
     break;
 
   case 10: // stm: if
-#line 72 "compiler.y"
+#line 70 "compiler.y"
                                                 {yylhs.value.as < Inode::node_t* > () = yystack_[0].value.as < Inode::node_t* > ();}
-#line 876 "compiler.tab.cc"
+#line 874 "compiler.tab.cc"
     break;
 
   case 11: // stm: while
-#line 73 "compiler.y"
+#line 71 "compiler.y"
                                                 {yylhs.value.as < Inode::node_t* > () = yystack_[0].value.as < Inode::node_t* > ();}
-#line 882 "compiler.tab.cc"
+#line 880 "compiler.tab.cc"
     break;
 
   case 12: // stm: output
-#line 74 "compiler.y"
+#line 72 "compiler.y"
                                                 {yylhs.value.as < Inode::node_t* > () = yystack_[0].value.as < Inode::node_t* > ();}
-#line 888 "compiler.tab.cc"
+#line 886 "compiler.tab.cc"
     break;
 
   case 13: // assign: lval ASSIGN expr1 SCOLON
-#line 76 "compiler.y"
-                                                {yylhs.value.as < Inode::node_t* > () = Inode::make_bin_op(yystack_[3].value.as < Inode::node_t* > (), Inode::bin_op::assign_, yystack_[1].value.as < Inode::node_t* > ());}
-#line 894 "compiler.tab.cc"
+#line 74 "compiler.y"
+                                                {yylhs.value.as < Inode::node_t* > () = new Inode::bin_op_t(yystack_[3].value.as < Inode::node_t* > (), Inode::bin_op::assign_, yystack_[1].value.as < Inode::node_t* > ());}
+#line 892 "compiler.tab.cc"
     break;
 
   case 14: // lval: NAME
-#line 78 "compiler.y"
+#line 76 "compiler.y"
                                                 {yylhs.value.as < Inode::node_t* > () = current_scope->add(yystack_[0].value.as < std::string > ());}
-#line 900 "compiler.tab.cc"
+#line 898 "compiler.tab.cc"
     break;
 
   case 15: // expr1: expr2 PLUS expr2
-#line 80 "compiler.y"
-                                                {yylhs.value.as < Inode::node_t* > () = Inode::make_bin_op(yystack_[2].value.as < Inode::node_t* > (), Inode::bin_op::plus_, yystack_[0].value.as < Inode::node_t* > ());}
-#line 906 "compiler.tab.cc"
+#line 78 "compiler.y"
+                                                {yylhs.value.as < Inode::node_t* > () = new Inode::bin_op_t(yystack_[2].value.as < Inode::node_t* > (), Inode::bin_op::plus_, yystack_[0].value.as < Inode::node_t* > ());}
+#line 904 "compiler.tab.cc"
     break;
 
   case 16: // expr1: expr2 MINUS expr2
-#line 81 "compiler.y"
-                                                {yylhs.value.as < Inode::node_t* > () = Inode::make_bin_op(yystack_[2].value.as < Inode::node_t* > (), Inode::bin_op::minus_, yystack_[0].value.as < Inode::node_t* > ());}
-#line 912 "compiler.tab.cc"
+#line 79 "compiler.y"
+                                                {yylhs.value.as < Inode::node_t* > () = new Inode::bin_op_t(yystack_[2].value.as < Inode::node_t* > (), Inode::bin_op::minus_, yystack_[0].value.as < Inode::node_t* > ());}
+#line 910 "compiler.tab.cc"
     break;
 
   case 17: // expr1: expr2
-#line 82 "compiler.y"
+#line 80 "compiler.y"
                                                 {yylhs.value.as < Inode::node_t* > () = yystack_[0].value.as < Inode::node_t* > ();}
-#line 918 "compiler.tab.cc"
+#line 916 "compiler.tab.cc"
     break;
 
   case 18: // expr2: expr3 MUL expr3
-#line 84 "compiler.y"
-                                                {yylhs.value.as < Inode::node_t* > () = Inode::make_bin_op(yystack_[2].value.as < Inode::node_t* > (), Inode::bin_op::mult_, yystack_[0].value.as < Inode::node_t* > ());}
-#line 924 "compiler.tab.cc"
+#line 82 "compiler.y"
+                                                {yylhs.value.as < Inode::node_t* > () = new Inode::bin_op_t(yystack_[2].value.as < Inode::node_t* > (), Inode::bin_op::mult_, yystack_[0].value.as < Inode::node_t* > ());}
+#line 922 "compiler.tab.cc"
     break;
 
   case 19: // expr2: expr3 DIV expr3
-#line 85 "compiler.y"
-                                                {yylhs.value.as < Inode::node_t* > () = Inode::make_bin_op(yystack_[2].value.as < Inode::node_t* > (), Inode::bin_op::div_, yystack_[0].value.as < Inode::node_t* > ());}
-#line 930 "compiler.tab.cc"
+#line 83 "compiler.y"
+                                                {yylhs.value.as < Inode::node_t* > () = new Inode::bin_op_t(yystack_[2].value.as < Inode::node_t* > (), Inode::bin_op::div_, yystack_[0].value.as < Inode::node_t* > ());}
+#line 928 "compiler.tab.cc"
     break;
 
   case 20: // expr2: expr3 MOD expr3
-#line 86 "compiler.y"
-                                                {yylhs.value.as < Inode::node_t* > () = Inode::make_bin_op(yystack_[2].value.as < Inode::node_t* > (), Inode::bin_op::mod_, yystack_[0].value.as < Inode::node_t* > ());}
-#line 936 "compiler.tab.cc"
+#line 84 "compiler.y"
+                                                {yylhs.value.as < Inode::node_t* > () = new Inode::bin_op_t(yystack_[2].value.as < Inode::node_t* > (), Inode::bin_op::mod_, yystack_[0].value.as < Inode::node_t* > ());}
+#line 934 "compiler.tab.cc"
     break;
 
   case 21: // expr2: expr3
-#line 87 "compiler.y"
+#line 85 "compiler.y"
                                                 {yylhs.value.as < Inode::node_t* > () = yystack_[0].value.as < Inode::node_t* > ();}
-#line 942 "compiler.tab.cc"
+#line 940 "compiler.tab.cc"
     break;
 
   case 22: // expr3: LRB expr1 RRB
-#line 89 "compiler.y"
+#line 87 "compiler.y"
                                                 {yylhs.value.as < Inode::node_t* > () = yystack_[1].value.as < Inode::node_t* > ();}
-#line 948 "compiler.tab.cc"
+#line 946 "compiler.tab.cc"
     break;
 
   case 23: // expr3: NAME
-#line 90 "compiler.y"
+#line 88 "compiler.y"
                                                 {yylhs.value.as < Inode::node_t* > () = current_scope->visible(yystack_[0].value.as < std::string > ());}
-#line 954 "compiler.tab.cc"
+#line 952 "compiler.tab.cc"
     break;
 
   case 24: // expr3: INTEGER
-#line 91 "compiler.y"
-                                                {yylhs.value.as < Inode::node_t* > () = Inode::make_value(yystack_[0].value.as < int > ());}
-#line 960 "compiler.tab.cc"
+#line 89 "compiler.y"
+                                                {yylhs.value.as < Inode::node_t* > () = new Inode::integer_t(yystack_[0].value.as < int > ());}
+#line 958 "compiler.tab.cc"
     break;
 
   case 25: // expr3: INPUT
-#line 92 "compiler.y"
-                                                {yylhs.value.as < Inode::node_t* > () = Inode::make_unary_op(Inode::unary_op::input_, nullptr);}
-#line 966 "compiler.tab.cc"
+#line 90 "compiler.y"
+                                                {yylhs.value.as < Inode::node_t* > () = new Inode::unary_op_t(Inode::unary_op::input_, nullptr);}
+#line 964 "compiler.tab.cc"
     break;
 
   case 26: // condition: expr1 AND expr1
-#line 94 "compiler.y"
-                                                {yylhs.value.as < Inode::node_t* > () = Inode::make_bin_op(yystack_[2].value.as < Inode::node_t* > (), Inode::bin_op::and_, yystack_[0].value.as < Inode::node_t* > ());}
-#line 972 "compiler.tab.cc"
+#line 92 "compiler.y"
+                                                {yylhs.value.as < Inode::node_t* > () = new Inode::bin_op_t(yystack_[2].value.as < Inode::node_t* > (), Inode::bin_op::and_, yystack_[0].value.as < Inode::node_t* > ());}
+#line 970 "compiler.tab.cc"
     break;
 
   case 27: // condition: expr1 OR expr1
-#line 95 "compiler.y"
-                                                {yylhs.value.as < Inode::node_t* > () = Inode::make_bin_op(yystack_[2].value.as < Inode::node_t* > (), Inode::bin_op::or_, yystack_[0].value.as < Inode::node_t* > ());}
-#line 978 "compiler.tab.cc"
+#line 93 "compiler.y"
+                                                {yylhs.value.as < Inode::node_t* > () = new Inode::bin_op_t(yystack_[2].value.as < Inode::node_t* > (), Inode::bin_op::or_, yystack_[0].value.as < Inode::node_t* > ());}
+#line 976 "compiler.tab.cc"
     break;
 
   case 28: // condition: NOT expr1
-#line 96 "compiler.y"
-                                                {yylhs.value.as < Inode::node_t* > () = Inode::make_unary_op(yystack_[0].value.as < Inode::node_t* > (), Inode::unary_op::not_);}
-#line 984 "compiler.tab.cc"
+#line 94 "compiler.y"
+                                                {yylhs.value.as < Inode::node_t* > () = new Inode::unary_op_t(yystack_[0].value.as < Inode::node_t* > (), Inode::unary_op::not_);}
+#line 982 "compiler.tab.cc"
     break;
 
   case 29: // condition: expr1 EQUAL expr1
-#line 97 "compiler.y"
-                                                {yylhs.value.as < Inode::node_t* > () = Inode::make_bin_op(yystack_[2].value.as < Inode::node_t* > (), Inode::bin_op::equal_, yystack_[0].value.as < Inode::node_t* > ());}
-#line 990 "compiler.tab.cc"
+#line 95 "compiler.y"
+                                                {yylhs.value.as < Inode::node_t* > () = new Inode::bin_op_t(yystack_[2].value.as < Inode::node_t* > (), Inode::bin_op::equal_, yystack_[0].value.as < Inode::node_t* > ());}
+#line 988 "compiler.tab.cc"
     break;
 
   case 30: // condition: expr1 NOT_EQUAL expr1
-#line 98 "compiler.y"
-                                                {yylhs.value.as < Inode::node_t* > () = Inode::make_bin_op(yystack_[2].value.as < Inode::node_t* > (), Inode::bin_op::not_equal_, yystack_[0].value.as < Inode::node_t* > ());}
-#line 996 "compiler.tab.cc"
+#line 96 "compiler.y"
+                                                {yylhs.value.as < Inode::node_t* > () = new Inode::bin_op_t(yystack_[2].value.as < Inode::node_t* > (), Inode::bin_op::not_equal_, yystack_[0].value.as < Inode::node_t* > ());}
+#line 994 "compiler.tab.cc"
     break;
 
   case 31: // condition: expr1 GREATER expr1
-#line 99 "compiler.y"
-                                                {yylhs.value.as < Inode::node_t* > () = Inode::make_bin_op(yystack_[2].value.as < Inode::node_t* > (), Inode::bin_op::greater_, yystack_[0].value.as < Inode::node_t* > ());}
-#line 1002 "compiler.tab.cc"
+#line 97 "compiler.y"
+                                                {yylhs.value.as < Inode::node_t* > () = new Inode::bin_op_t(yystack_[2].value.as < Inode::node_t* > (), Inode::bin_op::greater_, yystack_[0].value.as < Inode::node_t* > ());}
+#line 1000 "compiler.tab.cc"
     break;
 
   case 32: // condition: expr1 LESS expr1
-#line 100 "compiler.y"
-                                                {yylhs.value.as < Inode::node_t* > () = Inode::make_bin_op(yystack_[2].value.as < Inode::node_t* > (), Inode::bin_op::less_, yystack_[0].value.as < Inode::node_t* > ());}
-#line 1008 "compiler.tab.cc"
+#line 98 "compiler.y"
+                                                {yylhs.value.as < Inode::node_t* > () = new Inode::bin_op_t(yystack_[2].value.as < Inode::node_t* > (), Inode::bin_op::less_, yystack_[0].value.as < Inode::node_t* > ());}
+#line 1006 "compiler.tab.cc"
     break;
 
   case 33: // condition: expr1 GREATER_OR_EQUAL expr1
-#line 101 "compiler.y"
-                                                {yylhs.value.as < Inode::node_t* > () = Inode::make_bin_op(yystack_[2].value.as < Inode::node_t* > (), Inode::bin_op::greater_or_equal_, yystack_[0].value.as < Inode::node_t* > ());}
-#line 1014 "compiler.tab.cc"
+#line 99 "compiler.y"
+                                                {yylhs.value.as < Inode::node_t* > () = new Inode::bin_op_t(yystack_[2].value.as < Inode::node_t* > (), Inode::bin_op::greater_or_equal_, yystack_[0].value.as < Inode::node_t* > ());}
+#line 1012 "compiler.tab.cc"
     break;
 
   case 34: // condition: expr1 LESS_OR_EQUAL expr1
-#line 102 "compiler.y"
-                                                {yylhs.value.as < Inode::node_t* > () = Inode::make_bin_op(yystack_[2].value.as < Inode::node_t* > (), Inode::bin_op::less_or_equal_, yystack_[0].value.as < Inode::node_t* > ());}
-#line 1020 "compiler.tab.cc"
+#line 100 "compiler.y"
+                                                {yylhs.value.as < Inode::node_t* > () = new Inode::bin_op_t(yystack_[2].value.as < Inode::node_t* > (), Inode::bin_op::less_or_equal_, yystack_[0].value.as < Inode::node_t* > ());}
+#line 1018 "compiler.tab.cc"
     break;
 
   case 35: // condition: expr1
-#line 103 "compiler.y"
+#line 101 "compiler.y"
                                                 {yylhs.value.as < Inode::node_t* > () = yystack_[0].value.as < Inode::node_t* > ();}
-#line 1026 "compiler.tab.cc"
+#line 1024 "compiler.tab.cc"
     break;
 
   case 36: // if: IF LRB condition RRB scope
-#line 105 "compiler.y"
-                                                {yylhs.value.as < Inode::node_t* > () = Inode::make_if(yystack_[2].value.as < Inode::node_t* > (), yystack_[0].value.as < Inode::scope_t* > ());}
-#line 1032 "compiler.tab.cc"
+#line 103 "compiler.y"
+                                                {yylhs.value.as < Inode::node_t* > () = new Inode::if_t(yystack_[2].value.as < Inode::node_t* > (), yystack_[0].value.as < Inode::scope_t* > ());}
+#line 1030 "compiler.tab.cc"
     break;
 
   case 37: // while: WHILE LRB condition RRB scope
-#line 107 "compiler.y"
-                                                {yylhs.value.as < Inode::node_t* > () = Inode::make_while(yystack_[2].value.as < Inode::node_t* > (), yystack_[0].value.as < Inode::scope_t* > ());}
-#line 1038 "compiler.tab.cc"
+#line 105 "compiler.y"
+                                                {yylhs.value.as < Inode::node_t* > () = new Inode::while_t(yystack_[2].value.as < Inode::node_t* > (), yystack_[0].value.as < Inode::scope_t* > ());}
+#line 1036 "compiler.tab.cc"
     break;
 
   case 38: // output: OUTPUT expr1 SCOLON
-#line 109 "compiler.y"
-                                                 {yylhs.value.as < Inode::node_t* > () = Inode::make_unary_op(Inode::unary_op::output_, yystack_[1].value.as < Inode::node_t* > ());}
-#line 1044 "compiler.tab.cc"
+#line 107 "compiler.y"
+                                                 {yylhs.value.as < Inode::node_t* > () = new Inode::unary_op_t(Inode::unary_op::output_, yystack_[1].value.as < Inode::node_t* > ());}
+#line 1042 "compiler.tab.cc"
     break;
 
 
-#line 1048 "compiler.tab.cc"
+#line 1046 "compiler.tab.cc"
 
             default:
               break;
@@ -1388,10 +1386,10 @@ namespace yy {
   const signed char
   parser::yyrline_[] =
   {
-       0,    54,    54,    56,    58,    62,    67,    68,    69,    71,
-      72,    73,    74,    76,    78,    80,    81,    82,    84,    85,
-      86,    87,    89,    90,    91,    92,    94,    95,    96,    97,
-      98,    99,   100,   101,   102,   103,   105,   107,   109
+       0,    54,    54,    56,    58,    60,    65,    66,    67,    69,
+      70,    71,    72,    74,    76,    78,    79,    80,    82,    83,
+      84,    85,    87,    88,    89,    90,    92,    93,    94,    95,
+      96,    97,    98,    99,   100,   101,   103,   105,   107
   };
 
   void
@@ -1472,9 +1470,9 @@ namespace yy {
   }
 
 } // yy
-#line 1476 "compiler.tab.cc"
+#line 1474 "compiler.tab.cc"
 
-#line 111 "compiler.y"
+#line 109 "compiler.y"
 
 
 namespace yy {

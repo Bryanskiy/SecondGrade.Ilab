@@ -2,16 +2,7 @@
 
 namespace Inode {
 
-/* constructors */ 
-node_t* make_value(int val) {return new integer_t{val};}
-decl_t* make_decl() {return new decl_t;}
-node_t* make_bin_op(node_t* lhs, bin_op op, node_t* rhs) {return new bin_op_t{lhs, op, rhs};}
-node_t* make_unary_op(node_t* node, unary_op op) {return new unary_op_t{node, op};}
-node_t* make_unary_op(unary_op op, node_t* node) {return make_unary_op(node, op);}
-node_t* make_if(node_t* condition, node_t* scope) {return new if_t{condition, scope};}
-node_t* make_while(node_t* condition, node_t* scope) {return new while_t{condition, scope};}
-scope_t* make_scope() {return new scope_t{nullptr};}
-
+/*-------------------------SCOPE------------------------------*/
 
 int scope_t::calc() {
     for(const auto& branch : branches_) {
@@ -27,7 +18,7 @@ node_t* scope_t::add(const std::string& name) {
         return node;
     }
 
-    decl_t* decl = make_decl();
+    decl_t* decl = new decl_t;
     symtab_[name] = decl;
     return decl;
 }
@@ -53,6 +44,7 @@ scope_t::~scope_t() {
     }
 }
 
+/*-------------------------BIN OP------------------------------*/
 int bin_op_t::calc() {
     int ret = 0;
     switch(op_) {
@@ -108,7 +100,12 @@ int bin_op_t::calc() {
     return 0;
 }
 
+bin_op_t::~bin_op_t() {
+    delete lhs_;
+    delete rhs_;
+}
 
+/*-------------------------UNARY OP-------------------------*/
 int unary_op_t::calc() {
     int ret;
     switch(op_) {
@@ -127,14 +124,12 @@ int unary_op_t::calc() {
     return 0;
 }
 
-bin_op_t::~bin_op_t() {
-    delete lhs_;
-    delete rhs_;
-}
 
 unary_op_t::~unary_op_t() {
     delete node_;
 }
+
+/*------------------------------IF------------------------*/
 
 int if_t::calc() {
     if(condition_->calc()) {
@@ -144,6 +139,7 @@ int if_t::calc() {
     return 0;
 }
 
+/*--------------------------WHILE--------------------------*/
 int while_t::calc() {
     while(condition_->calc()) {
         scope_->calc();

@@ -49,18 +49,10 @@ enum class unary_op {
     input_,
 };
 
-node_t* make_value(int val);
-node_t* make_bin_op(node_t* lhs, bin_op op, node_t* rhs);
-node_t* make_unary_op(unary_op op, node_t* node);
-node_t* make_unary_op(node_t* node, unary_op op);
-
-node_t* make_if(node_t* condition, node_t* scope);
-node_t* make_while(node_t* condition, node_t* scope);
-
-
 class integer_t final : public node_t {
 public:
     integer_t(int val) : val_(val) {}
+    ~integer_t() override = default;
 
     int calc() override {return val_;}
 
@@ -72,6 +64,7 @@ class decl_t final : public node_t {
 public:
     decl_t(int val) : val_(val) {}
     decl_t() = default;
+    ~decl_t() override = default;
 
     int calc() override {return val_;};
     void set(int val) {val_ = val;}
@@ -79,8 +72,6 @@ public:
 private:    
     int val_;    
 };
-
-decl_t* make_decl();
 
 class scope_t final : public node_t {
 public:
@@ -102,8 +93,6 @@ private:
     std::unordered_map<std::string, decl_t*> symtab_;
 };
 
-scope_t* make_scope();
-
 class bin_op_t final : public node_t {
 public:
     bin_op_t(node_t* lhs, bin_op op, node_t* rhs) : lhs_(lhs), op_(op), rhs_(rhs) {}
@@ -119,6 +108,7 @@ private:
 class unary_op_t final : public node_t {
 public:
     unary_op_t(node_t* node, unary_op op) : node_(node), op_(op) {}
+    unary_op_t(unary_op op, node_t* node) : node_(node), op_(op) {}
     ~unary_op_t() override; 
 
     int calc() override;
@@ -130,6 +120,7 @@ private:
 class if_t final : public node_t {
 public:
     if_t(node_t* condition, node_t* scope) : condition_(condition), scope_(scope) {}  
+    ~if_t() {delete condition_; delete scope_;}
 
     int calc() override;   
 private:
@@ -141,6 +132,7 @@ class while_t final : public node_t {
 private:
 public:
     while_t(node_t* condition, node_t* scope) : condition_(condition), scope_(scope) {}
+    ~while_t() {delete condition_; delete scope_;}
 
     int calc() override;
 

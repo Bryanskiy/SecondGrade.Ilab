@@ -55,9 +55,7 @@ program:    stms                                {current_scope->calc();};
 
 scope:      open_sc stms close_sc               {$$ = $3;};
 
-open_sc:    LCB                                 {
-                                                    current_scope = current_scope->duplicate();
-                                                };
+open_sc:    LCB                                 { current_scope = new Inode::scope_t(current_scope); };
 
 close_sc:   RCB                                 {
                                                     $$ = current_scope;
@@ -73,40 +71,40 @@ stm:        assign                              {$$ = $1;};
           | while                               {$$ = $1;};
           | output                              {$$ = $1;};
 
-assign:     lval ASSIGN expr1 SCOLON            {$$ = Inode::make_bin_op($1, Inode::bin_op::assign_, $3);};
+assign:     lval ASSIGN expr1 SCOLON            {$$ = new Inode::bin_op_t($1, Inode::bin_op::assign_, $3);};
 
 lval:       NAME                                {$$ = current_scope->add($1);}
 
-expr1:       expr2 PLUS expr2                   {$$ = Inode::make_bin_op($1, Inode::bin_op::plus_, $3);};
-           | expr2 MINUS expr2                  {$$ = Inode::make_bin_op($1, Inode::bin_op::minus_, $3);};
+expr1:       expr2 PLUS expr2                   {$$ = new Inode::bin_op_t($1, Inode::bin_op::plus_, $3);};
+           | expr2 MINUS expr2                  {$$ = new Inode::bin_op_t($1, Inode::bin_op::minus_, $3);};
            | expr2                              {$$ = $1;}
 
-expr2:      expr3 MUL expr3                     {$$ = Inode::make_bin_op($1, Inode::bin_op::mult_, $3);};
-          | expr3 DIV expr3                     {$$ = Inode::make_bin_op($1, Inode::bin_op::div_, $3);};
-          | expr3 MOD expr3                     {$$ = Inode::make_bin_op($1, Inode::bin_op::mod_, $3);};
+expr2:      expr3 MUL expr3                     {$$ = new Inode::bin_op_t($1, Inode::bin_op::mult_, $3);};
+          | expr3 DIV expr3                     {$$ = new Inode::bin_op_t($1, Inode::bin_op::div_, $3);};
+          | expr3 MOD expr3                     {$$ = new Inode::bin_op_t($1, Inode::bin_op::mod_, $3);};
           | expr3                               {$$ = $1;}
 
 expr3:      LRB expr1 RRB                       {$$ = $2;} 
           | NAME                                {$$ = current_scope->visible($1);};
-          | INTEGER                             {$$ = Inode::make_value($1);}
-          | INPUT                               {$$ = Inode::make_unary_op(Inode::unary_op::input_, nullptr);};                  
+          | INTEGER                             {$$ = new Inode::integer_t($1);}
+          | INPUT                               {$$ = new Inode::unary_op_t(Inode::unary_op::input_, nullptr);};                  
 
-condition:  expr1 AND expr1                     {$$ = Inode::make_bin_op($1, Inode::bin_op::and_, $3);};
-          | expr1 OR expr1                      {$$ = Inode::make_bin_op($1, Inode::bin_op::or_, $3);};      
-          | NOT expr1                           {$$ = Inode::make_unary_op($2, Inode::unary_op::not_);};    
-          | expr1 EQUAL expr1                   {$$ = Inode::make_bin_op($1, Inode::bin_op::equal_, $3);};  
-          | expr1 NOT_EQUAL expr1               {$$ = Inode::make_bin_op($1, Inode::bin_op::not_equal_, $3);};  
-          | expr1 GREATER expr1                 {$$ = Inode::make_bin_op($1, Inode::bin_op::greater_, $3);};  
-          | expr1 LESS expr1                    {$$ = Inode::make_bin_op($1, Inode::bin_op::less_, $3);};  
-          | expr1 GREATER_OR_EQUAL expr1        {$$ = Inode::make_bin_op($1, Inode::bin_op::greater_or_equal_, $3);};  
-          | expr1 LESS_OR_EQUAL expr1           {$$ = Inode::make_bin_op($1, Inode::bin_op::less_or_equal_, $3);};
+condition:  expr1 AND expr1                     {$$ = new Inode::bin_op_t($1, Inode::bin_op::and_, $3);};
+          | expr1 OR expr1                      {$$ = new Inode::bin_op_t($1, Inode::bin_op::or_, $3);};      
+          | NOT expr1                           {$$ = new Inode::unary_op_t($2, Inode::unary_op::not_);};    
+          | expr1 EQUAL expr1                   {$$ = new Inode::bin_op_t($1, Inode::bin_op::equal_, $3);};  
+          | expr1 NOT_EQUAL expr1               {$$ = new Inode::bin_op_t($1, Inode::bin_op::not_equal_, $3);};  
+          | expr1 GREATER expr1                 {$$ = new Inode::bin_op_t($1, Inode::bin_op::greater_, $3);};  
+          | expr1 LESS expr1                    {$$ = new Inode::bin_op_t($1, Inode::bin_op::less_, $3);};  
+          | expr1 GREATER_OR_EQUAL expr1        {$$ = new Inode::bin_op_t($1, Inode::bin_op::greater_or_equal_, $3);};  
+          | expr1 LESS_OR_EQUAL expr1           {$$ = new Inode::bin_op_t($1, Inode::bin_op::less_or_equal_, $3);};
           | expr1                               {$$ = $1;}
 
-if:        IF LRB condition RRB scope           {$$ = Inode::make_if($3, $5);};
+if:        IF LRB condition RRB scope           {$$ = new Inode::if_t($3, $5);};
 
-while:     WHILE LRB condition RRB scope        {$$ = Inode::make_while($3, $5);};
+while:     WHILE LRB condition RRB scope        {$$ = new Inode::while_t($3, $5);};
 
-output:    OUTPUT expr1 SCOLON                   {$$ = Inode::make_unary_op(Inode::unary_op::output_, $2);};
+output:    OUTPUT expr1 SCOLON                   {$$ = new Inode::unary_op_t(Inode::unary_op::output_, $2);};
                          
 %%
 
