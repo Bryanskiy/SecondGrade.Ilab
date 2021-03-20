@@ -122,7 +122,7 @@ void App::updateModels(float time) {
         y_min = std::min(y_proj.first, y_min); y_max = std::max(y_proj.second, y_max);
 
         auto z_proj = triangles_[i].projection_i(2);
-        y_min = std::min(y_proj.first, y_min); y_max = std::max(y_proj.second, y_max);
+        z_min = std::min(z_proj.first, z_min); z_max = std::max(z_proj.second, z_max);
     }
 
     octt::space_t space{x_min, x_max, y_min, y_max, z_min, z_max};

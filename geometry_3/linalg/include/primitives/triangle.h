@@ -75,9 +75,6 @@ bool lingeo::triangle_t<dim_>::valid() const {
 
 template<std::size_t dim_>
 std::pair<long double, long double> lingeo::triangle_t<dim_>::projection_i(std::size_t i) const {
-    if(i > dim_) {
-        return {0.0, 0.0};
-    }
     std::pair<long double, long double> ret;
     ret.first = std::min(std::min(points_[0][i], points_[1][i]), points_[2][i]);
     ret.second = std::max(std::max(points_[0][i], points_[1][i]), points_[2][i]);
