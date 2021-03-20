@@ -1,7 +1,7 @@
 first = 1;
 second = 1;
 iter = 2;
-while ( iter < 40 ) {
+while ( iter < 45 ) {
     tmp = second;
     second = second + first;
     first = tmp;

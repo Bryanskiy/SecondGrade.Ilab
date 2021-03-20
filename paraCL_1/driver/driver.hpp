@@ -3,6 +3,7 @@
 #include <FlexLexer.h>
 #include <string>
 #include <fstream>
+#include <sstream>
 
 #include "../node_interface/node.hpp"
 #include "../parser/compiler.tab.hh"
@@ -12,19 +13,27 @@
 namespace yy {
     class driver_t final {
     public:
+
+        enum error_type {
+            RUNTIME_UNDEFINED_NAME,
+        };
+
         driver_t();
         driver_t(const char* file_name);
         ~driver_t();
 
         parser::token_type yylex(parser::location_type* l, parser::semantic_type* yylval);
         void report_syntax_error(parser::context const& ctx) const;
-        void set_source_stream();
+        void report_runtime_error(const parser::location_type& location, error_type err) const;
         bool parse();
     private:
-        const std::string file_name_ = "std::cin";
+        const std::string file_name_;
         std::vector<std::string> code_lines_;
-        mylexer_t* plexer_;
         std::ifstream file_;
+
+        mylexer_t* plexer_;
+
+        void report_error_position(std::ostream& stream, const parser::location_type& location) const;
     };
 }
 

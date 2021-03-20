@@ -21,18 +21,30 @@
 
 %token <std::string> NAME 
 %token <int> INTEGER
-%token WHILE IF
-%token SCOLON LCB RCB LRB RRB
-%token OUTPUT
-%right ASSIGN
-%left INPUT
-%left OR
-%left AND
-%left NOT
-%left EQUAL NOT_EQUAL
-%left GREATER LESS LESS_OR_EQUAL GREATER_OR_EQUAL
-%left PLUS MINUS
-%left MUL DIV MOD
+%token WHILE             "while"   
+       INPUT              "?"
+       IF                "if"
+       SCOLON            ";"
+       LCB               "{"
+       RCB               "}"
+       LRB               "("
+       RRB               ")"
+       OUTPUT            "print"
+       ASSIGN            "="
+       OR                "||" 
+       AND               "&&"
+       NOT               "!"
+       EQUAL             "=="
+       NOT_EQUAL         "!="
+       GREATER           ">"
+       LESS              "<"
+       LESS_OR_EQUAL     "<="
+       GREATER_OR_EQUAL  ">="
+       PLUS              "+"  
+       MINUS             "-"
+       MUL               "*"
+       DIV               "/"
+       MOD               "%"
 
 %nterm<Inode::scope_t*> scope
 %nterm<Inode::scope_t*> close_sc
@@ -94,7 +106,9 @@ expr2:      expr3 MUL expr3                     {$$ = new Inode::bin_op_t($1, In
 expr3:      LRB expr1 RRB                       {$$ = $2;} 
           | NAME                                {
                                                     Inode::node_t* visible = current_scope->visible($1);
-                                                    if(!visible) {/* error */} 
+                                                    if(!visible) {
+                                                        driver->report_runtime_error(@1, driver_t::error_type::RUNTIME_UNDEFINED_NAME);
+                                                    } 
                                                     $$ = visible;
                                                 };
           | INTEGER                             {$$ = new Inode::integer_t($1);}

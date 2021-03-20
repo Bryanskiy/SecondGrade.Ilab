@@ -6,6 +6,10 @@ int main(int argc, char** argv) {
          return 0;
     } 
 
-    yy::driver_t driver(argv[1]);
-    driver.parse();
+    try {
+        yy::driver_t driver(argv[1]);
+        driver.parse();
+    } catch(std::exception& ex) {
+        std::cerr << ex.what() << std::endl;
+    }    
 }

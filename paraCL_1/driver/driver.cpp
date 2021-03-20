@@ -11,10 +11,13 @@ driver_t::driver_t() {
 }
 
 driver_t::driver_t(const char* file_name) : file_name_(file_name) {
-    plexer_ = new mylexer_t;
-    current_scope = new Inode::scope_t(nullptr);
-
     file_.open(file_name_);
+    if(!file_.is_open()) {
+        std::stringstream err;
+        err << "Can't open " << file_name;
+        throw std::runtime_error(err.str());
+    }
+
     std::ifstream tmp(file_name_);
     while(tmp) {
         std::string str;
@@ -22,6 +25,8 @@ driver_t::driver_t(const char* file_name) : file_name_(file_name) {
         code_lines_.push_back(str);
     }
 
+    plexer_ = new mylexer_t;
+    current_scope = new Inode::scope_t(nullptr);
     plexer_->switch_streams(file_, std::cout);
 }
 
@@ -43,8 +48,9 @@ parser::token_type driver_t::yylex(parser::location_type* l, parser::semantic_ty
 }
 
 void driver_t::report_syntax_error(parser::context const& ctx) const {
-    int res = 0;
-    std::cerr << color_t::set_red() << "-----------------[Syntax error]---------------------" << color_t::reset() << std::endl <<
+    std::stringstream stream;
+
+    stream << color_t::set_red() << "-----------------[Syntax error]---------------------" << color_t::reset() << std::endl <<
     color_t::set_cyan() << "LOCATION: " << color_t::reset() << file_name_ <<  " : " << 
     plexer_->get_current_line() << " line" << std::endl;
 
@@ -52,28 +58,53 @@ void driver_t::report_syntax_error(parser::context const& ctx) const {
     parser::symbol_kind_type expected_tokens[TOKENMAX];
     int expected_tokens_count = ctx.expected_tokens(expected_tokens, TOKENMAX);
 
-    std::cerr << color_t::set_cyan() << "Expected: " << color_t::reset();
+    stream << color_t::set_cyan() << "Expected: " << color_t::reset();
     for (int i = 0; i < expected_tokens_count; i++) {
         if (i != 0) { 
-            std::cerr << " or "; 
+            stream << " or "; 
         }
 
-        std::cerr << "<" << parser::symbol_name(expected_tokens[i]) << ">";
+        stream << "'" << parser::symbol_name(expected_tokens[i]) << "'";
     }
-    std::cerr << color_t::set_cyan() << " before " << color_t::reset() << "<" << parser::symbol_name(ctx.token()) << ">" << std::endl;
-    std::cerr << color_t::set_cyan() << "LINE: " << color_t::reset() << code_lines_[plexer_->get_current_line() - 1] << std::endl;
-    std::cerr << "      " << color_t::set_red();
+    stream << color_t::set_cyan() << " before " << color_t::reset() << "'" << parser::symbol_name(ctx.token()) << "'" << std::endl;
 
-    yy::location loc = ctx.location();
-    for (size_t i = 0; i < loc.end.column; i++) {
-        if (i == ctx.lookahead().location.begin.line - 1) {
-            std::cerr << '^';
-        }
-        else {
-            std::cerr << '~';
-        }
+    yy::location location = ctx.location();
+    report_error_position(stream, location);
+
+    throw std::runtime_error(stream.str());
+}
+
+void driver_t::report_runtime_error(const parser::location_type& location, error_type err) const {
+    std::stringstream stream;
+
+    stream << color_t::set_red() << "-----------------[Runtime error]---------------------" << color_t::reset() << std::endl <<
+    color_t::set_cyan() << "LOCATION: " << color_t::reset() << file_name_ <<  " : " << 
+    plexer_->get_current_line() << " line" << std::endl;
+
+    switch(err) {
+        case RUNTIME_UNDEFINED_NAME: 
+            stream << color_t::set_cyan() << "Type: " << color_t::reset() << "undefined name" << std::endl;
+            break;
     }
-    std::cerr << color_t::reset();
+
+    report_error_position(stream, location);
+
+    throw std::runtime_error(stream.str());
+}
+
+void driver_t::report_error_position(std::ostream& stream, const parser::location_type& location) const {
+    stream << color_t::set_cyan() << "LINE: " << color_t::reset() << code_lines_[plexer_->get_current_line() - 1] << std::endl;
+    stream << "      " << color_t::set_red();
+
+    for (int i = 0; i < location.begin.column - 1; ++i) {
+        stream << "~";
+    }
+
+    for (int i = 0; i < location.end.column - location.begin.column; ++i) {
+        stream << "^";
+    }    
+
+    stream << color_t::reset();
 }
 
 bool driver_t::parse() {
@@ -87,4 +118,4 @@ driver_t::~driver_t() {
     delete current_scope;
 }
 
-}
+} /* namespace yy */

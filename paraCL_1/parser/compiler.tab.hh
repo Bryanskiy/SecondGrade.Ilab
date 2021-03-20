@@ -455,30 +455,30 @@ namespace yy {
     YYUNDEF = 257,                 // "invalid token"
     NAME = 258,                    // NAME
     INTEGER = 259,                 // INTEGER
-    WHILE = 260,                   // WHILE
-    IF = 261,                      // IF
-    SCOLON = 262,                  // SCOLON
-    LCB = 263,                     // LCB
-    RCB = 264,                     // RCB
-    LRB = 265,                     // LRB
-    RRB = 266,                     // RRB
-    OUTPUT = 267,                  // OUTPUT
-    ASSIGN = 268,                  // ASSIGN
-    INPUT = 269,                   // INPUT
-    OR = 270,                      // OR
-    AND = 271,                     // AND
-    NOT = 272,                     // NOT
-    EQUAL = 273,                   // EQUAL
-    NOT_EQUAL = 274,               // NOT_EQUAL
-    GREATER = 275,                 // GREATER
-    LESS = 276,                    // LESS
-    LESS_OR_EQUAL = 277,           // LESS_OR_EQUAL
-    GREATER_OR_EQUAL = 278,        // GREATER_OR_EQUAL
-    PLUS = 279,                    // PLUS
-    MINUS = 280,                   // MINUS
-    MUL = 281,                     // MUL
-    DIV = 282,                     // DIV
-    MOD = 283                      // MOD
+    WHILE = 260,                   // "while"
+    INPUT = 261,                   // "?"
+    IF = 262,                      // "if"
+    SCOLON = 263,                  // ";"
+    LCB = 264,                     // "{"
+    RCB = 265,                     // "}"
+    LRB = 266,                     // "("
+    RRB = 267,                     // ")"
+    OUTPUT = 268,                  // "print"
+    ASSIGN = 269,                  // "="
+    OR = 270,                      // "||"
+    AND = 271,                     // "&&"
+    NOT = 272,                     // "!"
+    EQUAL = 273,                   // "=="
+    NOT_EQUAL = 274,               // "!="
+    GREATER = 275,                 // ">"
+    LESS = 276,                    // "<"
+    LESS_OR_EQUAL = 277,           // "<="
+    GREATER_OR_EQUAL = 278,        // ">="
+    PLUS = 279,                    // "+"
+    MINUS = 280,                   // "-"
+    MUL = 281,                     // "*"
+    DIV = 282,                     // "/"
+    MOD = 283                      // "%"
       };
       /// Backward compatibility alias (Bison 3.6).
       typedef token_kind_type yytokentype;
@@ -502,30 +502,30 @@ namespace yy {
         S_YYUNDEF = 2,                           // "invalid token"
         S_NAME = 3,                              // NAME
         S_INTEGER = 4,                           // INTEGER
-        S_WHILE = 5,                             // WHILE
-        S_IF = 6,                                // IF
-        S_SCOLON = 7,                            // SCOLON
-        S_LCB = 8,                               // LCB
-        S_RCB = 9,                               // RCB
-        S_LRB = 10,                              // LRB
-        S_RRB = 11,                              // RRB
-        S_OUTPUT = 12,                           // OUTPUT
-        S_ASSIGN = 13,                           // ASSIGN
-        S_INPUT = 14,                            // INPUT
-        S_OR = 15,                               // OR
-        S_AND = 16,                              // AND
-        S_NOT = 17,                              // NOT
-        S_EQUAL = 18,                            // EQUAL
-        S_NOT_EQUAL = 19,                        // NOT_EQUAL
-        S_GREATER = 20,                          // GREATER
-        S_LESS = 21,                             // LESS
-        S_LESS_OR_EQUAL = 22,                    // LESS_OR_EQUAL
-        S_GREATER_OR_EQUAL = 23,                 // GREATER_OR_EQUAL
-        S_PLUS = 24,                             // PLUS
-        S_MINUS = 25,                            // MINUS
-        S_MUL = 26,                              // MUL
-        S_DIV = 27,                              // DIV
-        S_MOD = 28,                              // MOD
+        S_WHILE = 5,                             // "while"
+        S_INPUT = 6,                             // "?"
+        S_IF = 7,                                // "if"
+        S_SCOLON = 8,                            // ";"
+        S_LCB = 9,                               // "{"
+        S_RCB = 10,                              // "}"
+        S_LRB = 11,                              // "("
+        S_RRB = 12,                              // ")"
+        S_OUTPUT = 13,                           // "print"
+        S_ASSIGN = 14,                           // "="
+        S_OR = 15,                               // "||"
+        S_AND = 16,                              // "&&"
+        S_NOT = 17,                              // "!"
+        S_EQUAL = 18,                            // "=="
+        S_NOT_EQUAL = 19,                        // "!="
+        S_GREATER = 20,                          // ">"
+        S_LESS = 21,                             // "<"
+        S_LESS_OR_EQUAL = 22,                    // "<="
+        S_GREATER_OR_EQUAL = 23,                 // ">="
+        S_PLUS = 24,                             // "+"
+        S_MINUS = 25,                            // "-"
+        S_MUL = 26,                              // "*"
+        S_DIV = 27,                              // "/"
+        S_MOD = 28,                              // "%"
         S_YYACCEPT = 29,                         // $accept
         S_program = 30,                          // program
         S_scope = 31,                            // scope
@@ -986,6 +986,21 @@ switch (yykind)
 #if 201103L <= YY_CPLUSPLUS
       static
       symbol_type
+      make_INPUT (location_type l)
+      {
+        return symbol_type (token::INPUT, std::move (l));
+      }
+#else
+      static
+      symbol_type
+      make_INPUT (const location_type& l)
+      {
+        return symbol_type (token::INPUT, l);
+      }
+#endif
+#if 201103L <= YY_CPLUSPLUS
+      static
+      symbol_type
       make_IF (location_type l)
       {
         return symbol_type (token::IF, std::move (l));
@@ -1101,21 +1116,6 @@ switch (yykind)
       make_ASSIGN (const location_type& l)
       {
         return symbol_type (token::ASSIGN, l);
-      }
-#endif
-#if 201103L <= YY_CPLUSPLUS
-      static
-      symbol_type
-      make_INPUT (location_type l)
-      {
-        return symbol_type (token::INPUT, std::move (l));
-      }
-#else
-      static
-      symbol_type
-      make_INPUT (const location_type& l)
-      {
-        return symbol_type (token::INPUT, l);
       }
 #endif
 #if 201103L <= YY_CPLUSPLUS
@@ -1422,7 +1422,7 @@ switch (yykind)
 
 #if YYDEBUG
     // YYRLINE[YYN] -- Source line where rule number YYN was defined.
-    static const signed char yyrline_[];
+    static const unsigned char yyrline_[];
     /// Report on the debug stream that the rule \a r is going to be reduced.
     virtual void yy_reduce_print_ (int r) const;
     /// Print the state stack on the debug stream.
