@@ -37,12 +37,11 @@ namespace octt {
 
         void insert(T* elem);
         void fill_intersection();    
-        std::size_t children_count() const;
         void del();
 
     private:
 
-        static constexpr uint8_t max_height_ = 3;
+        static constexpr uint8_t max_height_ = 4;
 
         void fill_collision(T* elem);
 
@@ -132,11 +131,10 @@ void octt::node_t<T>::fill_intersection() {
             }
         }
 
-
         for(std::size_t j = 0, maxj = children_.size(); j < maxj; ++j) {
-             if(children_[j] != nullptr) {
-                children_[j]->fill_collision(elements_[i]);
-            }
+              if(children_[j] != nullptr) {
+                 children_[j]->fill_collision(elements_[i]);
+             }
         }
     }
 
@@ -149,6 +147,23 @@ void octt::node_t<T>::fill_intersection() {
 
 template<typename T>
 void octt::node_t<T>::fill_collision(T* elem) {
+    std::pair<long double, long double> proj[3];
+    proj[0] = elem->projection_i(0);
+    proj[1] = elem->projection_i(1);
+    proj[2] = elem->projection_i(2);
+
+    if((proj[0].first > space_[1]) || (proj[0].second < space_[0])) {
+        return;
+    }
+
+    if((proj[1].first > space_[3]) || (proj[1].second < space_[2])) {
+        return;
+    }
+
+    if((proj[2].first > space_[5]) || (proj[2].second < space_[4])) {
+        return;
+    }
+
     for(std::size_t i = 0, maxi = elements_.size(); i < maxi; ++i) {
         if(lingeo::intersection(elem->getTriangle(), elements_[i]->getTriangle())) {
             elements_[i]->setColor({1.0, 0.0, 0.0});
@@ -185,19 +200,6 @@ void octt::node_t<T>::del() {
 
         delete node;
     }
-}
-
-template<typename T>
-std::size_t octt::node_t<T>::children_count() const{
-    std::size_t ret = 0;
-
-    for(std::size_t i = 0, max = children_.size(); i < max; ++i) {
-        if(children_[i] != nullptr) {
-            ret += 1;
-        }
-    }
-
-    return ret;
 }
 
 
