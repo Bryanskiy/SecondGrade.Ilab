@@ -1,7 +1,6 @@
 #include "driver.hpp"
 
 Inode::scope_t* current_scope;
-yy::location current_location;
 
 namespace yy {
 
