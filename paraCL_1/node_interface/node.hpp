@@ -52,8 +52,11 @@ enum class unary_op {
 class integer_t final : public node_t {
 public:
     integer_t(int val) : val_(val) {}
-    ~integer_t() override = default;
-
+    ~integer_t() override {
+#ifdef DEBUG
+    std::cout << "~integer_t call" << "(" << this << ")" << std::endl;
+#endif        
+    }
     int calc() override {return val_;}
 
 private:    
@@ -64,7 +67,11 @@ class decl_t final : public node_t {
 public:
     decl_t(int val) : val_(val) {}
     decl_t() = default;
-    ~decl_t() override = default;
+    ~decl_t() override {
+#ifdef DEBUG
+    std::cout << "~decl_t call" << "(" << this << ")" << std::endl;
+#endif        
+    }
 
     int calc() override {return val_;};
     void set(int val) {val_ = val;}
@@ -84,7 +91,7 @@ public:
     scope_t* get_prev() const {return prev_scope_;}
     void add_branch(node_t* branch) {branches_.push_back(branch);}
 
-    node_t* add(const std::string& name);
+    void add(node_t* decl, const std::string& name);
     node_t* visible(const std::string& name) const; 
 
 private:    
@@ -120,7 +127,14 @@ private:
 class if_t final : public node_t {
 public:
     if_t(node_t* condition, node_t* scope) : condition_(condition), scope_(scope) {}  
-    ~if_t() {delete condition_; delete scope_;}
+    ~if_t() {
+#ifdef DEBUG
+    std::cout << "~if_t call" << "(" << this << ")" << std::endl;
+    std::cout << "delete " << condition_ << std::endl;
+    std::cout << "delete " << scope_ << std::endl;
+#endif
+        delete condition_; delete scope_;
+    }
 
     int calc() override;   
 private:
@@ -132,7 +146,14 @@ class while_t final : public node_t {
 private:
 public:
     while_t(node_t* condition, node_t* scope) : condition_(condition), scope_(scope) {}
-    ~while_t() {delete condition_; delete scope_;}
+    ~while_t() {
+#ifdef DEBUG
+    std::cout << "~while_t call" << "(" << this << ")" << std::endl;
+    std::cout << "delete " << condition_ << std::endl;
+    std::cout << "delete " << scope_ << std::endl;
+#endif        
+        delete condition_; delete scope_;
+    }
 
     int calc() override;
 

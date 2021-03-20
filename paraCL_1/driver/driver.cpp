@@ -84,6 +84,7 @@ bool driver_t::parse() {
 
 driver_t::~driver_t() {
     delete plexer_;
+    delete current_scope;
 }
 
 }

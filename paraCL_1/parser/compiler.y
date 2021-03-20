@@ -73,7 +73,14 @@ stm:        assign                              {$$ = $1;};
 
 assign:     lval ASSIGN expr1 SCOLON            {$$ = new Inode::bin_op_t($1, Inode::bin_op::assign_, $3);};
 
-lval:       NAME                                {$$ = current_scope->add($1);}
+lval:       NAME                                {
+                                                    Inode::node_t* node = current_scope->visible($1);
+                                                    if(!node) {
+                                                        node = new Inode::decl_t;
+                                                        current_scope->add(node, $1);
+                                                    }
+                                                    $$ = node;
+                                                }
 
 expr1:       expr2 PLUS expr2                   {$$ = new Inode::bin_op_t($1, Inode::bin_op::plus_, $3);};
            | expr2 MINUS expr2                  {$$ = new Inode::bin_op_t($1, Inode::bin_op::minus_, $3);};
@@ -85,7 +92,11 @@ expr2:      expr3 MUL expr3                     {$$ = new Inode::bin_op_t($1, In
           | expr3                               {$$ = $1;}
 
 expr3:      LRB expr1 RRB                       {$$ = $2;} 
-          | NAME                                {$$ = current_scope->visible($1);};
+          | NAME                                {
+                                                    Inode::node_t* visible = current_scope->visible($1);
+                                                    if(!visible) {/* error */} 
+                                                    $$ = visible;
+                                                };
           | INTEGER                             {$$ = new Inode::integer_t($1);}
           | INPUT                               {$$ = new Inode::unary_op_t(Inode::unary_op::input_, nullptr);};                  
 
@@ -104,7 +115,7 @@ if:        IF LRB condition RRB scope           {$$ = new Inode::if_t($3, $5);};
 
 while:     WHILE LRB condition RRB scope        {$$ = new Inode::while_t($3, $5);};
 
-output:    OUTPUT expr1 SCOLON                   {$$ = new Inode::unary_op_t(Inode::unary_op::output_, $2);};
+output:    OUTPUT expr1 SCOLON                  {$$ = new Inode::unary_op_t(Inode::unary_op::output_, $2);};
                          
 %%
 

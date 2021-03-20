@@ -12,15 +12,8 @@ int scope_t::calc() {
     return 0;
 }
 
-node_t* scope_t::add(const std::string& name) {
-    node_t* node = visible(name);
-    if(node) {
-        return node;
-    }
-
-    decl_t* decl = new decl_t;
-    symtab_[name] = decl;
-    return decl;
+void scope_t::add(node_t* decl, const std::string& name) {
+    symtab_[name] = dynamic_cast<decl_t*>(decl);
 }
 
 node_t* scope_t::visible(const std::string& name) const {
@@ -39,8 +32,21 @@ node_t* scope_t::visible(const std::string& name) const {
 }
 
 scope_t::~scope_t() {
-    for(const auto& x : branches_) {
+#ifdef DEBUG
+    std::cout << "~scope_t call" << "(" << this << ")" << std::endl;
+#endif    
+    for(auto& x : branches_) {
+#ifdef DEBUG
+    std::cout << "delete " << x << std::endl;
+#endif        
         delete x;
+    }
+
+    for(auto& elem : symtab_) {
+#ifdef DEBUG
+    std::cout << "delete " << elem.second << std::endl;
+#endif         
+        delete elem.second;
     }
 }
 
@@ -101,8 +107,23 @@ int bin_op_t::calc() {
 }
 
 bin_op_t::~bin_op_t() {
-    delete lhs_;
-    delete rhs_;
+#ifdef DEBUG
+    std::cout << "~bin_op_t call" << "(" << this << ")" << std::endl;
+#endif
+
+    if(!dynamic_cast<decl_t*>(lhs_)) {
+#ifdef DEBUG
+    std::cout << "delete " << lhs_ << std::endl;
+#endif         
+         delete lhs_;
+    }
+
+    if(!dynamic_cast<decl_t*>(rhs_)) {
+#ifdef DEBUG
+    std::cout << "delete " << rhs_ << std::endl;
+#endif          
+         delete rhs_;
+    }    
 }
 
 /*-------------------------UNARY OP-------------------------*/
@@ -126,7 +147,15 @@ int unary_op_t::calc() {
 
 
 unary_op_t::~unary_op_t() {
-    delete node_;
+#ifdef DEBUG
+    std::cout << "~unary_op_t call" << "(" << this << ")" << std::endl;
+#endif
+    if(!dynamic_cast<decl_t*>(node_)) {
+#ifdef DEBUG
+    std::cout << "delete " << node_ << std::endl;
+#endif 
+        delete node_;
+    }    
 }
 
 /*------------------------------IF------------------------*/
