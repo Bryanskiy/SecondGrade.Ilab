@@ -3,7 +3,7 @@
 | Branch            | current level | max level |
 | -------------     |:-------------:| :--------:|
 | Cache             | 1 (done)      |     1     |
-| geometry          | 3             |     9     |
+| geometry          | 4             |     9     |
 | trees             | 2             |     9     |
 | Matrices          | 3             |     9     |
 | GPU               | 2             |     9     |

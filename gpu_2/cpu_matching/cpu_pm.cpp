@@ -1,0 +1,28 @@
+#include "cpu_pm.hpp"
+
+namespace pm {
+
+std::vector<std::size_t> cpu_pm_t::match() const {
+    std::vector<std::size_t> res;
+    res.reserve(patterns_.size());
+
+    for(auto&& pattern : patterns_) {
+        std::size_t tmp = 0;
+        std::string::size_type pos = 0u;
+        for(;;) {
+            pos = text_.find(pattern, pos);
+            if(pos == std::string::npos) {
+                break;
+            }
+
+            tmp += 1;
+            pos += 1;
+        }
+
+        res.emplace_back(tmp);
+    }
+
+    return res;
+} 
+
+} /* namespace pm */

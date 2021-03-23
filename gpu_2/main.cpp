@@ -1,42 +1,83 @@
-#include "pattern_matching.hpp"
-
 #include <iostream>
 
-std::string read_str(std::size_t character_count, std::istream& in) {
-    std::string str; str.resize(character_count);
-    for(std::size_t i = 0; i < character_count; ++i) {
-        in >> str[i];
-    }
+#include "cpu_matching/cpu_pm.hpp"
+#include "gpu_matching/gpu_kmp.hpp"
 
-    return str;
+std::string read_str(std::istream& input) {
+    std::string ret;
+    size_t size = 0; input >> size;
+
+    input.ignore(1);
+    ret.resize(size);
+    input.read(ret.data(), size);
+    input.ignore(1);
+
+    return ret;
 }
 
-int main() {
-    pm::gpuKMP_t matcher;
-
-    std::size_t text_size; std::cin >> text_size;
-    std::string text = read_str(text_size, std::cin);
-
-    matcher.set_text(text);
-
-    std::size_t patterns_count; std::cin >> patterns_count;
-
-    for(std::size_t i = 0; i < patterns_count; ++i) {
-        std::size_t tmp_size; std::cin >> tmp_size;
-
-        std::string tmp = read_str(tmp_size, std::cin);
-
-        matcher.push_pattern(tmp);
-    }
+int main(int argc, char** argv) {
+/* -------------PROCESS MAIN ARGS ------------------------- */
+    std::vector<std::pair<cl::Platform, cl::Device>> info;
+    int id = 0;
 
     try {
-        matcher.match();
-    } catch (cl::Error& err) {
-        std::cerr << err.what() << std::endl;
-        return 0;
+
+        boost::program_options::options_description desc("Options");
+        desc.add_options()
+            ("help", "get options info")
+            ("devices", "get avaible devices")
+            ("set", boost::program_options::value<int>()->required(), "set device");
+
+        boost::program_options::variables_map vm;        
+        boost::program_options::store(boost::program_options::parse_command_line(argc, argv, desc), vm);
+        boost::program_options::notify(vm);
+
+        if (vm.count("help")) {
+            std::cout << desc;
+            return 0;
+        }
+
+        info = pm::clcore_t::get_devices();
+
+        if(vm.count("devices")) {
+            std::cout << "Available devices and platforms:" << std::endl;
+            for (size_t i = 0; i < info.size(); ++i) {
+                std::cout << "--------------------------------------------------------------" << std::endl;
+                std::cout << "Id: " << i << std::endl;
+                std::cout << "Platform:\t";
+                std::cout << info[i].first.getInfo<CL_PLATFORM_NAME>() << std::endl;
+                std::cout << "Device:\t\t";
+                std::cout << info[i].second.getInfo<CL_DEVICE_NAME>() << std::endl;
+            }
+
+            return 0;
+        }
+
+        if(vm.count("set")) {
+            id = vm["set"].as<int>();
+        }
+
+    } catch(std::exception& ex) {
+        std::cerr << ex.what() << std::endl;
+        return 1;
     }    
-    auto ans = matcher.get_matches();
-    for(std::size_t i = 0, maxi = ans.size(); i < maxi; ++i) {
-        std::cout << i + 1 << " " << ans[i].size() << std::endl;
+
+    cl::Device device = info[id].second;
+/* --------------MAIN PROGRAM ----------------------------- */
+    std::string text = read_str(std::cin);
+
+    std::vector<std::string> patterns;
+    std::size_t patterns_count; std::cin >> patterns_count;
+    patterns.reserve(patterns_count);
+
+    for(std::size_t i = 0; i < patterns_count; ++i) {
+        std::string tmp = read_str(std::cin);
+        patterns.emplace_back(std::move(tmp));
     }
+
+    pm::gpu_kmp_t pm(device, text, patterns);
+    // auto&& res = pm.match();
+    // for(std::size_t i = 0, maxi = res.size(); i < maxi; ++i) {
+    //     std::cout << i + 1 << " " << res[i] << std::endl;
+    // }
 }
