@@ -7,5 +7,5 @@
 | trees             | 2             |     9     |
 | Matrices          | 3             |     9     |
 | GPU               | 2             |     9     |
-| paraCL            | 1             |     9     |
+| paraCL            | 2             |     9     |
 | combinatorics     | 1             |     9     | 
