@@ -1,0 +1,36 @@
+#IncludeRegexLine: ^[ 	]*[#%][ 	]*(include|import)[ 	]*[<"]([^">]+)([">])
+
+#IncludeRegexScan: ^.*$
+
+#IncludeRegexComplain: ^$
+
+#IncludeRegexTransform: 
+
+/home/ivakin/prog/Ilab2_cpp/gpu_2/gpu_matching/cl_core.hpp
+CL/cl.hpp
+-
+boost/program_options.hpp
+-
+iostream
+-
+fstream
+-
+
+/home/ivakin/prog/Ilab2_cpp/gpu_2/gpu_matching/gpu_kmp.cpp
+gpu_kmp.hpp
+/home/ivakin/prog/Ilab2_cpp/gpu_2/gpu_matching/gpu_kmp.hpp
+
+/home/ivakin/prog/Ilab2_cpp/gpu_2/gpu_matching/gpu_kmp.hpp
+vector
+-
+string
+-
+cl_core.hpp
+/home/ivakin/prog/Ilab2_cpp/gpu_2/gpu_matching/cl_core.hpp
+../other/timer.hpp
+/home/ivakin/prog/Ilab2_cpp/gpu_2/other/timer.hpp
+
+/home/ivakin/prog/Ilab2_cpp/gpu_2/other/timer.hpp
+chrono
+-
+
