@@ -10,7 +10,7 @@ std::string read_str(std::istream& input) {
     input.ignore(1);
     ret.resize(size);
     input.read(ret.data(), size);
-    input.ignore(1);
+    input.ignore();
 
     return ret;
 }
@@ -26,7 +26,7 @@ int main(int argc, char** argv) {
         desc.add_options()
             ("help", "get options info")
             ("devices", "get avaible devices")
-            ("set", boost::program_options::value<int>()->required(), "set device");
+            ("set", boost::program_options::value<int>(), "set device");
 
         boost::program_options::variables_map vm;        
         boost::program_options::store(boost::program_options::parse_command_line(argc, argv, desc), vm);
@@ -65,19 +65,26 @@ int main(int argc, char** argv) {
     cl::Device device = info[id].second;
 /* --------------MAIN PROGRAM ----------------------------- */
     std::string text = read_str(std::cin);
-
     std::vector<std::string> patterns;
     std::size_t patterns_count; std::cin >> patterns_count;
     patterns.reserve(patterns_count);
 
     for(std::size_t i = 0; i < patterns_count; ++i) {
         std::string tmp = read_str(std::cin);
-        patterns.emplace_back(std::move(tmp));
+        patterns.push_back(tmp);
     }
 
     pm::gpu_kmp_t pm(device, text, patterns);
-    // auto&& res = pm.match();
-    // for(std::size_t i = 0, maxi = res.size(); i < maxi; ++i) {
-    //     std::cout << i + 1 << " " << res[i] << std::endl;
-    // }
+    try {
+        auto&& res = pm.match();
+        for(std::size_t i = 0, maxi = res.size(); i < maxi; ++i) {
+            std::cout << i + 1 << " " << res[i] << std::endl;
+        }
+    } catch(cl::Error& err) {
+        std::cerr << err.what() << std::endl; 
+    } 
+    
+    catch(std::exception& err) {
+        std::cerr << err.what() << std::endl; 
+    }
 }
