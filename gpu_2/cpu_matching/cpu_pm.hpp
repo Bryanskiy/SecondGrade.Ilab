@@ -2,6 +2,7 @@
 
 #include <string>
 #include <vector>
+#include "../other/timer.hpp"
 
 /* pm - pattern matching */
 namespace pm {
@@ -13,10 +14,12 @@ public:
     void set_text(std::string& text) {text_ = text;}
     void push_pattern(std::string& pattern) {patterns_.push_back(pattern);}
 
-    std::vector<std::size_t> match() const;
+    std::vector<std::size_t> match();
+    std::size_t get_time() const {return time_;}
 private:
     std::string text_;
     std::vector<std::string> patterns_;
+    std::size_t time_;
 };
 
 } /* namespace pm */

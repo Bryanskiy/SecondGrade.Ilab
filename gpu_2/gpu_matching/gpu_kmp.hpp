@@ -2,7 +2,9 @@
 
 #include <vector>
 #include <string>
+
 #include "cl_core.hpp"
+#include "../other/timer.hpp"
 
 namespace pm {
 
@@ -13,11 +15,14 @@ public:
         core_(device), text_(text), patterns_(patterns) {}
 
     std::vector<std::size_t> match();
+
+    std::size_t gpu_time() const {return core_.get_time();}
+    std::size_t time() const {return time_;}
 private:
     clcore_t core_;
     std::string text_;
     std::vector<std::string> patterns_;
-
+    std::size_t time_;
     bool builded_ = false;
 };
 

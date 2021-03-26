@@ -2,7 +2,8 @@
 
 namespace pm {
 
-std::vector<std::size_t> cpu_pm_t::match() const {
+std::vector<std::size_t> cpu_pm_t::match() {
+    Timer_t timer;
     std::vector<std::size_t> res;
     res.reserve(patterns_.size());
 
@@ -22,6 +23,7 @@ std::vector<std::size_t> cpu_pm_t::match() const {
         res.emplace_back(tmp);
     }
 
+    time_ = timer.get_time().count();
     return res;
 } 
 

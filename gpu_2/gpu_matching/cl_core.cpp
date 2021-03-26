@@ -49,6 +49,16 @@ void clcore_t::build_program(const std::vector<std::string>& kernels) {
     } 
 }                                     
 
+void clcore_t::enqueue_kernel(cl::Kernel& kernel, cl::NDRange& offset, cl::NDRange& global_size, cl::NDRange& local_size) {
+    cl::Event event;
+    queue_.enqueueNDRangeKernel(kernel, offset, global_size, local_size, NULL, &event);
+    event.wait();
+
+    std::size_t start = event.getProfilingInfo<CL_PROFILING_COMMAND_START>();
+    std::size_t end = event.getProfilingInfo<CL_PROFILING_COMMAND_END>();
+    time_ += (end - start) / 1000;
+}
+
 } /* namespace pm */
 
 const char* cl_get_error_string(int error_code) {

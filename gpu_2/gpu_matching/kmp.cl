@@ -41,5 +41,5 @@ __kernel void kmp(__global char* text, ulong text_size, __global char* pattern, 
 
     //printf("[%lu]: %lu\n", id, positions_number);
 
-    answer[0] += positions_number;
+    answer[id] += positions_number;
 }

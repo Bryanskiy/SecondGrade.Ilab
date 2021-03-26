@@ -10,7 +10,7 @@ std::string read_str(std::istream& input) {
     input.ignore(1);
     ret.resize(size);
     input.read(ret.data(), size);
-    input.ignore();
+    input.ignore(1);
 
     return ret;
 }

@@ -3,6 +3,8 @@
 namespace pm {
 
 std::vector<std::size_t> gpu_kmp_t::match() {
+    Timer_t timer;
+
     if(!builded_) {
         core_.build_program({"../gpu_matching/kmp.cl"});
         builded_ = true;
@@ -18,6 +20,7 @@ std::vector<std::size_t> gpu_kmp_t::match() {
     for(const auto& pattern : patterns_) {
         if(pattern.size() > text_.size()) {
             ans.push_back(0u);
+            continue;
         }
 
         auto preffix = preffix_function(pattern);
@@ -27,11 +30,12 @@ std::vector<std::size_t> gpu_kmp_t::match() {
         cl::Buffer pattern_buffer(core_.get_context(), CL_MEM_READ_ONLY, pattern.size() * sizeof(pattern[0]));
         queue.enqueueWriteBuffer(pattern_buffer, CL_TRUE, 0, pattern.size() * sizeof(pattern[0]), pattern.data());
 
-        std::size_t pattern_ans = 0;
-        cl::Buffer ans_buffer(core_.get_context(), CL_MEM_READ_WRITE | CL_MEM_USE_HOST_PTR, 1, &pattern_ans);
+        std::size_t thread_count = text_.size() / pattern.size() + 1;
+        std::vector<std::size_t> ans_vector(thread_count);
+        cl::Buffer ans_buffer(core_.get_context(), CL_MEM_READ_ONLY, ans_vector.size() * sizeof(ans_vector[0]));
+        queue.enqueueWriteBuffer(ans_buffer, CL_TRUE, 0, ans_vector.size() * sizeof(ans_vector[0]), ans_vector.data());
 
         cl::NDRange offset(0);
-        std::size_t thread_count = text_.size() / pattern.size() + 1;
         cl::NDRange global_size(thread_count);
         cl::NDRange local_size(1);
 
@@ -44,12 +48,18 @@ std::vector<std::size_t> gpu_kmp_t::match() {
         kernel.setArg(5, preffix.size());
         kernel.setArg(6, ans_buffer);
 
-        cl::Event event;
-        queue.enqueueNDRangeKernel(kernel, offset, global_size, local_size, NULL, &event);
-        event.wait();
+        core_.enqueue_kernel(kernel, offset, global_size, local_size);
 
-        ans.push_back(pattern_ans);
+        std::size_t* map_data = (std::size_t*)queue.enqueueMapBuffer(ans_buffer, CL_TRUE, CL_MAP_READ, 0, ans_vector.size() * sizeof(ans_vector[0]));
+        std::size_t ans_pattern = 0;
+        for(std::size_t i = 0; i < thread_count; ++i) {
+            ans_pattern += map_data[i];
+        }
+
+        ans.push_back(ans_pattern);
     }
+
+    time_ = timer.get_time().count();
 
     return ans;
 }
