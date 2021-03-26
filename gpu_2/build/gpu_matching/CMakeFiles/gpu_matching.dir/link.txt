@@ -1,2 +1,0 @@
-/usr/bin/ar qc libgpu_matching.a  CMakeFiles/gpu_matching.dir/cl_core.cpp.o CMakeFiles/gpu_matching.dir/gpu_kmp.cpp.o
-/usr/bin/ranlib libgpu_matching.a

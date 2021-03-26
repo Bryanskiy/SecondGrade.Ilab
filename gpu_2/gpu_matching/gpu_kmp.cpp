@@ -1,5 +1,20 @@
 #include "gpu_kmp.hpp"
 
+namespace {
+
+std::size_t calculate_thread_count(std::size_t text_size, std::size_t pattern_size) {
+    std::size_t ans = 1;
+    pattern_size *= 2;
+    while(text_size > pattern_size) {
+        ans *= 2;
+        text_size /= 2;
+    }
+
+    return ans;
+}
+
+}
+
 namespace pm {
 
 std::vector<std::size_t> gpu_kmp_t::match() {
@@ -17,27 +32,27 @@ std::vector<std::size_t> gpu_kmp_t::match() {
     auto queue = core_.get_queue();
     queue.enqueueWriteBuffer(text_buffer, CL_TRUE, 0, text_.size() * sizeof(text_[0]), text_.data());
 
-    for(const auto& pattern : patterns_) {
+    for(auto&& pattern : patterns_) {
         if(pattern.size() > text_.size()) {
             ans.push_back(0u);
             continue;
         }
 
-        auto preffix = preffix_function(pattern);
+        auto&& preffix = preffix_function(pattern);
         cl::Buffer preffix_buffer(core_.get_context(), CL_MEM_READ_ONLY, preffix.size() * sizeof(preffix[0]));
         queue.enqueueWriteBuffer(preffix_buffer, CL_TRUE, 0, preffix.size() * sizeof(preffix[0]), preffix.data());
 
         cl::Buffer pattern_buffer(core_.get_context(), CL_MEM_READ_ONLY, pattern.size() * sizeof(pattern[0]));
         queue.enqueueWriteBuffer(pattern_buffer, CL_TRUE, 0, pattern.size() * sizeof(pattern[0]), pattern.data());
 
-        std::size_t thread_count = text_.size() / pattern.size() + 1;
+        std::size_t thread_count = calculate_thread_count(text_.size(), pattern.size());
         std::vector<std::size_t> ans_vector(thread_count);
         cl::Buffer ans_buffer(core_.get_context(), CL_MEM_READ_ONLY, ans_vector.size() * sizeof(ans_vector[0]));
         queue.enqueueWriteBuffer(ans_buffer, CL_TRUE, 0, ans_vector.size() * sizeof(ans_vector[0]), ans_vector.data());
 
         cl::NDRange offset(0);
         cl::NDRange global_size(thread_count);
-        cl::NDRange local_size(1);
+        cl::NDRange local_size(std::min(thread_count, core_.get_device().getInfo<CL_DEVICE_MAX_WORK_GROUP_SIZE>()));
 
         cl::Kernel kernel(core_.get_program(), "kmp");
         kernel.setArg(0, text_buffer);
