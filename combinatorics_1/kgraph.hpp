@@ -5,24 +5,59 @@
 #include <stdexcept>
 #include <unordered_map>
 #include <iomanip>
-	
+#include <stack>	
+#include <cassert>
 
 namespace kgraph {
+
+struct color_t {
+    enum COLOR {
+        blue,
+        red,
+        empty,
+    };
+
+    static COLOR get_another(COLOR color) {
+        if(color == empty) {return empty;}
+        return (color == blue) ? red : blue;
+    }
+
+    static const char* get_string(COLOR color) {
+        switch(color) {
+            case blue:  return "b";
+            case red:   return "r";
+            case empty: return "empty";
+        }
+
+        assert(0);
+        return "";
+    }
+};
 
 template<typename VT, typename ET>
 class kgraph_t final {
 public:
-    kgraph_t() : vertex_size_(0u), vertex_capacity_(2u) {graph_.resize(vertex_capacity_);}
+    kgraph_t() : vertex_size_(0u), vertex_capacity_(2u) {
+        graph_.resize(vertex_capacity_);
+        vertex_data_.resize(vertex_capacity_);
+    }
 
     /* v1, v2 - user vertices idx */
     void push_edge(std::size_t v1, std::size_t v2, const ET& edge_data = ET{});
     void dump(std::ostream& out) const;
+    bool fill_bipartite_color();
+
+    /* return vector of pair's of user idx and color */
+    std::vector<std::pair<std::size_t, color_t::COLOR>> get_color() const;
 
 private:
     void vertex_realloc(std::size_t new_vertex_capacity);
     /*  v1      - user idx
         retern  - internal idx */
     std::size_t push_vertex(std::size_t v);
+
+    /* return internal idx */
+    std::size_t pair_incident_vertex(std::size_t edge_id);
 private:
     /* essense can be vertex or edge */
     struct essense_t {
@@ -37,7 +72,11 @@ private:
     std::size_t vertex_size_;
 
     /* vertex_data_[i] matchs to graph_[i] vertex */
-    std::vector<VT> vertex_data_;
+    struct vertex_data_t {
+        VT data;
+        color_t::COLOR color = color_t::empty;
+    };
+    std::vector<vertex_data_t> vertex_data_;
     /* edge_data_[i] matchs to graph_[i + vertex_capacity_] edge */
     std::vector<ET> edge_data_;
 
@@ -105,9 +144,71 @@ void kgraph_t<VT, ET>::vertex_realloc(std::size_t new_vertex_capacity) {
     }
 
     vertex_capacity_ += cap_delta;
+    vertex_data_.resize(vertex_capacity_);
     tmp.swap(graph_);
 }
 
+template<typename VT, typename ET>
+bool kgraph_t<VT, ET>::fill_bipartite_color() {
+    for(std::size_t w = 0; w < vertex_size_; ++w) {
+
+        std::stack<std::size_t> stack;
+
+        /* start B3 step */
+        if(vertex_data_[w].color != color_t::empty) {
+            continue;
+        }
+
+        stack.push(w);
+        vertex_data_[w].color = color_t::blue;
+        /* end B3 step */
+
+        /* B4 - B8 loop */
+        while(!stack.empty()) {
+            std::size_t current_vertex = stack.top();
+            color_t::COLOR current_vertex_color = vertex_data_[current_vertex].color;
+            stack.pop();
+
+            std::size_t current_edge = graph_[current_vertex].next;
+
+            /* B5 - B7 loop */
+            while(current_edge != current_vertex) {
+                std::size_t tmp_vertex = pair_incident_vertex(current_edge);
+                color_t::COLOR tmp_vertex_color = vertex_data_[tmp_vertex].color;
+
+                if(tmp_vertex_color == color_t::empty) {
+                    vertex_data_[tmp_vertex].color = color_t::get_another(current_vertex_color);
+                    stack.push(tmp_vertex);
+                } else if(tmp_vertex_color == current_vertex_color) {
+                    return false;
+                }
+
+                current_edge = graph_[current_edge].next;
+            }
+        }
+    }
+
+    return true;
+}
+
+template<typename VT, typename ET>
+std::vector<std::pair<std::size_t, color_t::COLOR>> kgraph_t<VT, ET>::get_color() const {
+    std::vector<std::pair<std::size_t, color_t::COLOR>> ans;
+    ans.reserve(vertex_size_);
+
+    for(std::size_t i = 0; i < vertex_size_; ++i) {
+        color_t::COLOR v_color = vertex_data_[i].color;
+        std::size_t user_idx = internal2user_.at(i);
+        ans.push_back({user_idx, v_color});
+    }
+
+    return ans;
+}
+
+template<typename VT, typename ET>
+std::size_t kgraph_t<VT, ET>::pair_incident_vertex(std::size_t edge_id) {
+    return ((edge_id) % 2) ? graph_[edge_id - 1].incident_vertex : graph_[edge_id + 1].incident_vertex;
+}
 
 template<typename VT, typename ET>
 void kgraph_t<VT, ET>::dump(std::ostream& out) const {

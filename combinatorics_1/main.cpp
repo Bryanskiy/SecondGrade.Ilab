@@ -34,5 +34,18 @@ int main(int argc, char** argv) {
         graph.push_edge(edge.v1, edge.v2, edge.w);
     }
 
+#ifdef DEBUG
     graph.dump(std::cout);
+#endif
+
+    bool possible = graph.fill_bipartite_color();
+    if(possible) {
+        auto&& ans = graph.get_color();
+
+        for(auto&& elem : ans) {
+            std::cout << elem.first << " " << kgraph::color_t::get_string(elem.second) << " ";
+        }   
+    } else {
+        std::cout << "Impossible" << std::endl;
+    }
 }
