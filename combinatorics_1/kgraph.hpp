@@ -14,13 +14,13 @@ class kgraph_t final {
 public:
     kgraph_t() : vertex_size_(0u), vertex_capacity_(2u) {graph_.resize(vertex_capacity_);}
 
-    /* v1, v2 - vertices id */
+    /* v1, v2 - user vertices idx */
     void push_edge(std::size_t v1, std::size_t v2, const ET& edge_data = ET{});
     void dump(std::ostream& out) const;
 
 private:
     void vertex_realloc(std::size_t new_vertex_capacity);
-    /*  v1      - user id
+    /*  v1      - user idx
         retern  - internal idx */
     std::size_t push_vertex(std::size_t v);
 private:
@@ -73,28 +73,19 @@ void kgraph_t<VT, ET>::push_edge(std::size_t v1, std::size_t v2, const ET& edge_
 
     /* first essesnse */
     {
-        std::size_t last_essense = graph_[user2internal_[v1]].prev;
-        graph_[user2internal_[v1]].prev = graph_.size();
+        std::size_t last_essense = graph_[internal_v1].prev;
+        graph_[internal_v1].prev = graph_.size();
         graph_[last_essense].next = graph_.size();
-        graph_.push_back({v1, user2internal_[v1], last_essense});
+        graph_.push_back({internal_v1, internal_v1, last_essense});
     }
-
- #ifdef DEBUG
-    dump(std::cout);
-#endif     
 
     /* second essesnse */
     {
-        std::size_t last_essense = graph_[user2internal_[v2]].prev;
-        graph_[user2internal_[v2]].prev = graph_.size();
+        std::size_t last_essense = graph_[internal_v2].prev;
+        graph_[internal_v2].prev = graph_.size();
         graph_[last_essense].next = graph_.size();
-        graph_.push_back({v2, user2internal_[v2], last_essense});
+        graph_.push_back({internal_v2, internal_v2, last_essense});
     }
-
-#ifdef DEBUG
-    dump(std::cout);
-#endif 
-      
 }
 
 template<typename VT, typename ET>
@@ -130,7 +121,11 @@ void kgraph_t<VT, ET>::dump(std::ostream& out) const {
     for(std::size_t i = 0, maxi = graph_.size(); i < maxi; ++i) {
         if(i == vertex_size_) {out << "| ";}
         if((i >= vertex_size_) && (i < vertex_capacity_)) {continue;}
-        out << std::setw(4) << graph_[i].incident_vertex << " ";
+        if(i < vertex_size_) {
+            out << std::setw(4) << graph_[i].incident_vertex << " ";
+        } else {
+            out << std::setw(4) << internal2user_.at(graph_[i].incident_vertex) << " ";
+        }    
     }
     out << std::endl;
 
