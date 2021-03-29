@@ -37,7 +37,7 @@ struct color_t {
 template<typename VT, typename ET>
 class kgraph_t final {
 public:
-    kgraph_t() : vertex_size_(0u), vertex_capacity_(2u) {
+    kgraph_t() : vertex_size_(0u), vertex_capacity_(1u) {
         graph_.resize(vertex_capacity_);
         vertex_data_.resize(vertex_capacity_);
     }
@@ -133,14 +133,14 @@ void kgraph_t<VT, ET>::vertex_realloc(std::size_t new_vertex_capacity) {
     std::vector<essense_t> tmp(graph_.size() + cap_delta);
     for(std::size_t i = 0, maxi = vertex_size_; i < maxi; ++i) {
         tmp[i].incident_vertex = 0u;
-        tmp[i].next = graph_[i].next + cap_delta;
-        tmp[i].prev = graph_[i].prev + cap_delta;
+        tmp[i].next = (graph_[i].next >= vertex_capacity_) ? graph_[i].next + cap_delta : graph_[i].next;
+        tmp[i].prev = (graph_[i].next >= vertex_capacity_) ? graph_[i].prev + cap_delta : graph_[i].prev;
     }
 
     for(std::size_t i = vertex_capacity_, maxi = graph_.size(); i < maxi; ++i) {
         tmp[i + cap_delta].incident_vertex = graph_[i].incident_vertex;
-        tmp[i + cap_delta].next = (graph_[i].next >= new_vertex_capacity) ? graph_[i].next + cap_delta : graph_[i].next;
-        tmp[i + cap_delta].prev = (graph_[i].next >= new_vertex_capacity) ? graph_[i].prev + cap_delta : graph_[i].prev;
+        tmp[i + cap_delta].next = (graph_[i].next >= vertex_capacity_) ? graph_[i].next + cap_delta : graph_[i].next;
+        tmp[i + cap_delta].prev = (graph_[i].next >= vertex_capacity_) ? graph_[i].prev + cap_delta : graph_[i].prev;
     }
 
     vertex_capacity_ += cap_delta;
