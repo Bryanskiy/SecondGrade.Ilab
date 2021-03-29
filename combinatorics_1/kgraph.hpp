@@ -7,6 +7,7 @@
 #include <iomanip>
 #include <stack>	
 #include <cassert>
+#include <optional>
 
 namespace kgraph {
 
@@ -46,8 +47,9 @@ public:
     void push_edge(std::size_t v1, std::size_t v2, const ET& edge_data = ET{});
     void dump(std::ostream& out) const;
 
-    /* v - iser vertex id */
-    bool fill_bipartite_color(std::size_t v = 1, color_t::COLOR v_color = color_t::blue);
+    /* v - iser vertex id 
+       return cycle of odd len, if it exists */
+    std::optional<std::vector<std::size_t>> fill_bipartite_color(std::size_t v = 1, color_t::COLOR v_color = color_t::blue);
 
     /* return vector of pair's of user idx and color */
     std::vector<std::pair<std::size_t, color_t::COLOR>> get_color() const;
@@ -62,7 +64,7 @@ private:
     std::size_t pair_incident_vertex(std::size_t edge_id);
 
     /* v - internal id */
-    bool fill_bipartite_itirate(std::size_t w);
+    bool fill_bipartite_itirate(std::size_t w, std::vector<std::size_t>& odd_cycle);
 private:
     /* essense can be vertex or edge */
     struct essense_t {
@@ -154,14 +156,16 @@ void kgraph_t<VT, ET>::vertex_realloc(std::size_t new_vertex_capacity) {
 }
 
 template<typename VT, typename ET>
-bool kgraph_t<VT, ET>::fill_bipartite_color(std::size_t v /* = 1 */, color_t::COLOR v_color /* = color_t::blue */) {
-    std::size_t ans = true;
+std::optional<std::vector<std::size_t>> kgraph_t<VT, ET>::fill_bipartite_color(std::size_t v /* = 1 */, color_t::COLOR v_color /* = color_t::blue */) {
+    std::size_t ret = true;
     std::size_t start_v = vertex_capacity_ + 1;
+    std::vector<std::size_t> odd_cycle;
+
     for(std::size_t w = 0; w < vertex_size_; ++w) {
         if(internal2user_[w] == v) {
             start_v = w;
             vertex_data_[w].color = v_color;
-            ans = fill_bipartite_itirate(w);
+            ret = fill_bipartite_itirate(w, odd_cycle);
             break;
         }
     }
@@ -170,25 +174,27 @@ bool kgraph_t<VT, ET>::fill_bipartite_color(std::size_t v /* = 1 */, color_t::CO
         throw std::runtime_error("invalid argument in fill_bipartite_color");
     }
 
-    for(std::size_t w = 0; (w < vertex_size_) && ans; ++w) {
-        if(w == start_v) {
-            continue;
-        }
-
+    for(std::size_t w = 0; (w < vertex_size_) && ret; ++w) {
         if(vertex_data_[w].color != color_t::empty) {
             continue;
         }
 
+        if(w == start_v) {
+            continue;
+        }
+
         vertex_data_[w].color = v_color;
-        ans = fill_bipartite_itirate(w);
+        ret = fill_bipartite_itirate(w, odd_cycle);
     }
 
-    return ans;
+    return (ret) ? std::optional<std::vector<std::size_t>>() : odd_cycle;
 }
 
 template<typename VT, typename ET>
-bool kgraph_t<VT, ET>::fill_bipartite_itirate(std::size_t w) {
+bool kgraph_t<VT, ET>::fill_bipartite_itirate(std::size_t w, std::vector<std::size_t>& odd_cycle) {
     std::stack<std::size_t> stack;
+    std::vector<size_t> parents(vertex_size_);
+
     stack.push(w);
 
     /* B4 - B8 loop */
@@ -207,7 +213,20 @@ bool kgraph_t<VT, ET>::fill_bipartite_itirate(std::size_t w) {
             if(tmp_vertex_color == color_t::empty) {
                 vertex_data_[tmp_vertex].color = color_t::get_another(current_vertex_color);
                 stack.push(tmp_vertex);
+                parents[tmp_vertex] = current_vertex;
             } else if(tmp_vertex_color == current_vertex_color) {
+
+                std::size_t p = parents[current_vertex];
+                
+                odd_cycle.push_back(internal2user_[current_vertex]);
+                while(p != parents[tmp_vertex]) {
+                    odd_cycle.push_back(internal2user_[p]);
+                    p = parents[p];
+                }
+
+                odd_cycle.push_back(internal2user_[p]);
+                odd_cycle.push_back(internal2user_[tmp_vertex]);
+
                 return false;
             }
 

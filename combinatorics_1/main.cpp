@@ -30,18 +30,27 @@ int main(int argc, char** argv) {
 
     kgraph::kgraph_t<std::size_t, std::size_t> graph;
 
-    for(auto&& edge : edges) {
-        graph.push_edge(edge.v1, edge.v2, edge.w);
+    std::optional<std::vector<std::size_t>> possible;
+    try {
+        for(auto&& edge : edges) {
+            graph.push_edge(edge.v1, edge.v2, edge.w);
+        }
+
+        possible = graph.fill_bipartite_color();
+    }  catch(std::exception& ex) {
+        std::cerr << ex.what() << std::endl;
+        return 1;
     }
 
-    bool possible = graph.fill_bipartite_color();
-    if(possible) {
+    if(!possible.has_value()) {
         auto&& ans = graph.get_color();
 
         for(auto&& elem : ans) {
             std::cout << elem.first << " " << kgraph::color_t::get_string(elem.second) << " ";
-        }   
+        }
     } else {
-        std::cout << "Impossible" << std::endl;
+        for(auto&& elem : possible.value()) {
+            std::cout << elem << " ";
+        }
     }
 }
