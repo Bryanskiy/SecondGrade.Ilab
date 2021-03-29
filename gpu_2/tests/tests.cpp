@@ -3,7 +3,7 @@
 #include "../gpu_matching/gpu_kmp.hpp"
 #include "../cpu_matching/cpu_pm.hpp"
 #include "generator.h"
-#include "../support/cl_support.hpp"
+#include "../support/support.hpp"
 
 int main(int argc, char** argv) {
 /* -------------PROCESS MAIN ARGS ------------------------- */
@@ -16,7 +16,7 @@ int main(int argc, char** argv) {
         desc.add_options()
             ("help", "get options info")
             ("devices", "get avaible devices")
-            ("stress", "add stress test")
+            ("usert", "set user tests moode")
             ("set", boost::program_options::value<int>(), "set device");
 
         boost::program_options::variables_map vm;        
@@ -24,14 +24,12 @@ int main(int argc, char** argv) {
         boost::program_options::notify(vm);
 
         if (vm.count("help")) {
-            std::cout << "Execute pattern matching random tests." << std::endl;
-            std::cout << "Now, avaible only time test(default mode) and stress test, which execute algorithms on CPU and GPU and compare results." << std::endl;
-
+            std::cout << "Execute pattern matching tests." << std::endl;
             std::cout << desc;
             return 0;
         }
 
-        info = clsup::get_devices();
+        info = sup::get_devices();
 
         if(vm.count("devices")) {
             std::cout << "Available devices and platforms:" << std::endl;
@@ -52,24 +50,40 @@ int main(int argc, char** argv) {
         }
 
         cl::Device device = info[id].second;
-        string_generator_t gen;
-
-        std::size_t patterns_size;
-        std::size_t left_border, right_border;
-        std::size_t text_size;
-
-        std::cout << "Please, enter patterns count: "; std::cin >> patterns_size;
-        std::cout << "Please, enter left and right border for pattern size: "; std::cin >> left_border >> right_border;
-        std::cout << "Please, enter text size: "; std::cin >> text_size;
 
         std::vector<std::string> patterns;
+        std::string text;
 
-        for(std::size_t i = 0; i < patterns_size; ++i) {
-            std::string pattern = gen.generate_string(left_border, right_border);
-            patterns.push_back(pattern);
+        if(!vm.count("usert")) {
+            string_generator_t gen;
+            std::size_t patterns_count;
+            std::size_t left_border, right_border;
+            std::size_t text_size;
+
+            std::cout << "Please, enter patterns count: "; std::cin >> patterns_count;
+            std::cout << "Please, enter left and right border for pattern size: "; std::cin >> left_border >> right_border;
+            std::cout << "Please, enter text size: "; std::cin >> text_size;
+
+            patterns.reserve(patterns_count);
+
+            for(std::size_t i = 0; i < patterns_count; ++i) {
+                std::string pattern = gen.generate_string(left_border, right_border);
+                patterns.push_back(pattern);
+            }
+
+            text = gen.generate_string(text_size);
+        } else {
+            text = sup::read_str(std::cin);
+
+            std::size_t patterns_count; std::cin >> patterns_count;
+            patterns.reserve(patterns_count);
+
+            for(std::size_t i = 0; i < patterns_count; ++i) {
+                std::string tmp = sup::read_str(std::cin);
+                patterns.push_back(tmp);
+            }
         }
 
-        std::string text = gen.generate_string(text_size);
         pm::cpu_pm_t cpu(text, patterns);
         pm::gpu_kmp_t kmp(device, text, patterns);
 
@@ -82,20 +96,16 @@ int main(int argc, char** argv) {
         std::cout << "CPU: " << cpu_time << " mcs" << std::endl;
         std::cout << "GPU: " << gpu_full_time << " mcs" << std::endl;
 
-        if(vm.count("stress")) {
-            if(cpu_result.size() != gpu_result.size()) {
-                std::cerr << "TEST: FAILED" << std::endl;
-                return 1;
-            }
+        if(cpu_result.size() != gpu_result.size()) {
+            std::cerr << "STRESS TEST: FAILED (cpu and gpu algorithms have different results)" << std::endl;
+            return 1;
+        }
 
-            for(std::size_t i = 0, maxi = cpu_result.size(); i < maxi; ++i) {
-                if(cpu_result[i] != gpu_result[i]) {
-                    std::cerr << "STRESS TEST: FAIL" << std::endl;
-                    return 0;
-                }
+        for(std::size_t i = 0, maxi = cpu_result.size(); i < maxi; ++i) {
+            if(cpu_result[i] != gpu_result[i]) {
+                std::cerr  << "STRESS TEST: FAILED (cpu and gpu algorithms have different results)" << std::endl;
+                return 0;
             }
-
-            std::cout << "STRESS TEST: SUCCESS" << std::endl;
         }
 
     } catch(cl::Error& ex) {

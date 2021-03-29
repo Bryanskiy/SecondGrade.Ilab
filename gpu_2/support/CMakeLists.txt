@@ -3,6 +3,6 @@ project(support VERSION 1.0.0)
 
 add_library(
     support
-    cl_support.hpp
-    cl_support.cpp
+    support.hpp
+    support.cpp
 )

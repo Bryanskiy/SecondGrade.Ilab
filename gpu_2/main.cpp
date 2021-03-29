@@ -3,19 +3,7 @@
 
 #include "cpu_matching/cpu_pm.hpp"
 #include "gpu_matching/gpu_kmp.hpp"
-#include "support/cl_support.hpp"
-
-std::string read_str(std::istream& input) {
-    std::string ret;
-    size_t size = 0; input >> size;
-
-    input.ignore(1);
-    ret.resize(size);
-    input.read(ret.data(), size);
-    input.ignore(1);
-
-    return ret;
-}
+#include "support/support.hpp"
 
 int main(int argc, char** argv) {
 /* -------------PROCESS MAIN ARGS ------------------------- */
@@ -26,7 +14,7 @@ int main(int argc, char** argv) {
 
         boost::program_options::options_description desc("Options");
         desc.add_options()
-            ("help", "get options info")
+            ("help", "get app info")
             ("devices", "get avaible devices")
             ("set", boost::program_options::value<int>(), "set device");
 
@@ -35,11 +23,12 @@ int main(int argc, char** argv) {
         boost::program_options::notify(vm);
 
         if (vm.count("help")) {
+            std::cout << "This is program to find patterns in a text" << std::endl;
             std::cout << desc;
             return 0;
         }
 
-        info = clsup::get_devices();
+        info = sup::get_devices();
 
         if(vm.count("devices")) {
             std::cout << "Available devices and platforms:" << std::endl;
@@ -59,32 +48,29 @@ int main(int argc, char** argv) {
             id = vm["set"].as<int>();
         }
 
-    } catch(std::exception& ex) {
-        std::cerr << ex.what() << std::endl;
-        return 1;
-    }    
-
-    cl::Device device = info[id].second;
+        cl::Device device = info[id].second;
 /* --------------MAIN PROGRAM ----------------------------- */
-    std::string text = read_str(std::cin);
-    std::vector<std::string> patterns;
-    std::size_t patterns_count; std::cin >> patterns_count;
-    patterns.reserve(patterns_count);
+        std::string text = sup::read_str(std::cin);
+        std::vector<std::string> patterns;
+        std::size_t patterns_count; std::cin >> patterns_count;
+        patterns.reserve(patterns_count);
 
-    for(std::size_t i = 0; i < patterns_count; ++i) {
-        std::string tmp = read_str(std::cin);
-        patterns.push_back(tmp);
-    }
+        for(std::size_t i = 0; i < patterns_count; ++i) {
+            std::string tmp = sup::read_str(std::cin);
+            patterns.push_back(tmp);
+        }
 
-    pm::gpu_kmp_t pm(device, text, patterns);
-    try {
+        pm::gpu_kmp_t pm(device, text, patterns);
+    
         auto&& res = pm.match();
+
         for(std::size_t i = 0, maxi = res.size(); i < maxi; ++i) {
             std::cout << i + 1 << " " << res[i] << std::endl;
         }
+
     } catch(cl::Error& err) {
         std::cerr << err.what() << std::endl; 
-        std::cerr << clsup::cl_get_error_string(err.err()) << std::endl;
+        std::cerr << sup::cl_get_error_string(err.err()) << std::endl;
     }
     
     catch(std::exception& err) {

@@ -29,9 +29,9 @@ target_link_libraries(
 
 
 
-add_executable(random_test tests/random.cpp)
+add_executable(tests tests/tests.cpp)
 target_link_libraries(
-    random_test
+    tests
     gpu_matching
     cpu_matching
     support

@@ -1,6 +1,18 @@
-#include "cl_support.hpp"
+#include "support.hpp"
 
-namespace clsup {
+namespace sup {
+
+std::string read_str(std::istream& input) {
+    std::string ret;
+    size_t size = 0; input >> size;
+
+    input.ignore(1);
+    ret.resize(size);
+    input.read(ret.data(), size);
+    input.ignore(1);
+
+    return ret;
+}
 
 std::vector<std::pair<cl::Platform, cl::Device>> get_devices() {
     std::vector<cl::Platform> platforms;
@@ -119,4 +131,4 @@ const char* cl_get_error_string(int error_code) {
     }
 }    
 
-} /* namespace clsup */
+} /* namespace sup */

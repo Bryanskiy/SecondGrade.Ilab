@@ -2,10 +2,13 @@
 
 #include <vector>
 #include <CL/cl.hpp>
+#include <iostream>
+#include <string>
 
-namespace clsup {
+namespace sup {
 
 const char* cl_get_error_string(int error_code);
 std::vector<std::pair<cl::Platform, cl::Device>> get_devices();
+std::string read_str(std::istream& input);
 
-} /* namespace clsup */
+} /* namespace sup */
