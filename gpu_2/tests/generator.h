@@ -8,7 +8,7 @@ public:
     string_generator_t() : rd_(), gen_(rd_()) {}
 
     std::string generate_string(std::size_t size) {
-        std::uniform_int_distribution<> ch_dis('A', 'z');
+        std::uniform_int_distribution<> ch_dis('a', 'z');
         std::string str; str.reserve(size);
 
         for(std::size_t i = 0; i < size; ++i) {

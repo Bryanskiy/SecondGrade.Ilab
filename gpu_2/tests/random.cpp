@@ -1,6 +1,9 @@
+#include <boost/program_options.hpp>
+
 #include "../gpu_matching/gpu_kmp.hpp"
 #include "../cpu_matching/cpu_pm.hpp"
 #include "generator.h"
+#include "../support/cl_support.hpp"
 
 int main(int argc, char** argv) {
 /* -------------PROCESS MAIN ARGS ------------------------- */
@@ -28,7 +31,7 @@ int main(int argc, char** argv) {
             return 0;
         }
 
-        info = pm::clcore_t::get_devices();
+        info = clsup::get_devices();
 
         if(vm.count("devices")) {
             std::cout << "Available devices and platforms:" << std::endl;
@@ -74,12 +77,10 @@ int main(int argc, char** argv) {
         auto gpu_result = kmp.match();
 
         std::size_t cpu_time = cpu.get_time();
-        std::size_t gpu_time = kmp.gpu_time();
         std::size_t gpu_full_time = kmp.time();
 
-        std::cout << "CPU:      " << cpu_time << " mcs" << std::endl;
-        std::cout << "GPU full: " << gpu_full_time << " mcs" << std::endl;
-        std::cout << "GPU only: " << gpu_time << " mcs" << std::endl;
+        std::cout << "CPU: " << cpu_time << " mcs" << std::endl;
+        std::cout << "GPU: " << gpu_full_time << " mcs" << std::endl;
 
         if(vm.count("stress")) {
             if(cpu_result.size() != gpu_result.size()) {
@@ -98,13 +99,13 @@ int main(int argc, char** argv) {
         }
 
     } catch(cl::Error& ex) {
-        std::cerr << ex.what() << std::endl;
+        std::cerr << "Error: "<<  ex.what() << std::endl;
         return 1;
     }
     
     
     catch(std::exception& ex) {
-        std::cerr << ex.what() << std::endl;
+        std::cerr << "Error: " << ex.what() << std::endl;
         return 1;
     }    
 

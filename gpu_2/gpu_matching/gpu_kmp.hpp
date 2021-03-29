@@ -2,9 +2,13 @@
 
 #include <vector>
 #include <string>
+#include <fstream>
+#include <iostream>
 
-#include "cl_core.hpp"
-#include "../other/timer.hpp"
+
+#define __CL_ENABLE_EXCEPTIONS
+#include "CL/cl.hpp"
+#include "../support/timer.hpp"
 
 namespace pm {
 
@@ -12,16 +16,27 @@ class gpu_kmp_t {
 public:
     gpu_kmp_t() = default;
     gpu_kmp_t(const cl::Device& device , const std::string& text, const std::vector<std::string>& patterns) : 
-        core_(device), text_(text), patterns_(patterns) {}
+              device_(device),  context_(cl::Context(device_)),
+              queue_(cl::CommandQueue(context_, device_, CL_QUEUE_PROFILING_ENABLE)), 
+              text_(text), patterns_(patterns) {}
 
     std::vector<std::size_t> match();
 
-    std::size_t gpu_time() const {return core_.get_time();}
     std::size_t time() const {return time_;}
+
 private:
-    clcore_t core_;
+    void build_program(const std::vector<std::string>& kernels);
+    void enqueue_kernel(cl::Kernel& kernel, cl::NDRange& offset, cl::NDRange& global_size, cl::NDRange& local_size);
+
+private:
+    cl::Device device_;
+    cl::Context context_;
+    cl::CommandQueue queue_;
+    cl::Program program_;
+
     std::string text_;
     std::vector<std::string> patterns_;
+
     std::size_t time_;
     bool builded_ = false;
 };

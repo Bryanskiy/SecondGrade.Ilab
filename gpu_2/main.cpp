@@ -1,7 +1,9 @@
 #include <iostream>
+#include <boost/program_options.hpp>
 
 #include "cpu_matching/cpu_pm.hpp"
 #include "gpu_matching/gpu_kmp.hpp"
+#include "support/cl_support.hpp"
 
 std::string read_str(std::istream& input) {
     std::string ret;
@@ -37,7 +39,7 @@ int main(int argc, char** argv) {
             return 0;
         }
 
-        info = pm::clcore_t::get_devices();
+        info = clsup::get_devices();
 
         if(vm.count("devices")) {
             std::cout << "Available devices and platforms:" << std::endl;
@@ -82,7 +84,8 @@ int main(int argc, char** argv) {
         }
     } catch(cl::Error& err) {
         std::cerr << err.what() << std::endl; 
-    } 
+        std::cerr << clsup::cl_get_error_string(err.err()) << std::endl;
+    }
     
     catch(std::exception& err) {
         std::cerr << err.what() << std::endl; 

@@ -2,7 +2,7 @@
 
 #include <string>
 #include <vector>
-#include "../other/timer.hpp"
+#include "../support/timer.hpp"
 
 /* pm - pattern matching */
 namespace pm {

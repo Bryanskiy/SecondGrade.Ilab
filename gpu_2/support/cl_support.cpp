@@ -1,8 +1,8 @@
-#include "cl_core.hpp"
+#include "cl_support.hpp"
 
-namespace pm {
+namespace clsup {
 
-/* static */ std::vector<std::pair<cl::Platform, cl::Device>> clcore_t::get_devices() {
+std::vector<std::pair<cl::Platform, cl::Device>> get_devices() {
     std::vector<cl::Platform> platforms;
     cl::Platform::get(&platforms);
 
@@ -23,43 +23,6 @@ namespace pm {
 
     return ret;
 }
-
-clcore_t::clcore_t(const cl::Device& device) : device_(device), 
-                                     context_(cl::Context(device_)),
-                                     queue_(cl::CommandQueue(context_, device_, CL_QUEUE_PROFILING_ENABLE)) {} 
-
-
-void clcore_t::build_program(const std::vector<std::string>& kernels) {
-
-    std::string program_string;
-
-    for(auto& kernel_name : kernels) {
-        std::ifstream program_sources(kernel_name);
-        program_string += std::string(std::istreambuf_iterator<char>(program_sources), (std::istreambuf_iterator<char>()));
-    }
-    
-    cl::Program::Sources source(1, std::make_pair(program_string.c_str(), program_string.length() + 1));
-    program_ = cl::Program(context_, source);
-
-    try {
-        program_.build();
-    } catch (cl::Error& e) {
-        std::cerr << program_.getBuildInfo<CL_PROGRAM_BUILD_LOG>(device_);
-        throw e;
-    } 
-}                                     
-
-void clcore_t::enqueue_kernel(cl::Kernel& kernel, cl::NDRange& offset, cl::NDRange& global_size, cl::NDRange& local_size) {
-    cl::Event event;
-    queue_.enqueueNDRangeKernel(kernel, offset, global_size, local_size, NULL, &event);
-    event.wait();
-
-    std::size_t start = event.getProfilingInfo<CL_PROFILING_COMMAND_START>();
-    std::size_t end = event.getProfilingInfo<CL_PROFILING_COMMAND_END>();
-    time_ += (end - start) / 1000;
-}
-
-} /* namespace pm */
 
 const char* cl_get_error_string(int error_code) {
     switch (error_code) {
@@ -154,4 +117,6 @@ const char* cl_get_error_string(int error_code) {
         case -1101: return "CL_VA_API_MEDIA_SURFACE_NOT_ACQUIRED_INTEL";
         default: return "CL_UNKNOWN_ERROR";
     }
-}
+}    
+
+} /* namespace clsup */
