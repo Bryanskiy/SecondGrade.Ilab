@@ -25,8 +25,7 @@ std::vector<edge_t> read_input(std::istream& in) {
 }
 
 int main(int argc, char** argv) {
-    std::ifstream input(argv[1]);
-    std::vector<edge_t> edges = read_input(input);
+    std::vector<edge_t> edges = read_input(std::cin);
 
     kgraph::kgraph_t<std::size_t, std::size_t> graph;
 
@@ -36,7 +35,11 @@ int main(int argc, char** argv) {
             graph.push_edge(edge.v1, edge.v2, edge.w);
         }
 
-        possible = graph.fill_bipartite_color();
+#ifdef DEBUG
+        graph.dump(std::cout);
+#endif
+
+        possible = graph.fill_bipartite_color(1, kgraph::color_t::blue);
     }  catch(std::exception& ex) {
         std::cerr << ex.what() << std::endl;
         return 1;
