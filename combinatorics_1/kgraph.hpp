@@ -45,7 +45,9 @@ public:
     /* v1, v2 - user vertices idx */
     void push_edge(std::size_t v1, std::size_t v2, const ET& edge_data = ET{});
     void dump(std::ostream& out) const;
-    bool fill_bipartite_color();
+
+    /* v - iser vertex id */
+    bool fill_bipartite_color(std::size_t v = 1, color_t::COLOR v_color = color_t::blue);
 
     /* return vector of pair's of user idx and color */
     std::vector<std::pair<std::size_t, color_t::COLOR>> get_color() const;
@@ -58,6 +60,9 @@ private:
 
     /* return internal idx */
     std::size_t pair_incident_vertex(std::size_t edge_id);
+
+    /* v - internal id */
+    bool fill_bipartite_itirate(std::size_t w);
 private:
     /* essense can be vertex or edge */
     struct essense_t {
@@ -149,42 +154,64 @@ void kgraph_t<VT, ET>::vertex_realloc(std::size_t new_vertex_capacity) {
 }
 
 template<typename VT, typename ET>
-bool kgraph_t<VT, ET>::fill_bipartite_color() {
+bool kgraph_t<VT, ET>::fill_bipartite_color(std::size_t v /* = 1 */, color_t::COLOR v_color /* = color_t::blue */) {
+    std::size_t ans = true;
+    std::size_t start_v = vertex_capacity_ + 1;
     for(std::size_t w = 0; w < vertex_size_; ++w) {
+        if(internal2user_[w] == v) {
+            start_v = w;
+            vertex_data_[w].color = v_color;
+            ans = fill_bipartite_itirate(w);
+            break;
+        }
+    }
 
-        std::stack<std::size_t> stack;
+    if(start_v > vertex_capacity_) {
+        throw std::runtime_error("invalid argument in fill_bipartite_color");
+    }
 
-        /* start B3 step */
+    for(std::size_t w = 0; (w < vertex_size_) && ans; ++w) {
+        if(w == start_v) {
+            continue;
+        }
+
         if(vertex_data_[w].color != color_t::empty) {
             continue;
         }
 
-        stack.push(w);
-        vertex_data_[w].color = color_t::blue;
-        /* end B3 step */
+        vertex_data_[w].color = v_color;
+        ans = fill_bipartite_itirate(w);
+    }
 
-        /* B4 - B8 loop */
-        while(!stack.empty()) {
-            std::size_t current_vertex = stack.top();
-            color_t::COLOR current_vertex_color = vertex_data_[current_vertex].color;
-            stack.pop();
+    return ans;
+}
 
-            std::size_t current_edge = graph_[current_vertex].next;
+template<typename VT, typename ET>
+bool kgraph_t<VT, ET>::fill_bipartite_itirate(std::size_t w) {
+    std::stack<std::size_t> stack;
+    stack.push(w);
 
-            /* B5 - B7 loop */
-            while(current_edge != current_vertex) {
-                std::size_t tmp_vertex = pair_incident_vertex(current_edge);
-                color_t::COLOR tmp_vertex_color = vertex_data_[tmp_vertex].color;
+    /* B4 - B8 loop */
+    while(!stack.empty()) {
+        std::size_t current_vertex = stack.top();
+        color_t::COLOR current_vertex_color = vertex_data_[current_vertex].color;
+        stack.pop();
 
-                if(tmp_vertex_color == color_t::empty) {
-                    vertex_data_[tmp_vertex].color = color_t::get_another(current_vertex_color);
-                    stack.push(tmp_vertex);
-                } else if(tmp_vertex_color == current_vertex_color) {
-                    return false;
-                }
+        std::size_t current_edge = graph_[current_vertex].next;
 
-                current_edge = graph_[current_edge].next;
+        /* B5 - B7 loop */
+        while(current_edge != current_vertex) {
+            std::size_t tmp_vertex = pair_incident_vertex(current_edge);
+            color_t::COLOR tmp_vertex_color = vertex_data_[tmp_vertex].color;
+
+            if(tmp_vertex_color == color_t::empty) {
+                vertex_data_[tmp_vertex].color = color_t::get_another(current_vertex_color);
+                stack.push(tmp_vertex);
+            } else if(tmp_vertex_color == current_vertex_color) {
+                return false;
             }
+
+            current_edge = graph_[current_edge].next;
         }
     }
 
