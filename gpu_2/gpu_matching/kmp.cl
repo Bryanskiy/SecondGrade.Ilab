@@ -40,16 +40,16 @@ __kernel void kmp(__global char* text, ulong text_size, __global char* pattern, 
     uint j = 0; // position of the current character in pattern
 
     while(i < right_border) {
-        if(pattern[j] == text[i]) {
+        if(pattern_local[j] == text[i]) {
             ++i; ++j;
         }    
             
         if(j == pattern_size) {
             ++positions_number;
-            j = preffix[j - 1];
-        } else if((i < right_border) && pattern[j] != text[i]) {
+            j = preffix_local[j - 1];
+        } else if((i < right_border) && pattern_local[j] != text[i]) {
             if (j > 0) {
-                j = preffix[j - 1];
+                j = preffix_local[j - 1];
             }     
             else {
                 i += 1;

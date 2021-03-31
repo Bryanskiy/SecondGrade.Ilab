@@ -62,7 +62,7 @@ std::vector<unsigned> gpu_kmp_t::match() {
 
     unsigned i = 0;
     for(auto&& pattern : patterns_) {
-        if(pattern.size() > text_.size()) {
+        if((pattern.size() > text_.size()) || (pattern.size() == 0)) {
             continue;
         }
 
@@ -102,7 +102,7 @@ std::vector<unsigned> gpu_kmp_t::match() {
     }
 
     for(unsigned i = 0, maxi = patterns_.size(); i < maxi; ++i) {
-        if(patterns_[i].size() > text_.size()) {
+        if((patterns_[i].size() > text_.size()) || (patterns_[i].size() == 0)) {
             ans.push_back(0);
             continue;
         }
