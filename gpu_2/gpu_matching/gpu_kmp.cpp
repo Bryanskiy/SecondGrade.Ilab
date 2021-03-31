@@ -2,8 +2,8 @@
 
 namespace {
 
-std::size_t calculate_thread_count(std::size_t text_size, std::size_t pattern_size) {
-    std::size_t ans = 1;
+unsigned calculate_thread_count(unsigned text_size, unsigned pattern_size) {
+    unsigned ans = 1;
     pattern_size *= 2;
     while(text_size > pattern_size) {
         ans *= 2;
@@ -42,7 +42,7 @@ void gpu_kmp_t::build_program(const std::vector<std::string>& kernels) {
     } 
 }
 
-std::vector<std::size_t> gpu_kmp_t::match() {
+std::vector<unsigned> gpu_kmp_t::match() {
     Timer_t timer;
 
     if(!builded_) {
@@ -50,17 +50,17 @@ std::vector<std::size_t> gpu_kmp_t::match() {
         builded_ = true;
     }
 
-    std::vector<std::size_t> ans;
+    std::vector<unsigned> ans;
     ans.reserve(patterns_.size());
 
     cl::Buffer text_buffer(context_, CL_MEM_READ_ONLY, text_.size() * sizeof(text_[0]));
     queue_.enqueueWriteBuffer(text_buffer, CL_TRUE, 0, text_.size() * sizeof(text_[0]), text_.data());
 
     std::vector<cl::Event> events(patterns_.size());
-    std::vector<std::vector<std::size_t>> answers(patterns_.size());
+    std::vector<std::vector<unsigned>> answers(patterns_.size());
     std::vector<cl::Buffer> ans_buffers(patterns_.size());
 
-    std::size_t i = 0;
+    unsigned i = 0;
     for(auto&& pattern : patterns_) {
         if(pattern.size() > text_.size()) {
             continue;
@@ -101,7 +101,7 @@ std::vector<std::size_t> gpu_kmp_t::match() {
         ++i;
     }
 
-    for(std::size_t i = 0, maxi = patterns_.size(); i < maxi; ++i) {
+    for(unsigned i = 0, maxi = patterns_.size(); i < maxi; ++i) {
         if(patterns_[i].size() > text_.size()) {
             ans.push_back(0);
             continue;
@@ -114,8 +114,11 @@ std::vector<std::size_t> gpu_kmp_t::match() {
         gpu_only_time_ += (end - start) / 1000;
 
         queue_.enqueueReadBuffer(ans_buffers[i], CL_TRUE, 0, answers[i].size() * sizeof(answers[i][0]), answers[i].data());
-        std::size_t ans_pattern = 0;
-        for(std::size_t j = 0; j < answers[i].size(); ++j) {
+        /* cl::copy(ans_buffers[i], answers[i].begin(), answers[i].end()); 
+           why id doesn't work :( */
+
+        unsigned ans_pattern = 0;
+        for(unsigned j = 0; j < answers[i].size(); ++j) {
             ans_pattern += answers[i][j];
         }
 
@@ -127,11 +130,11 @@ std::vector<std::size_t> gpu_kmp_t::match() {
     return ans;
 }
 
-std::vector<std::size_t> preffix_function(const std::string& str) {
-    std::vector<std::size_t> ret(str.size());
+std::vector<unsigned> preffix_function(const std::string& str) {
+    std::vector<unsigned> ret(str.size());
 
-    for(std::size_t i = 1, maxi = ret.size(); i < maxi; ++i) {
-        std::size_t j = ret[i - 1];
+    for(unsigned i = 1, maxi = ret.size(); i < maxi; ++i) {
+        unsigned j = ret[i - 1];
         while((j > 0) && (str[i] != str[j])) {
             j = ret[j - 1];
         }

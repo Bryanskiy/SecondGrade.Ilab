@@ -20,7 +20,7 @@ public:
               queue_(cl::CommandQueue(context_, device_, CL_QUEUE_PROFILING_ENABLE)), 
               text_(text), patterns_(patterns) {}
 
-    std::vector<std::size_t> match();
+    std::vector<unsigned> match();
 
     std::size_t time() const {return time_;}
     std::size_t gpu_only_time() const {return gpu_only_time_;}
@@ -42,6 +42,6 @@ private:
     bool builded_ = false;
 };
 
-std::vector<std::size_t> preffix_function(const std::string& str);
+std::vector<unsigned> preffix_function(const std::string& str);
 
 } /* namespace pm */

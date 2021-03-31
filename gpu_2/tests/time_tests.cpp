@@ -94,7 +94,7 @@ int main(int argc, char** argv) {
         auto gpu_only_time = kmp.gpu_only_time();
         auto gpu_full_time = kmp.time();
 
-        std::cout << "CPU: " << cpu_time << " mcs" << std::endl;
+        std::cout << "CPU:      " << cpu_time << " mcs" << std::endl;
         std::cout << "GPU only: " << gpu_only_time << " mcs" << std::endl;
         std::cout << "GPU full: " << gpu_full_time << " mcs" << std::endl;
 

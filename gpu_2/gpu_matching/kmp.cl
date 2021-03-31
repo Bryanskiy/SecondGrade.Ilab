@@ -1,19 +1,19 @@
 __kernel void kmp(__global char* text, ulong text_size, __global char* pattern, ulong pattern_size, 
-                  __global ulong* preffix, ulong preffix_size, __global ulong* answer, 
-                  __local char* pattern_local, __local ulong* preffix_local) 
+                  __global uint* preffix, ulong preffix_size, __global uint* answer, 
+                  __local char* pattern_local, __local uint* preffix_local) 
 {
     /* get info about thread location */
-    ulong id = get_global_id(0); // preproc part id
-    ulong thread_count = get_global_size(0);
+    uint id = get_global_id(0); // preproc part id
+    uint thread_count = get_global_size(0);
 
     /* copy to local mem */
-    ulong local_id = get_local_id(0);
-    ulong local_thread_count = get_local_size(0);
+    uint local_id = get_local_id(0);
+    uint local_thread_count = get_local_size(0);
 
-    ulong step = preffix_size / local_thread_count + 1; /* count of pattern symbols per thread */
+    uint step = preffix_size / local_thread_count + 1; /* count of pattern symbols per thread */
 
-    for(ulong i = 0; i < step; ++i) {
-        ulong pos = step * local_id + i;
+    for(uint i = 0; i < step; ++i) {
+        uint pos = step * local_id + i;
         if(pos >= pattern_size) {
             break;
         }
@@ -30,14 +30,14 @@ __kernel void kmp(__global char* text, ulong text_size, __global char* pattern, 
         step += 1;
     }
 
-    ulong left_border  = step * id;
-    ulong right_border = min(left_border + step - 1 + pattern_size, text_size);  
+    uint left_border  = step * id;
+    uint right_border = min(left_border + step - 1 + pattern_size, text_size);  
 
     //printf("[%lu]: left_border: %lu | right_border: %lu\n", id, left_border, right_border);
 
-    ulong positions_number = 0;
-    ulong i = left_border; // position of the current character in text
-    ulong j = 0; // position of the current character in pattern
+    uint positions_number = 0;
+    uint i = left_border; // position of the current character in text
+    uint j = 0; // position of the current character in pattern
 
     while(i < right_border) {
         if(pattern[j] == text[i]) {
