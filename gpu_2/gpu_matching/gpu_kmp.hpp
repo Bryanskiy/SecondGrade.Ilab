@@ -23,10 +23,10 @@ public:
     std::vector<std::size_t> match();
 
     std::size_t time() const {return time_;}
+    std::size_t gpu_only_time() const {return gpu_only_time_;}
 
 private:
     void build_program(const std::vector<std::string>& kernels);
-    void enqueue_kernel(cl::Kernel& kernel, cl::NDRange& offset, cl::NDRange& global_size, cl::NDRange& local_size);
 
 private:
     cl::Device device_;
@@ -38,6 +38,7 @@ private:
     std::vector<std::string> patterns_;
 
     std::size_t time_;
+    std::size_t gpu_only_time_ = 0;
     bool builded_ = false;
 };
 

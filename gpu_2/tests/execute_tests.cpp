@@ -5,7 +5,8 @@
 #include "../support/support.hpp"
 
 void test1(cl::Device device) {
-    std::size_t iterations_count = 10000;
+    std::cout << "----------------------------TEST1----------------------------------------" << std::endl;
+    std::size_t iterations_count = 91234;
 
     std::string text;
     std::string pattern = "abs";
@@ -22,17 +23,53 @@ void test1(cl::Device device) {
     bool correct = true;
 
     if(cpu_result[0] != iterations_count) {
-        std::cout << "test1(): CPU algirithm failed - expected " << iterations_count << " but actual " << cpu_result[0] << std::endl;
+        std::cout << "CPU algirithm failed - expected " << iterations_count << " but actual " << cpu_result[0] << std::endl;
         correct = false;
     }
 
     if(gpu_result[0] != iterations_count) {
-         std::cout << "test1(): GPU algirithm failed - expected " << iterations_count << " but actual " << gpu_result[0] << std::endl;
+         std::cout << "GPU algirithm failed - expected " << iterations_count << " but actual " << gpu_result[0] << std::endl;
         correct = false;
     }
 
     if(correct) {
-        std::cout << "test1(): SUCCESS" << std::endl; 
+        std::cout << "SUCCESS" << std::endl; 
+    }
+}
+
+void test2(cl::Device device) {
+    std::cout << "----------------------------TEST2----------------------------------------" << std::endl;
+    std::size_t iterations_count = 56093;
+
+    std::vector<std::string> patterns({"ad", "b", "cb", "d"});
+    std::string text;
+    for(std::size_t i = 0; i < iterations_count; ++i) {
+        text += "cbad";
+    }
+
+    pm::cpu_pm_t cpu(text, patterns);
+    pm::gpu_kmp_t kmp(device, text, patterns);
+
+    auto cpu_result = cpu.match();
+    auto gpu_result = kmp.match();
+
+    bool correct = true;
+
+    for(std::size_t i = 0; i < patterns.size(); ++i) {
+
+        if(cpu_result[i] != iterations_count) {
+            std::cout << "CPU algirithm failed on "<< i <<  " pattern - expected " << iterations_count << " but actual " << cpu_result[i] << std::endl;
+            correct = false;
+        }
+
+        if(gpu_result[i] != iterations_count) {
+            std::cout << "GPU algirithm failed on "<< i <<  " pattern - expected " << iterations_count << " but actual " << gpu_result[i] << std::endl;
+            correct = false;
+        }
+    }
+
+    if(correct) {
+        std::cout << "SUCCESS" << std::endl; 
     }
 }
 
@@ -81,6 +118,7 @@ int main(int argc, char** argv) {
 
         cl::Device device = info[id].second;
         test1(device);
+        test2(device);
 
     } catch(cl::Error& ex) {
         std::cerr << "Error: "<<  ex.what() << std::endl;

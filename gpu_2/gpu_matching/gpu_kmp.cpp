@@ -40,12 +40,6 @@ void gpu_kmp_t::build_program(const std::vector<std::string>& kernels) {
         std::cerr << program_.getBuildInfo<CL_PROGRAM_BUILD_LOG>(device_);
         throw e;
     } 
-}                                     
-
-void gpu_kmp_t::enqueue_kernel(cl::Kernel& kernel, cl::NDRange& offset, cl::NDRange& global_size, cl::NDRange& local_size) {
-    cl::Event event;
-    queue_.enqueueNDRangeKernel(kernel, offset, global_size, local_size, NULL, &event);
-    event.wait();
 }
 
 std::vector<std::size_t> gpu_kmp_t::match() {
@@ -62,9 +56,13 @@ std::vector<std::size_t> gpu_kmp_t::match() {
     cl::Buffer text_buffer(context_, CL_MEM_READ_ONLY, text_.size() * sizeof(text_[0]));
     queue_.enqueueWriteBuffer(text_buffer, CL_TRUE, 0, text_.size() * sizeof(text_[0]), text_.data());
 
+    std::vector<cl::Event> events(patterns_.size());
+    std::vector<std::vector<std::size_t>> answers(patterns_.size());
+    std::vector<cl::Buffer> ans_buffers(patterns_.size());
+
+    std::size_t i = 0;
     for(auto&& pattern : patterns_) {
         if(pattern.size() > text_.size()) {
-            ans.push_back(0u);
             continue;
         }
 
@@ -76,9 +74,9 @@ std::vector<std::size_t> gpu_kmp_t::match() {
         queue_.enqueueWriteBuffer(pattern_buffer, CL_TRUE, 0, pattern.size() * sizeof(pattern[0]), pattern.data());
 
         std::size_t thread_count = calculate_thread_count(text_.size(), pattern.size());
-        std::vector<std::size_t> ans_vector(thread_count);
-        cl::Buffer ans_buffer(context_, CL_MEM_READ_ONLY, ans_vector.size() * sizeof(ans_vector[0]));
-        queue_.enqueueWriteBuffer(ans_buffer, CL_TRUE, 0, ans_vector.size() * sizeof(ans_vector[0]), ans_vector.data());
+        answers[i].resize(thread_count);
+        ans_buffers[i] = cl::Buffer(context_, CL_MEM_READ_WRITE, answers[i].size() * sizeof(answers[i][0]));
+        queue_.enqueueWriteBuffer(ans_buffers[i], CL_TRUE, 0, answers[i].size() * sizeof(answers[i][0]), answers[i].data());
 
         cl::NDRange offset(0);
         cl::NDRange global_size(thread_count);
@@ -91,20 +89,34 @@ std::vector<std::size_t> gpu_kmp_t::match() {
         kernel.setArg(3, pattern.size());
         kernel.setArg(4, preffix_buffer);
         kernel.setArg(5, preffix.size());
-        kernel.setArg(6, ans_buffer);        
-        
+        kernel.setArg(6, ans_buffers[i]);
+
         cl::LocalSpaceArg local_pattern = cl::__local(pattern.size() * sizeof(char));
         kernel.setArg(7, local_pattern);
 
         cl::LocalSpaceArg local_preffix = cl::__local(preffix.size() * sizeof(preffix[0]));
         kernel.setArg(8, local_preffix);
 
-        enqueue_kernel(kernel, offset, global_size, local_size);
+        queue_.enqueueNDRangeKernel(kernel, offset, global_size, local_size, NULL, &events[i]);
+        ++i;
+    }
 
-        std::size_t* map_data = (std::size_t*)queue_.enqueueMapBuffer(ans_buffer, CL_TRUE, CL_MAP_READ, 0, ans_vector.size() * sizeof(ans_vector[0]));
+    for(std::size_t i = 0, maxi = patterns_.size(); i < maxi; ++i) {
+        if(patterns_[i].size() > text_.size()) {
+            ans.push_back(0);
+            continue;
+        }
+
+        events[i].wait();
+
+        std::size_t start = events[i].getProfilingInfo<CL_PROFILING_COMMAND_START>();
+        std::size_t end = events[i].getProfilingInfo<CL_PROFILING_COMMAND_END>();
+        gpu_only_time_ += (end - start) / 1000;
+
+        queue_.enqueueReadBuffer(ans_buffers[i], CL_TRUE, 0, answers[i].size() * sizeof(answers[i][0]), answers[i].data());
         std::size_t ans_pattern = 0;
-        for(std::size_t i = 0; i < thread_count; ++i) {
-            ans_pattern += map_data[i];
+        for(std::size_t j = 0; j < answers[i].size(); ++j) {
+            ans_pattern += answers[i][j];
         }
 
         ans.push_back(ans_pattern);

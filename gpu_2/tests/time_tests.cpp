@@ -90,11 +90,13 @@ int main(int argc, char** argv) {
         auto cpu_result = cpu.match();
         auto gpu_result = kmp.match();
 
-        std::size_t cpu_time = cpu.get_time();
-        std::size_t gpu_full_time = kmp.time();
+        auto cpu_time = cpu.get_time();
+        auto gpu_only_time = kmp.gpu_only_time();
+        auto gpu_full_time = kmp.time();
 
         std::cout << "CPU: " << cpu_time << " mcs" << std::endl;
-        std::cout << "GPU: " << gpu_full_time << " mcs" << std::endl;
+        std::cout << "GPU only: " << gpu_only_time << " mcs" << std::endl;
+        std::cout << "GPU full: " << gpu_full_time << " mcs" << std::endl;
 
         /* it's a bad test, because for big random patterns avarage shot count == 0 */
         if(cpu_result.size() != gpu_result.size()) {
