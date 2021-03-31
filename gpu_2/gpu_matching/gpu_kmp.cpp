@@ -43,7 +43,9 @@ void gpu_kmp_t::build_program(const std::vector<std::string>& kernels) {
 }                                     
 
 void gpu_kmp_t::enqueue_kernel(cl::Kernel& kernel, cl::NDRange& offset, cl::NDRange& global_size, cl::NDRange& local_size) {
-    queue_.enqueueNDRangeKernel(kernel, offset, global_size, local_size, NULL, NULL);
+    cl::Event event;
+    queue_.enqueueNDRangeKernel(kernel, offset, global_size, local_size, NULL, &event);
+    event.wait();
 }
 
 std::vector<std::size_t> gpu_kmp_t::match() {
@@ -90,12 +92,6 @@ std::vector<std::size_t> gpu_kmp_t::match() {
         kernel.setArg(4, preffix_buffer);
         kernel.setArg(5, preffix.size());
         kernel.setArg(6, ans_buffer);
-
-        cl::LocalSpaceArg local_pattern = cl::__local(pattern.size() * sizeof(char));
-        kernel.setArg(7, local_pattern);
-
-        cl::LocalSpaceArg local_preffix = cl::__local(preffix.size() * sizeof(preffix[0]));
-        kernel.setArg(8, local_preffix);
 
         enqueue_kernel(kernel, offset, global_size, local_size);
 

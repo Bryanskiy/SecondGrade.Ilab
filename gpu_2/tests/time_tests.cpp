@@ -24,7 +24,7 @@ int main(int argc, char** argv) {
         boost::program_options::notify(vm);
 
         if (vm.count("help")) {
-            std::cout << "Execute pattern matching tests." << std::endl;
+            std::cout << "Execute pattern matching time tests." << std::endl;
             std::cout << desc;
             return 0;
         }
@@ -96,6 +96,7 @@ int main(int argc, char** argv) {
         std::cout << "CPU: " << cpu_time << " mcs" << std::endl;
         std::cout << "GPU: " << gpu_full_time << " mcs" << std::endl;
 
+        /* it's a bad test, because for big random patterns avarage shot count == 0 */
         if(cpu_result.size() != gpu_result.size()) {
             std::cerr << "STRESS TEST: FAILED (cpu and gpu algorithms have different results)" << std::endl;
             return 1;

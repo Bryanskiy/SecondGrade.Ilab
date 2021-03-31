@@ -29,9 +29,19 @@ target_link_libraries(
 
 
 
-add_executable(tests tests/tests.cpp)
+add_executable(time_tests tests/time_tests.cpp)
 target_link_libraries(
-    tests
+    time_tests
+    gpu_matching
+    cpu_matching
+    support
+    ${OpenCL_LIBRARY}
+    Boost::program_options
+)
+
+add_executable(execute_tests tests/execute_tests.cpp)
+target_link_libraries(
+    execute_tests
     gpu_matching
     cpu_matching
     support
