@@ -1,12 +1,31 @@
 __kernel void kmp(__global char* text, ulong text_size, __global char* pattern, ulong pattern_size, 
-                  __global ulong* preffix, ulong preffix_size, __global ulong* answer) 
+                  __global ulong* preffix, ulong preffix_size, __global ulong* answer, 
+                  __local char* pattern_local, __local ulong* preffix_local) 
 {
     /* get info about thread location */
     ulong id = get_global_id(0); // preproc part id
     ulong thread_count = get_global_size(0);
 
+    /* copy to local mem */
+    ulong local_id = get_local_id(0);
+    ulong local_thread_count = get_local_size(0);
+
+    ulong step = preffix_size / local_thread_count + 1; /* count of pattern symbols per thread */
+
+    for(ulong i = 0; i < step; ++i) {
+        ulong pos = step * local_id + i;
+        if(pos >= pattern_size) {
+            break;
+        }
+
+        pattern_local[pos] = pattern[pos];
+        preffix_local[pos] = preffix[pos];
+    }
+
+    barrier(CLK_LOCAL_MEM_FENCE);
+    
     /* calculate info about text processing part */
-    ulong step = text_size / thread_count;
+    step = text_size / thread_count;
     if((text_size % thread_count) != 0) {
         step += 1;
     }

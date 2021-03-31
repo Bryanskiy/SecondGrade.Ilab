@@ -91,7 +91,13 @@ std::vector<std::size_t> gpu_kmp_t::match() {
         kernel.setArg(3, pattern.size());
         kernel.setArg(4, preffix_buffer);
         kernel.setArg(5, preffix.size());
-        kernel.setArg(6, ans_buffer);
+        kernel.setArg(6, ans_buffer);        
+        
+        cl::LocalSpaceArg local_pattern = cl::__local(pattern.size() * sizeof(char));
+        kernel.setArg(7, local_pattern);
+
+        cl::LocalSpaceArg local_preffix = cl::__local(preffix.size() * sizeof(preffix[0]));
+        kernel.setArg(8, local_preffix);
 
         enqueue_kernel(kernel, offset, global_size, local_size);
 
