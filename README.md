@@ -7,5 +7,6 @@
 | trees             | 2             |     9     |
 | Matrices          | 3             |     9     |
 | GPU               | 2             |     9     |
-| paraCL            | 2             |     9     |
-| combinatorics     | 1             |     9     | 
+| paraCL(frontend)  | 2             |     9     |
+| combinatorics     | 2             |     9     | 
+| paraCL(+backend)  | 1             |     9     |
