@@ -48,6 +48,10 @@ int main(int argc, char** argv) {
             id = vm["set"].as<int>();
         }
 
+        if(id >= info.size()) {
+            std::cerr << "invalid id" << std::endl;
+            return 0;
+        }
         cl::Device device = info[id].second;
 /* --------------MAIN PROGRAM ----------------------------- */
         std::string text = sup::read_str(std::cin);

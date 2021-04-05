@@ -49,6 +49,11 @@ int main(int argc, char** argv) {
             id = vm["set"].as<int>();
         }
 
+        if(id >= info.size()) {
+            std::cerr << "invalid id" << std::endl;
+            return 0;
+        }
+
         cl::Device device = info[id].second;
 
         std::vector<std::string> patterns;

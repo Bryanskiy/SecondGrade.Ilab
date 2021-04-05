@@ -114,8 +114,6 @@ std::vector<unsigned> gpu_kmp_t::match() {
         gpu_only_time_ += (end - start) / 1000;
 
         queue_.enqueueReadBuffer(ans_buffers[i], CL_TRUE, 0, answers[i].size() * sizeof(answers[i][0]), answers[i].data());
-        /* cl::copy(ans_buffers[i], answers[i].begin(), answers[i].end()); 
-           why id doesn't work :( */
 
         unsigned ans_pattern = 0;
         for(unsigned j = 0; j < answers[i].size(); ++j) {

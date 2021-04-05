@@ -91,7 +91,7 @@ int main(int argc, char** argv) {
         boost::program_options::notify(vm);
 
         if (vm.count("help")) {
-            std::cout << "Execute pattern matching time tests." << std::endl;
+            std::cout << "Execute pattern matching valid tests." << std::endl;
             std::cout << desc;
             return 0;
         }
@@ -116,6 +116,10 @@ int main(int argc, char** argv) {
             id = vm["set"].as<int>();
         }
 
+        if(id >= info.size()) {
+            std::cerr << "invalid id" << std::endl;
+            return 0;
+        }
         cl::Device device = info[id].second;
         test1(device);
         test2(device);
