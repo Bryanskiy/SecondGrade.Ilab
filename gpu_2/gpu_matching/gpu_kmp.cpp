@@ -13,6 +13,53 @@ unsigned calculate_thread_count(unsigned text_size, unsigned pattern_size) {
     return ans;
 }
 
+const std::string wired_kernels = "\
+__kernel void kmp(__global char* text, ulong text_size, __global char* pattern, ulong pattern_size,\
+                  __global uint* preffix, ulong preffix_size, __global uint* answer,\ 
+                  __local char* pattern_local, __local uint* preffix_local)\ 
+{\
+    uint id = get_global_id(0);\
+    uint thread_count = get_global_size(0);\
+    uint local_id = get_local_id(0);\
+    uint local_thread_count = get_local_size(0);\
+    uint step = preffix_size / local_thread_count + 1;\
+    for(uint i = 0; i < step; ++i) {\
+        uint pos = step * local_id + i;\
+        if(pos >= pattern_size) {\
+            break;\
+        }\
+        pattern_local[pos] = pattern[pos];\
+        preffix_local[pos] = preffix[pos];\
+    }\
+    barrier(CLK_LOCAL_MEM_FENCE);\
+    step = text_size / thread_count;\
+    if((text_size % thread_count) != 0) {\
+        step += 1;\
+    }\
+    uint left_border  = step * id;\
+    uint right_border = min(left_border + step - 1 + pattern_size, text_size);\
+    uint positions_number = 0;\
+    uint i = left_border;\
+    uint j = 0;\
+    while(i < right_border) {\
+        if(pattern_local[j] == text[i]) {\
+            ++i; ++j;\
+        }\       
+        if(j == pattern_size) {\
+            ++positions_number;\
+            j = preffix_local[j - 1];\
+        } else if((i < right_border) && pattern_local[j] != text[i]) {\
+            if (j > 0) {\
+                j = preffix_local[j - 1];\
+            }\  
+            else {\
+                i += 1;\
+            }\   
+        }\
+    }\
+    answer[id] += positions_number;\
+}";
+
 }
 
 namespace pm {
@@ -21,17 +68,25 @@ void gpu_kmp_t::build_program(const std::vector<std::string>& kernels) {
 
     std::string program_string;
 
+    bool use_extern_kernel = true;
     for(auto& kernel_name : kernels) {
         std::ifstream program_sources(kernel_name);
 
         if(!program_sources.good()) {
-            throw std::runtime_error("Can't open kernel");
+            use_extern_kernel = false;
+            break;
         }
 
         program_string += std::string(std::istreambuf_iterator<char>(program_sources), (std::istreambuf_iterator<char>()));
     }
-    
-    cl::Program::Sources source(1, std::make_pair(program_string.c_str(), program_string.length() + 1));
+
+    cl::Program::Sources source;
+    if(use_extern_kernel) {
+        source = cl::Program::Sources(1, std::make_pair(program_string.c_str(), program_string.length() + 1));
+    } else {
+        source = cl::Program::Sources(1, std::make_pair(wired_kernels.c_str(), wired_kernels.length() + 1));
+    }    
+
     program_ = cl::Program(context_, source);
 
     try {
