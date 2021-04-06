@@ -43,6 +43,4 @@ private:
     bool builded_ = false;
 };
 
-std::vector<unsigned> preffix_function(const std::string& str);
-
 } /* namespace pm */

@@ -9,6 +9,25 @@ unsigned calculate_thread_count(unsigned text_size, unsigned pattern_size) {
     return ans;
 }
 
+std::vector<unsigned> preffix_function(const std::string& str) {
+    std::vector<unsigned> ret(str.size());
+
+    for(unsigned i = 1, maxi = ret.size(); i < maxi; ++i) {
+        unsigned j = ret[i - 1];
+        while((j > 0) && (str[i] != str[j])) {
+            j = ret[j - 1];
+        }
+
+        if(str[i] == str[j]) {
+            ++j;
+        }
+
+        ret[i] = j;
+    }
+
+    return ret;
+}
+
 const std::string wired_kernels = "\
 __kernel void kmp(__global char* text, ulong text_size, __global char* pattern, ulong pattern_size,\
                   __global uint* preffix, ulong preffix_size, __global uint* answer,\ 
@@ -175,25 +194,6 @@ std::vector<unsigned> gpu_kmp_t::match() {
     time_ = timer.get_time().count();
 
     return ans;
-}
-
-std::vector<unsigned> preffix_function(const std::string& str) {
-    std::vector<unsigned> ret(str.size());
-
-    for(unsigned i = 1, maxi = ret.size(); i < maxi; ++i) {
-        unsigned j = ret[i - 1];
-        while((j > 0) && (str[i] != str[j])) {
-            j = ret[j - 1];
-        }
-
-        if(str[i] == str[j]) {
-            ++j;
-        }
-
-        ret[i] = j;
-    }
-
-    return ret;
 }
 
 } /* namespace pm */
