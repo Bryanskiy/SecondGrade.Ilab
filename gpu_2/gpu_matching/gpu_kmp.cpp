@@ -29,47 +29,38 @@ std::vector<unsigned> preffix_function(const std::string& str) {
 }
 
 const std::string wired_kernels = "\
-__kernel void kmp(__global char* text, ulong text_size, __global char* pattern, ulong pattern_size,\
-                  __global uint* preffix, ulong preffix_size, __global uint* answer,\ 
-                  __local char* pattern_local, __local uint* preffix_local)\ 
+__kernel void kmp(__global char* text, ulong text_size, __global char* pattern, ulong pattern_size,\ 
+                  __global uint* preffix, ulong preffix_size, __global uint* answer)\
 {\
     uint id = get_global_id(0);\
     uint thread_count = get_global_size(0);\
-    uint local_id = get_local_id(0);\
-    uint local_thread_count = get_local_size(0);\
-    uint step = preffix_size / local_thread_count + 1;\
-    for(uint i = 0; i < step; ++i) {\
-        uint pos = step * local_id + i;\
-        if(pos >= pattern_size) {\
-            break;\
-        }\
-        pattern_local[pos] = pattern[pos];\
-        preffix_local[pos] = preffix[pos];\
-    }\
-    barrier(CLK_LOCAL_MEM_FENCE);\
-    step = text_size / thread_count;\
+    uint step = text_size / thread_count;\
     if((text_size % thread_count) != 0) {\
         step += 1;\
     }\
+\
     uint left_border  = step * id;\
     uint right_border = min(left_border + step - 1 + pattern_size, text_size);\
+\
     uint positions_number = 0;\
     uint i = left_border;\
     uint j = 0;\
+\
     while(i < right_border) {\
-        if(pattern_local[j] == text[i]) {\
+        if(pattern[j] == text[i]) {\
             ++i; ++j;\
-        }\       
+        }\   
+\           
         if(j == pattern_size) {\
             ++positions_number;\
-            j = preffix_local[j - 1];\
-        } else if((i < right_border) && pattern_local[j] != text[i]) {\
+            j = preffix[j - 1];\
+        } else if((i < right_border) && pattern[j] != text[i]) {\
             if (j > 0) {\
-                j = preffix_local[j - 1];\
-            }\  
+                j = preffix[j - 1];\
+            }\     
             else {\
                 i += 1;\
-            }\   
+            }\    
         }\
     }\
     answer[id] += positions_number;\
@@ -162,12 +153,6 @@ std::vector<unsigned> gpu_kmp_t::match() {
         kernel.setArg(4, preffix_buffer);
         kernel.setArg(5, preffix.size());
         kernel.setArg(6, ans_buffers[i]);
-
-        cl::LocalSpaceArg local_pattern = cl::__local(pattern.size() * sizeof(char));
-        kernel.setArg(7, local_pattern);
-
-        cl::LocalSpaceArg local_preffix = cl::__local(preffix.size() * sizeof(preffix[0]));
-        kernel.setArg(8, local_preffix);
 
         queue_.enqueueNDRangeKernel(kernel, offset, global_size, local_size, NULL, &events[i]);
         ++i;
