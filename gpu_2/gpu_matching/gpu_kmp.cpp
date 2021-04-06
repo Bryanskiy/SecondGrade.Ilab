@@ -3,13 +3,9 @@
 namespace {
 
 unsigned calculate_thread_count(unsigned text_size, unsigned pattern_size) {
+    unsigned tmp = text_size / (4 * pattern_size) + 1;
     unsigned ans = 1;
-    pattern_size *= 2;
-    while(text_size > pattern_size) {
-        ans *= 2;
-        text_size /= 2;
-    }
-
+    while(ans < tmp) {ans *= 2;}
     return ans;
 }
 
@@ -77,7 +73,9 @@ void gpu_kmp_t::build_program(const std::vector<std::string>& kernels) {
             break;
         }
 
-        program_string += std::string(std::istreambuf_iterator<char>(program_sources), (std::istreambuf_iterator<char>()));
+        auto&& lhs = std::istreambuf_iterator<char>{program_sources};
+        auto&& rhs = std::istreambuf_iterator<char>{};
+        program_string += std::string(lhs, rhs);
     }
 
     cl::Program::Sources source;
@@ -90,7 +88,7 @@ void gpu_kmp_t::build_program(const std::vector<std::string>& kernels) {
     program_ = cl::Program(context_, source);
 
     try {
-        program_.build("-O2");
+        program_.build();
     } catch (cl::Error& e) {
         std::cerr << program_.getBuildInfo<CL_PROGRAM_BUILD_LOG>(device_);
         throw e;
@@ -170,11 +168,7 @@ std::vector<unsigned> gpu_kmp_t::match() {
 
         queue_.enqueueReadBuffer(ans_buffers[i], CL_TRUE, 0, answers[i].size() * sizeof(answers[i][0]), answers[i].data());
 
-        unsigned ans_pattern = 0;
-        for(unsigned j = 0; j < answers[i].size(); ++j) {
-            ans_pattern += answers[i][j];
-        }
-
+        unsigned ans_pattern = std::accumulate(answers[i].begin(), answers[i].end(), 0);
         ans.push_back(ans_pattern);
     }
 

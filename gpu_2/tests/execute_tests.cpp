@@ -41,7 +41,7 @@ void test2(cl::Device device) {
     std::cout << "----------------------------TEST2----------------------------------------" << std::endl;
     std::size_t iterations_count = 56093;
 
-    std::vector<std::string> patterns({"ad", "b", "cb", "d"});
+    std::vector<std::string> patterns({"ad", "cbad", "cba", "d"});
     std::string text;
     for(std::size_t i = 0; i < iterations_count; ++i) {
         text += "cbad";
@@ -76,7 +76,6 @@ void test2(cl::Device device) {
 int main(int argc, char** argv) {
     /* -------------PROCESS MAIN ARGS ------------------------- */
     std::vector<std::pair<cl::Platform, cl::Device>> info;
-    int id = 0;
 
     try {
 
@@ -112,15 +111,21 @@ int main(int argc, char** argv) {
             return 0;
         }
 
+        int id = 0;
+        cl::Device device;
         if(vm.count("set")) {
             id = vm["set"].as<int>();
+
+            if(id >= info.size()) {
+                std::cerr << "invalid id" << std::endl;
+                return 0;
+            }
+
+            device = info[id].second;
+        } else {
+            device = sup::choose_default_device(info);   
         }
 
-        if(id >= info.size()) {
-            std::cerr << "invalid id" << std::endl;
-            return 0;
-        }
-        cl::Device device = info[id].second;
         test1(device);
         test2(device);
 

@@ -36,6 +36,22 @@ std::vector<std::pair<cl::Platform, cl::Device>> get_devices() {
     return ret;
 }
 
+cl::Device choose_default_device(const std::vector<std::pair<cl::Platform, cl::Device>>& data) {
+    if(data.empty()) {
+        throw std::runtime_error("there are no available devices");
+    }
+
+    cl::Device ret = data[0].second;
+    
+    for(auto&& pair : data) {
+        if(pair.second.getInfo<CL_DEVICE_MAX_CLOCK_FREQUENCY>() > ret.getInfo<CL_DEVICE_MAX_CLOCK_FREQUENCY>()) {
+            ret = pair.second;
+        }
+    }
+
+    return ret;
+}
+
 const char* cl_get_error_string(int error_code) {
     switch (error_code) {
         case 0: return "CL_SUCCESS";

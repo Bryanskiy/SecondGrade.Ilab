@@ -8,7 +8,6 @@
 int main(int argc, char** argv) {
 /* -------------PROCESS MAIN ARGS ------------------------- */
     std::vector<std::pair<cl::Platform, cl::Device>> info;
-    int id = 0;
 
     try {
 
@@ -44,15 +43,21 @@ int main(int argc, char** argv) {
             return 0;
         }
 
+        int id = 0;
+        cl::Device device;
         if(vm.count("set")) {
             id = vm["set"].as<int>();
+
+            if(id >= info.size()) {
+                std::cerr << "invalid id" << std::endl;
+                return 0;
+            }
+
+            device = info[id].second;
+        } else {
+            device = sup::choose_default_device(info);   
         }
 
-        if(id >= info.size()) {
-            std::cerr << "invalid id" << std::endl;
-            return 0;
-        }
-        cl::Device device = info[id].second;
 /* --------------MAIN PROGRAM ----------------------------- */
         std::string text = sup::read_str(std::cin);
         std::vector<std::string> patterns;

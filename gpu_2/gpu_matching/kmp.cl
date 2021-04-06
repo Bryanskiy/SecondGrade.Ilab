@@ -35,6 +35,7 @@ __kernel void kmp(__global char* text, ulong text_size, __global char* pattern, 
 
     //printf("[%lu]: left_border: %lu | right_border: %lu\n", id, left_border, right_border);
 
+    /* KMP */
     uint positions_number = 0;
     uint i = left_border; // position of the current character in text
     uint j = 0; // position of the current character in pattern
