@@ -132,7 +132,7 @@ std::vector<unsigned> gpu_kmp_t::match() {
     unsigned i = 0;
     for(auto&& pattern : patterns_) {
 #ifdef LOG
-    sup::log.log_file << "Start processing pattern with len = " << pattern.size() << std::endl;
+    sup::log.log_file << "Start processing [" << i << "] pattern with len = " << pattern.size() << std::endl;
 #endif        
         if((pattern.size() > text_.size()) || (pattern.size() == 0)) {
 #ifdef LOG
@@ -185,7 +185,10 @@ std::vector<unsigned> gpu_kmp_t::match() {
         std::size_t start = events[i].getProfilingInfo<CL_PROFILING_COMMAND_START>();
         std::size_t end = events[i].getProfilingInfo<CL_PROFILING_COMMAND_END>();
         gpu_only_time_ += (end - start) / 1000;
-
+#ifdef LOG
+    sup::log.log_file << "End processing [" << i << "] pattern" << std::endl;
+    sup::log.log_file << "Prifiling time: " << (end - start) / 1000 << std::endl;
+#endif 
         queue_.enqueueReadBuffer(ans_buffers[i], CL_TRUE, 0, answers[i].size() * sizeof(answers[i][0]), answers[i].data());
 
         unsigned ans_pattern = std::accumulate(answers[i].begin(), answers[i].end(), 0);

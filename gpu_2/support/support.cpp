@@ -43,11 +43,7 @@ std::vector<std::pair<cl::Platform, cl::Device>> get_devices() {
         platform.getDevices(CL_DEVICE_TYPE_ALL, &platform_devices);
         
         for(auto&& device : platform_devices) {
-            if( device.getInfo<CL_DEVICE_AVAILABLE>() &&
-                device.getInfo<CL_DEVICE_COMPILER_AVAILABLE>()) 
-            {
-                ret.push_back({platform, device});
-            }
+            ret.push_back({platform, device});
         }
     }
 
