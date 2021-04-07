@@ -7,7 +7,7 @@ endif()
 
 set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_FLAGS_RELEASE "-O2")
-set(CMAKE_CXX_FLAGS_DEBUG "-g -O0")
+set(CMAKE_CXX_FLAGS_DEBUG "-g -O0 -DLOG")
 
 find_package(OpenCL REQUIRED)
 find_package(Boost COMPONENTS program_options REQUIRED)

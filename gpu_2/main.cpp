@@ -58,6 +58,12 @@ int main(int argc, char** argv) {
             device = sup::choose_default_device(info);   
         }
 
+#ifdef LOG
+    sup::dump_devices(info, sup::log.log_file);
+    sup::log.separate();
+    sup::log.log_file << "Chosen device: " << device.getInfo<CL_DEVICE_NAME>() << std::endl;
+#endif 
+
 /* --------------MAIN PROGRAM ----------------------------- */
         std::string text = sup::read_str(std::cin);
         std::vector<std::string> patterns;

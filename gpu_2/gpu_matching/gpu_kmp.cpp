@@ -72,6 +72,12 @@ namespace pm {
 
 void gpu_kmp_t::build_program(const std::vector<std::string>& kernels) {
 
+#ifdef LOG
+    sup::log.separate();
+    sup::log.log_file << "Start matching for text with len = " << text_.size() << std::endl;
+#endif
+
+
     std::string program_string;
 
     bool use_extern_kernel = true;
@@ -98,7 +104,7 @@ void gpu_kmp_t::build_program(const std::vector<std::string>& kernels) {
     program_ = cl::Program(context_, source);
 
     try {
-        program_.build();
+        program_.build("-O2");
     } catch (cl::Error& e) {
         std::cerr << program_.getBuildInfo<CL_PROGRAM_BUILD_LOG>(device_);
         throw e;
@@ -125,7 +131,13 @@ std::vector<unsigned> gpu_kmp_t::match() {
 
     unsigned i = 0;
     for(auto&& pattern : patterns_) {
+#ifdef LOG
+    sup::log.log_file << "Start processing pattern with len = " << pattern.size() << std::endl;
+#endif        
         if((pattern.size() > text_.size()) || (pattern.size() == 0)) {
+#ifdef LOG
+    sup::log.log_file << "Skip this pattern" << std::endl;
+#endif             
             continue;
         }
 
@@ -137,6 +149,10 @@ std::vector<unsigned> gpu_kmp_t::match() {
         queue_.enqueueWriteBuffer(pattern_buffer, CL_TRUE, 0, pattern.size() * sizeof(pattern[0]), pattern.data());
 
         std::size_t thread_count = calculate_thread_count(text_.size(), pattern.size());
+#ifdef LOG
+    sup::log.log_file << "Calculated thread count: " << thread_count << std::endl;
+#endif
+
         answers[i].resize(thread_count);
         ans_buffers[i] = cl::Buffer(context_, CL_MEM_READ_WRITE, answers[i].size() * sizeof(answers[i][0]));
         queue_.enqueueWriteBuffer(ans_buffers[i], CL_TRUE, 0, answers[i].size() * sizeof(answers[i][0]), answers[i].data());

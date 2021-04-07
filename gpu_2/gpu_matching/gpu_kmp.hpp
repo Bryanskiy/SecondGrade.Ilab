@@ -10,6 +10,7 @@
 #define __CL_ENABLE_EXCEPTIONS
 #include "CL/cl.hpp"
 #include "../support/timer.hpp"
+#include "../support/support.hpp"
 
 namespace pm {
 

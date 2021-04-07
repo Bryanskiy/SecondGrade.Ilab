@@ -2,6 +2,10 @@
 
 namespace sup {
 
+#ifdef LOG
+    log_t log("log.txt");
+#endif
+
 std::string read_str(std::istream& input) {
     std::string ret;
     size_t size = 0; input >> size;
@@ -12,6 +16,20 @@ std::string read_str(std::istream& input) {
     input.ignore(1);
 
     return ret;
+}
+
+void dump_devices(const std::vector<std::pair<cl::Platform, cl::Device>>& info, std::ostream& stream) {
+    stream << "--------------------------------------------------------------" << std::endl;
+    stream << "Available devices and platforms:" << std::endl;
+
+    std::string local_indent = "    ";
+    for (size_t i = 0; i < info.size(); ++i) {
+        stream << local_indent << "Id: " << i << std::endl;
+        stream << local_indent << "Platform:\t";
+        stream << local_indent << info[i].first.getInfo<CL_PLATFORM_NAME>() << std::endl;
+        stream << local_indent << "Device:\t\t";
+        stream << local_indent << info[i].second.getInfo<CL_DEVICE_NAME>() << std::endl << std::endl;
+    }
 }
 
 std::vector<std::pair<cl::Platform, cl::Device>> get_devices() {
