@@ -13,5 +13,9 @@ int main() {
         chain.push(lhs, rhs);
     }
 
-    chain.dump(std::cout);
+    auto&& order = chain.get_optimal_order();
+    for(std::size_t i = 0; i < order.size(); ++i) {
+        std::cout << order[i] << " ";
+    }
+    std::cout << std::endl;
 }

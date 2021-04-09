@@ -12,7 +12,8 @@ void Imatrix_chain_t::push(std::size_t rows, std::size_t cols) {
     }
 
     if(dp_table_size_ == dp_table_capacity_) {
-        dp_table_.resize(dp_table_size_ * 2, dp_table_size_ * 2);
+        dp_table_capacity_ *= 2;
+        dp_table_.resize(dp_table_capacity_, dp_table_capacity_);
     }
 
     if(!dp_table_size_) {
@@ -44,7 +45,27 @@ void Imatrix_chain_t::push(std::size_t rows, std::size_t cols) {
        dp_table_[j][i] = i + std::distance(variants.begin(), it);
     }
 
+    optimal_order_.clear();
+    calculate_optimal_order(0, dp_table_size_);
+
     ++dp_table_size_;
+}
+
+void Imatrix_chain_t::calculate_optimal_order(std::size_t i, std::size_t j) {
+    if(i >= j) {
+        return;
+    }
+
+    if((i + 1) == j) {
+        optimal_order_.push_back(i);
+        return;
+    }
+
+    std::size_t pivot = dp_table_[j][i];
+    calculate_optimal_order(pivot + 1, j);    
+    calculate_optimal_order(i, pivot);
+
+    optimal_order_.push_back(pivot);
 }
 
 void Imatrix_chain_t::dump(std::ostream& stream) const {
