@@ -90,7 +90,7 @@ void gpu_kmp_t::build_program(const std::vector<std::string>& kernels) {
         }
 
         auto&& lhs = std::istreambuf_iterator<char>{program_sources};
-        auto&& rhs = std::istreambuf_iterator<char>{};
+        std::istreambuf_iterator<char> rhs;
         program_string += std::string(lhs, rhs);
     }
 

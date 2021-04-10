@@ -5,6 +5,21 @@
 #include "gpu_matching/gpu_kmp.hpp"
 #include "support/support.hpp"
 
+std::vector<unsigned> main_process(cl::Device& device, std::istream& in, std::ostream& out) {
+    std::string text = sup::read_str(std::cin);
+    std::vector<std::string> patterns;
+    std::size_t patterns_count; std::cin >> patterns_count;
+    patterns.reserve(patterns_count);
+
+    for(std::size_t i = 0; i < patterns_count; ++i) {
+        std::string tmp = sup::read_str(std::cin);
+        patterns.push_back(tmp);
+    }
+
+    pm::gpu_kmp_t pm(device, text, patterns);
+    return pm.match();
+}
+
 int main(int argc, char** argv) {
 /* -------------PROCESS MAIN ARGS ------------------------- */
     std::vector<std::pair<cl::Platform, cl::Device>> info;
@@ -65,19 +80,9 @@ int main(int argc, char** argv) {
 #endif 
 
 /* --------------MAIN PROGRAM ----------------------------- */
-        std::string text = sup::read_str(std::cin);
-        std::vector<std::string> patterns;
-        std::size_t patterns_count; std::cin >> patterns_count;
-        patterns.reserve(patterns_count);
 
-        for(std::size_t i = 0; i < patterns_count; ++i) {
-            std::string tmp = sup::read_str(std::cin);
-            patterns.push_back(tmp);
-        }
-
-        pm::gpu_kmp_t pm(device, text, patterns);
     
-        auto&& res = pm.match();
+        auto&& res = main_process(device, std::cin, std::cout);
 
         for(std::size_t i = 0, maxi = res.size(); i < maxi; ++i) {
             std::cout << i + 1 << " " << res[i] << std::endl;
