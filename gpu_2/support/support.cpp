@@ -58,7 +58,7 @@ cl::Device choose_default_device(const std::vector<std::pair<cl::Platform, cl::D
     cl::Device ret = data[0].second;
     
     for(auto&& pair : data) {
-        if(pair.second.getInfo<CL_DEVICE_MAX_CLOCK_FREQUENCY>() > ret.getInfo<CL_DEVICE_MAX_CLOCK_FREQUENCY>()) {
+        if(pair.second.getInfo<CL_DEVICE_MAX_COMPUTE_UNITS>() > ret.getInfo<CL_DEVICE_MAX_COMPUTE_UNITS>()) {
             ret = pair.second;
         }
     }

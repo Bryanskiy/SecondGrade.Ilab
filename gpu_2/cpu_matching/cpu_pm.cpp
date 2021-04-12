@@ -8,6 +8,11 @@ std::vector<std::size_t> cpu_pm_t::match() {
     res.reserve(patterns_.size());
 
     for(auto&& pattern : patterns_) {
+        if((pattern.size() > text_.size()) || (pattern.size() == 0)) { 
+            res.emplace_back(0u);
+            continue;
+        }
+
         std::size_t tmp = 0;
         std::string::size_type pos = 0u;
         for(;;) {

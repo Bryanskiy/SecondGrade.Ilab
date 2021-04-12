@@ -79,9 +79,7 @@ int main(int argc, char** argv) {
     sup::log.log_file << "Chosen device: " << device.getInfo<CL_DEVICE_NAME>() << std::endl;
 #endif 
 
-/* --------------MAIN PROGRAM ----------------------------- */
-
-    
+/* --------------MAIN PROGRAM ----------------------------- */ 
         auto&& res = main_process(device, std::cin, std::cout);
 
         for(std::size_t i = 0, maxi = res.size(); i < maxi; ++i) {

@@ -137,7 +137,8 @@ std::vector<unsigned> gpu_kmp_t::match() {
         if((pattern.size() > text_.size()) || (pattern.size() == 0)) {
 #ifdef LOG
     sup::log.log_file << "Skip this pattern" << std::endl;
-#endif             
+#endif  
+            ++i;           
             continue;
         }
 

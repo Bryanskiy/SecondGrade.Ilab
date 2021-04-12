@@ -16,6 +16,7 @@ int main(int argc, char** argv) {
             ("help", "get options info")
             ("devices", "get avaible devices")
             ("usert", "set user tests moode")
+            ("all", "run test for all devives")
             ("set", boost::program_options::value<int>(), "set device");
 
         boost::program_options::variables_map vm;        
@@ -45,7 +46,13 @@ int main(int argc, char** argv) {
         }
 
         int id = 0;
-        cl::Device device;
+        std::vector<cl::Device> devices;
+
+#ifdef LOG
+        sup::dump_devices(info, sup::log.log_file);
+        sup::log.separate();
+#endif 
+
         if(vm.count("set")) {
             id = vm["set"].as<int>();
 
@@ -54,15 +61,20 @@ int main(int argc, char** argv) {
                 return 0;
             }
 
-            device = info[id].second;
+            devices.push_back(info[id].second);
+        } 
+
+        if(vm.count("all")) {
+            for(auto&& pair : info) {
+                devices.push_back(pair.second);
+            }
         } else {
-            device = sup::choose_default_device(info);   
-        }
+            devices.push_back(sup::choose_default_device(info));
 #ifdef LOG
-    sup::dump_devices(info, sup::log.log_file);
-    sup::log.separate();
-    sup::log.log_file << "Chosen device: " << device.getInfo<CL_DEVICE_NAME>() << std::endl;
-#endif 
+            sup::log.log_file << "Chosen device: " << devices.back().getInfo<CL_DEVICE_NAME>() << std::endl;    
+#endif            
+        }
+
         std::vector<std::string> patterns;
         std::string text;
 
@@ -96,32 +108,54 @@ int main(int argc, char** argv) {
             }
         }
 
-        pm::cpu_pm_t cpu(text, patterns);
-        pm::gpu_kmp_t kmp(device, text, patterns);
+        for(auto&& device : devices) {
 
-        auto cpu_result = cpu.match();
-        auto gpu_result = kmp.match();
+            pm::cpu_pm_t cpu(text, patterns);
+            pm::gpu_kmp_t kmp(device, text, patterns);
 
-        auto cpu_time = cpu.get_time();
-        auto gpu_only_time = kmp.gpu_only_time();
-        auto gpu_full_time = kmp.time();
+            auto cpu_result = cpu.match();
+            auto gpu_result = kmp.match();
 
-        std::cout << "CPU:      " << cpu_time << " mcs" << std::endl;
-        std::cout << "GPU only: " << gpu_only_time << " mcs" << std::endl;
-        std::cout << "GPU full: " << gpu_full_time << " mcs" << std::endl;
+            auto cpu_time = cpu.get_time();
+            auto gpu_only_time = kmp.gpu_only_time();
+            auto gpu_full_time = kmp.time();
+            std::cout << "-------------------------------------------------------" << std::endl;            
+            std::cout << "Current device: " << device.getInfo<CL_DEVICE_NAME>() << std::endl; 
+            std::cout << "CPU:      " << cpu_time << " mcs" << std::endl;
+            std::cout << "GPU only: " << gpu_only_time << " mcs" << std::endl;
+            std::cout << "GPU full: " << gpu_full_time << " mcs" << std::endl;
 
-        /* it's a bad test, because for big random patterns avarage shot count == 0 */
-        if(cpu_result.size() != gpu_result.size()) {
-            std::cerr << "STRESS TEST: FAILED (cpu and gpu algorithms have different results)" << std::endl;
-            return 1;
-        }
-
-        for(std::size_t i = 0, maxi = cpu_result.size(); i < maxi; ++i) {
-            if(cpu_result[i] != gpu_result[i]) {
-                std::cerr  << "STRESS TEST: FAILED (cpu and gpu algorithms have different results)" << std::endl;
-                return 0;
+            /* it's a bad test, because for big random patterns avarage shot count == 0 */
+            bool correct = true;
+            if(cpu_result.size() != gpu_result.size()) {
+                correct = false;
             }
-        }
+
+            for(std::size_t i = 0, maxi = cpu_result.size(); i < maxi; ++i) {
+                if(cpu_result[i] != gpu_result[i]) {
+                    correct = false;
+                    break;
+                }
+            }
+
+            if(!correct) {
+                std::string err_str = "STRESS TEST: FAILED (cpu and gpu algorithms have different results)";
+                std::cerr << err_str << std::endl;
+#ifdef LOG
+                sup::log.separate();
+                sup::log.log_file << err_str << std::endl;
+                sup::log.log_file << "CPU result: " << std::endl;
+                for(auto&& res : cpu_result) {
+                    sup::log.log_file << res << " ";
+                }
+                sup::log.log_file << std::endl;
+                sup::log.log_file << "GPU result: " << std::endl;
+                for(auto&& res : gpu_result) {
+                    sup::log.log_file << res << " ";
+                }
+#endif      
+            }
+        }    
 
     } catch(cl::Error& ex) {
         std::cerr << "Error: "<<  ex.what() << std::endl;
