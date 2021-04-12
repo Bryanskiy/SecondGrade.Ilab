@@ -4,8 +4,6 @@ __kernel void kmp(__global char* text, ulong text_size, __global char* pattern, 
     /* get info about thread location */
     uint id = get_global_id(0); // preproc part id
     uint thread_count = get_global_size(0);
-    
-    //printf("thread count: %d\n", thread_count);
 
     /* calculate info about text processing part */
     uint step = text_size / thread_count;
