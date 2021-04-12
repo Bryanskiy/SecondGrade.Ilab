@@ -5,6 +5,8 @@ __kernel void kmp(__global char* text, ulong text_size, __global char* pattern, 
     uint id = get_global_id(0); // preproc part id
     uint thread_count = get_global_size(0);
     
+    //printf("thread count: %d\n", thread_count);
+
     /* calculate info about text processing part */
     uint step = text_size / thread_count;
     if((text_size % thread_count) != 0) {
@@ -40,7 +42,7 @@ __kernel void kmp(__global char* text, ulong text_size, __global char* pattern, 
     }
 
 
-    //printf("[%lu]: %lu\n", id, positions_number);
+    //printf("count[%lu]: %lu\n", id, positions_number);
 
     answer[id] += positions_number;
 }
