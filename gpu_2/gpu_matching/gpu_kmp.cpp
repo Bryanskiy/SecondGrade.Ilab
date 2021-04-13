@@ -104,7 +104,7 @@ void gpu_kmp_t::build_program(const std::vector<std::string>& kernels) {
     program_ = cl::Program(context_, source);
 
     try {
-        program_.build("-O2");
+        program_.build();
     } catch (cl::Error& e) {
         std::cerr << program_.getBuildInfo<CL_PROGRAM_BUILD_LOG>(device_);
         throw e;
