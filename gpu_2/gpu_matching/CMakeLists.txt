@@ -3,6 +3,10 @@ project(gpu_matching VERSION 1.0.0)
 
 add_library(
     gpu_matching
-    gpu_kmp.hpp
-    gpu_kmp.cpp
+
+    cl_general.cpp
+    cl_general.hpp
+
+    kmp/gpu_kmp.hpp
+    kmp/gpu_kmp.cpp
 )

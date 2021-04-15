@@ -1,9 +1,21 @@
 #include <boost/program_options.hpp>
 
-#include "../gpu_matching/gpu_kmp.hpp"
+#include "../gpu_matching/kmp/gpu_kmp.hpp"
+#include "../gpu_matching/cl_general.hpp"
 #include "../cpu_matching/cpu_pm.hpp"
 #include "generator.h"
-#include "../support/support.hpp"
+
+std::string read_str(std::istream& input) {
+    std::string ret;
+    size_t size = 0; input >> size;
+
+    input.ignore(1);
+    ret.resize(size);
+    input.read(ret.data(), size);
+    input.ignore(1);
+
+    return ret;
+}
 
 int main(int argc, char** argv) {
 /* -------------PROCESS MAIN ARGS ------------------------- */
@@ -29,7 +41,7 @@ int main(int argc, char** argv) {
             return 0;
         }
 
-        info = sup::get_devices();
+        info = pm::get_devices();
 
         if(vm.count("devices")) {
             std::cout << "Available devices and platforms:" << std::endl;
@@ -69,7 +81,7 @@ int main(int argc, char** argv) {
                 devices.push_back(pair.second);
             }
         } else {
-            devices.push_back(sup::choose_default_device(info));
+            devices.push_back(pm::choose_default_device(info));
 #ifdef LOG
             sup::log.log_file << "Chosen device: " << devices.back().getInfo<CL_DEVICE_NAME>() << std::endl;    
 #endif            
@@ -97,13 +109,13 @@ int main(int argc, char** argv) {
 
             text = gen.generate_string(text_size);
         } else {
-            text = sup::read_str(std::cin);
+            text = read_str(std::cin);
 
             std::size_t patterns_count; std::cin >> patterns_count;
             patterns.reserve(patterns_count);
 
             for(std::size_t i = 0; i < patterns_count; ++i) {
-                std::string tmp = sup::read_str(std::cin);
+                std::string tmp = read_str(std::cin);
                 patterns.push_back(tmp);
             }
         }

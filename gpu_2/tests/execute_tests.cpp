@@ -1,8 +1,8 @@
 #include <boost/program_options.hpp>
 
-#include "../gpu_matching/gpu_kmp.hpp"
+#include "../gpu_matching/kmp/gpu_kmp.hpp"
+#include "../gpu_matching/cl_general.hpp"
 #include "../cpu_matching/cpu_pm.hpp"
-#include "../support/support.hpp"
 
 void test1(cl::Device device) {
     std::cout << "----------------------------TEST1----------------------------------------" << std::endl;
@@ -95,7 +95,7 @@ int main(int argc, char** argv) {
             return 0;
         }
 
-        info = sup::get_devices();
+        info = pm::get_devices();
 
         if(vm.count("devices")) {
             std::cout << "Available devices and platforms:" << std::endl;
@@ -123,7 +123,7 @@ int main(int argc, char** argv) {
 
             device = info[id].second;
         } else {
-            device = sup::choose_default_device(info);   
+            device = pm::choose_default_device(info);   
         }
 #ifdef LOG
     sup::dump_devices(info, sup::log.log_file);

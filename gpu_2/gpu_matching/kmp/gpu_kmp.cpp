@@ -28,94 +28,15 @@ std::vector<unsigned> preffix_function(const std::string& str) {
     return ret;
 }
 
-const std::string wired_kernels = "\
-__kernel void kmp(__global char* text, ulong text_size, __global char* pattern, ulong pattern_size,\ 
-                  __global uint* preffix, ulong preffix_size, __global uint* answer)\
-{\
-    uint id = get_global_id(0);\
-    uint thread_count = get_global_size(0);\
-    uint step = text_size / thread_count;\
-    if((text_size % thread_count) != 0) {\
-        step += 1;\
-    }\
-\
-    uint left_border  = step * id;\
-    uint right_border = min(left_border + step - 1 + pattern_size, text_size);\
-\
-    uint positions_number = 0;\
-    uint i = left_border;\
-    uint j = 0;\
-\
-    while(i < right_border) {\
-        if(pattern[j] == text[i]) {\
-            ++i; ++j;\
-        }\   
-\           
-        if(j == pattern_size) {\
-            ++positions_number;\
-            j = preffix[j - 1];\
-        } else if((i < right_border) && pattern[j] != text[i]) {\
-            if (j > 0) {\
-                j = preffix[j - 1];\
-            }\     
-            else {\
-                i += 1;\
-            }\    
-        }\
-    }\
-    answer[id] += positions_number;\
-}";
-
 }
 
 namespace pm {
-
-void gpu_kmp_t::build_program(const std::vector<std::string>& kernels) {
-
-#ifdef LOG
-    sup::log.separate();
-    sup::log.log_file << "Start matching for text with len = " << text_.size() << std::endl;
-#endif
-
-
-    std::string program_string;
-
-    bool use_extern_kernel = true;
-    for(auto& kernel_name : kernels) {
-        std::ifstream program_sources(kernel_name);
-
-        if(!program_sources.good()) {
-            use_extern_kernel = false;
-            break;
-        }
-
-        auto&& lhs = std::istreambuf_iterator<char>{program_sources};
-        std::istreambuf_iterator<char> rhs;
-        program_string += std::string(lhs, rhs);
-    }
-
-    cl::Program::Sources source;
-    if(use_extern_kernel) {
-        source = cl::Program::Sources(1, std::make_pair(program_string.c_str(), program_string.length() + 1));
-    } else {
-        source = cl::Program::Sources(1, std::make_pair(wired_kernels.c_str(), wired_kernels.length() + 1));
-    }    
-
-    program_ = cl::Program(context_, source);
-
-    try {
-        program_.build();
-    } catch (cl::Error& e) {
-        std::cerr << program_.getBuildInfo<CL_PROGRAM_BUILD_LOG>(device_);
-        throw e;
-    } 
-}
 
 std::vector<unsigned> gpu_kmp_t::match() {
     Timer_t timer;
 
     if(!builded_) {
-        build_program({"../gpu_matching/kmp.cl"});
+        build_program({"../gpu_matching/kmp/kmp.cl"});
         builded_ = true;
     }
 
@@ -130,14 +51,8 @@ std::vector<unsigned> gpu_kmp_t::match() {
     std::vector<cl::Buffer> ans_buffers(patterns_.size());
 
     unsigned i = 0;
-    for(auto&& pattern : patterns_) {
-#ifdef LOG
-    sup::log.log_file << "Start processing [" << i << "] pattern with len = " << pattern.size() << std::endl;
-#endif        
-        if((pattern.size() > text_.size()) || (pattern.size() == 0)) {
-#ifdef LOG
-    sup::log.log_file << "Skip this pattern" << std::endl;
-#endif  
+    for(auto&& pattern : patterns_) {       
+        if((pattern.size() > text_.size()) || (pattern.size() == 0)) { 
             ++i;           
             continue;
         }
@@ -150,9 +65,6 @@ std::vector<unsigned> gpu_kmp_t::match() {
         queue_.enqueueWriteBuffer(pattern_buffer, CL_TRUE, 0, pattern.size() * sizeof(pattern[0]), pattern.data());
 
         std::size_t thread_count = calculate_thread_count(text_.size(), pattern.size());
-#ifdef LOG
-    sup::log.log_file << "Calculated thread count: " << thread_count << std::endl;
-#endif
 
         answers[i].resize(thread_count);
         ans_buffers[i] = cl::Buffer(context_, CL_MEM_READ_WRITE, answers[i].size() * sizeof(answers[i][0]));
@@ -186,10 +98,7 @@ std::vector<unsigned> gpu_kmp_t::match() {
         std::size_t start = events[i].getProfilingInfo<CL_PROFILING_COMMAND_START>();
         std::size_t end = events[i].getProfilingInfo<CL_PROFILING_COMMAND_END>();
         gpu_only_time_ += (end - start) / 1000;
-#ifdef LOG
-    sup::log.log_file << "End processing [" << i << "] pattern" << std::endl;
-    sup::log.log_file << "Prifiling time: " << (end - start) / 1000 << std::endl;
-#endif 
+ 
         queue_.enqueueReadBuffer(ans_buffers[i], CL_TRUE, 0, answers[i].size() * sizeof(answers[i][0]), answers[i].data());
 
         unsigned ans_pattern = std::accumulate(answers[i].begin(), answers[i].end(), 0);

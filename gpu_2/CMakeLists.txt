@@ -14,7 +14,6 @@ find_package(Boost COMPONENTS program_options REQUIRED)
 
 add_subdirectory(gpu_matching)
 add_subdirectory(cpu_matching)
-add_subdirectory(support)
 
 
 add_executable(main main.cpp)
@@ -22,7 +21,6 @@ target_link_libraries(
     main 
     gpu_matching
     cpu_matching
-    support
     ${OpenCL_LIBRARY}
     Boost::program_options
 )
@@ -34,7 +32,6 @@ target_link_libraries(
     time_tests
     gpu_matching
     cpu_matching
-    support
     ${OpenCL_LIBRARY}
     Boost::program_options
 )
@@ -44,7 +41,6 @@ target_link_libraries(
     execute_tests
     gpu_matching
     cpu_matching
-    support
     ${OpenCL_LIBRARY}
     Boost::program_options
 )
