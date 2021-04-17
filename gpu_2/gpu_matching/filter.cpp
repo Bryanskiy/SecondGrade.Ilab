@@ -58,7 +58,7 @@ std::vector<std::vector<std::size_t>> gpu_filter_t::match(std::string& text) {
 
     std::vector<cl_float2> answer_vector(text.size());
 
-    /* send kernels to gpu */
+    /* check results after filter */
     for(std::size_t step = 0; step < table_depth; ++step) {
 
         events[step].wait();
