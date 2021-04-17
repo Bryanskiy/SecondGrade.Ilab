@@ -6,7 +6,7 @@ add_library(
 
     cl_general.cpp
     cl_general.hpp
-
-    kmp/gpu_kmp.hpp
-    kmp/gpu_kmp.cpp
+    
+    filter.hpp
+    filter.cpp
 )

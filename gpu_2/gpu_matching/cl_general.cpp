@@ -2,25 +2,24 @@
 
 namespace pm {
 
-void dump_devices(const std::vector<std::pair<cl::Platform, cl::Device>>& info, std::ostream& stream) {
-    stream << "--------------------------------------------------------------" << std::endl;
-    stream << "Available devices and platforms:" << std::endl;
-
-    std::string local_indent = "    ";
-    for (size_t i = 0; i < info.size(); ++i) {
-        stream << local_indent << "Id: " << i << std::endl;
-        stream << local_indent << "Platform:\t";
-        stream << local_indent << info[i].first.getInfo<CL_PLATFORM_NAME>() << std::endl;
-        stream << local_indent << "Device:\t\t";
-        stream << local_indent << info[i].second.getInfo<CL_DEVICE_NAME>() << std::endl << std::endl;
-    }
+cl_iclass_t::cl_iclass_t() {
+    device_ = choose_default_device();
+    context_ = cl::Context(device_),
+    queue_ = cl::CommandQueue(context_, device_, CL_QUEUE_PROFILING_ENABLE);
 }
 
-std::vector<std::pair<cl::Platform, cl::Device>> get_devices() {
+cl_iclass_t::cl_iclass_t(cl::Device device) : device_(device) {
+    context_ = cl::Context(device_),
+    queue_ = cl::CommandQueue(context_, device_, CL_QUEUE_PROFILING_ENABLE);
+}
+
+cl_iclass_t::~cl_iclass_t() {}
+
+std::vector<machine_t> get_devices() {
     std::vector<cl::Platform> platforms;
     cl::Platform::get(&platforms);
 
-    std::vector<std::pair<cl::Platform, cl::Device>> ret;
+    std::vector<machine_t> ret;
 
     for(auto&& platform : platforms) {
         std::vector<cl::Device> platform_devices;
@@ -34,7 +33,7 @@ std::vector<std::pair<cl::Platform, cl::Device>> get_devices() {
     return ret;
 }
 
-cl::Device choose_default_device(const std::vector<std::pair<cl::Platform, cl::Device>>& data) {
+cl::Device choose_default_device(const std::vector<machine_t>& data) {
     if(data.empty()) {
         throw std::runtime_error("there are no available devices");
     }
@@ -59,10 +58,11 @@ void cl_iclass_t::build_program(const std::vector<std::string>& kernels) {
 
     std::string program_string;
 
-    for(auto& kernel_name : kernels) {
+    for(const auto& kernel_name : kernels) {
         std::ifstream program_sources(kernel_name);
 
         if(!program_sources.good()) {
+            std::cout << "Bad" << std::endl;
             throw std::runtime_error("cl_iclass_t::build_program: can't open kernel source");
         }
 

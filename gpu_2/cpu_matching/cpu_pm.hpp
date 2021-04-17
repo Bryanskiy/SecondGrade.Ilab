@@ -7,17 +7,15 @@
 /* pm - pattern matching */
 namespace pm {
 
+std::vector<std::size_t> match(std::string& text, std::string& pattern);
+
 class cpu_pm_t final {
 public:
-    cpu_pm_t(const std::string& text, const std::vector<std::string>& patterns) : text_(text), patterns_(patterns) {}
+    cpu_pm_t(const std::vector<std::string>& patterns) : patterns_(patterns) {}
 
-    void set_text(std::string& text) {text_ = text;}
-    void push_pattern(const std::string& pattern) {patterns_.push_back(pattern);}
-
-    std::vector<std::size_t> match();
+    std::vector<std::vector<std::size_t>> match(std::string& text);
     std::size_t get_time() const {return time_;}
 private:
-    std::string text_;
     std::vector<std::string> patterns_;
     std::size_t time_;
 };

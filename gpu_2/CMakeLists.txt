@@ -7,14 +7,13 @@ endif()
 
 set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_FLAGS_RELEASE "-O2")
-set(CMAKE_CXX_FLAGS_DEBUG "-g -O0 -DLOG")
+set(CMAKE_CXX_FLAGS_DEBUG "-g -O0")
 
 find_package(OpenCL REQUIRED)
 find_package(Boost COMPONENTS program_options REQUIRED)
 
 add_subdirectory(gpu_matching)
 add_subdirectory(cpu_matching)
-
 
 add_executable(main main.cpp)
 target_link_libraries(
@@ -24,8 +23,6 @@ target_link_libraries(
     ${OpenCL_LIBRARY}
     Boost::program_options
 )
-
-
 
 add_executable(time_tests tests/time_tests.cpp)
 target_link_libraries(
