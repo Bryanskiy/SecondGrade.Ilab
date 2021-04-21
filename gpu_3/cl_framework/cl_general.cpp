@@ -1,32 +1,97 @@
-#include "support.hpp"
+#include "cl_general.hpp"
 
-namespace sup {
+namespace clf {
 
-std::vector<std::pair<cl::Platform, cl::Device>> get_devices() {
+/*-------------------------------------------------------------------------------------------- 
+                            cl_iclass_t REALIZATION 
+---------------------------------------------------------------------------------------------*/
+
+/* definition of static value */
+bool cl_iclass_t::init_ = false;
+
+cl_iclass_t::cl_iclass_t() {
+    cl::Device device = choose_default_device(); /* can throw exeption */
+    if(!init_) {
+        init(device);
+        init_ = true;
+    }    
+}
+
+cl_iclass_t::cl_iclass_t(cl::Device device) {
+    if(!init_) {
+        init(device);
+        init_ = true;
+    } 
+}
+
+void cl_iclass_t::init(cl::Device device) {
+    cl::Context context(device);
+    cl::CommandQueue queue(context_, device_, CL_QUEUE_PROFILING_ENABLE);
+    cl::Program program = build_program(context); /* can throw exeption */
+
+    /*---------------------------KALB LINE-----------------------------*/
+
+    /* cl::* contains discriptor, so it's quickly copied */
+    device_ = device;
+    context_ = context;
+    queue_ = queue;
+    program_ = program;
+}
+
+cl_iclass_t::~cl_iclass_t() {}
+
+cl::Program cl_iclass_t::build_program(cl::Context context) {
+
+    /* read kernels into string */
+    std::string program_string;
+    std::ifstream program_sources("kernels.cl");
+    if(!program_sources.good()) {
+        throw std::runtime_error("clf::cl_iclass_t::build_program: can't open kernel source");
+    }
+    auto&& lhs = std::istreambuf_iterator<char>{program_sources};
+    std::istreambuf_iterator<char> rhs;
+    program_string = std::move(std::string(lhs, rhs));
+
+    /* build */
+    cl::Program::Sources source;
+    source = cl::Program::Sources(1, std::make_pair(program_string.c_str(), program_string.length() + 1));
+    cl::Program program(context, source);
+
+    try {
+        program.build();
+    } catch (cl::Error& e) {
+        std::cerr << program_.getBuildInfo<CL_PROGRAM_BUILD_LOG>(device_);
+        throw e;
+    } 
+
+    return program;
+}
+
+/*-------------------------------------------------------------------------------------------- 
+                            BASIC FUNCTIONS REALIZATION 
+---------------------------------------------------------------------------------------------*/
+
+std::vector<machine_t> get_devices() {
     std::vector<cl::Platform> platforms;
     cl::Platform::get(&platforms);
 
-    std::vector<std::pair<cl::Platform, cl::Device>> ret;
+    std::vector<machine_t> ret;
 
     for(auto&& platform : platforms) {
         std::vector<cl::Device> platform_devices;
         platform.getDevices(CL_DEVICE_TYPE_ALL, &platform_devices);
         
         for(auto&& device : platform_devices) {
-            if( device.getInfo<CL_DEVICE_AVAILABLE>() &&
-                device.getInfo<CL_DEVICE_COMPILER_AVAILABLE>()) 
-            {
-                ret.push_back({platform, device});
-            }
+            ret.push_back({platform, device});
         }
     }
 
     return ret;
 }
 
-cl::Device choose_default_device(const std::vector<std::pair<cl::Platform, cl::Device>>& data) {
+cl::Device choose_default_device(const std::vector<machine_t>& data) {
     if(data.empty()) {
-        throw std::runtime_error("there are no available devices");
+        throw std::runtime_error("clf::choose_default_device: there are no available devices");
     }
 
     cl::Device ret = data[0].second;
@@ -138,6 +203,6 @@ const char* cl_get_error_string(int error_code) {
         case -1101: return "CL_VA_API_MEDIA_SURFACE_NOT_ACQUIRED_INTEL";
         default: return "CL_UNKNOWN_ERROR";
     }
-}    
+}  
 
-} /* namespace sup */
+} /* namespace clf */    

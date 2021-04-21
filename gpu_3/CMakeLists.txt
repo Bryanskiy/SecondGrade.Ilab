@@ -7,9 +7,10 @@ endif()
 
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_FLAGS_DEBUG "-g -O0")
-set(CMAKE_CXX_FLAGS_RELEASE "-g")
+set(CMAKE_CXX_FLAGS_RELEASE "-O2")
 
 find_package(OpenCL REQUIRED)
+find_package(GTest REQUIRED)
 
 add_subdirectory(support)
 add_subdirectory(dirichlet)
@@ -17,7 +18,15 @@ add_subdirectory(dirichlet)
 add_executable(main main.cpp)
 target_link_libraries(
     main
-    support
     dirichlet
     ${OpenCL_LIBRARY}
+)
+
+add_executable(execute_tests tests/execute_tests.cpp)
+target_link_libraries(
+    main
+    dirichlet
+    ${OpenCL_LIBRARY}
+    GTest::GTest 
+    GTest::Main
 )
