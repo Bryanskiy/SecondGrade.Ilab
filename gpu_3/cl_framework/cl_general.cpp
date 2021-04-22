@@ -8,6 +8,10 @@ namespace clf {
 
 /* definition of static value */
 bool cl_iclass_t::init_ = false;
+cl::Device cl_iclass_t::device_;
+cl::Context cl_iclass_t::context_;
+cl::CommandQueue cl_iclass_t::queue_;
+cl::Program cl_iclass_t::program_;
 
 cl_iclass_t::cl_iclass_t() {
     cl::Device device = choose_default_device(); /* can throw exeption */
@@ -26,25 +30,24 @@ cl_iclass_t::cl_iclass_t(cl::Device device) {
 
 void cl_iclass_t::init(cl::Device device) {
     cl::Context context(device);
-    cl::CommandQueue queue(context_, device_, CL_QUEUE_PROFILING_ENABLE);
-    cl::Program program = build_program(context); /* can throw exeption */
+    cl::CommandQueue queue(context, device, CL_QUEUE_PROFILING_ENABLE);
+    cl::Program program = build_program(context, device); /* can throw exeption */
 
     /*---------------------------KALB LINE-----------------------------*/
 
-    /* cl::* contains discriptor, so it's quickly copied */
-    device_ = device;
-    context_ = context;
-    queue_ = queue;
-    program_ = program;
+    device_ = std::move(device);
+    context_ = std::move(context);
+    queue_ = std::move(queue);
+    program_ = std::move(program);
 }
 
 cl_iclass_t::~cl_iclass_t() {}
 
-cl::Program cl_iclass_t::build_program(cl::Context context) {
+cl::Program cl_iclass_t::build_program(cl::Context context, cl::Device device) {
 
     /* read kernels into string */
     std::string program_string;
-    std::ifstream program_sources("kernels.cl");
+    std::ifstream program_sources("../cl_framework/kernels.cl");
     if(!program_sources.good()) {
         throw std::runtime_error("clf::cl_iclass_t::build_program: can't open kernel source");
     }
@@ -60,7 +63,7 @@ cl::Program cl_iclass_t::build_program(cl::Context context) {
     try {
         program.build();
     } catch (cl::Error& e) {
-        std::cerr << program_.getBuildInfo<CL_PROGRAM_BUILD_LOG>(device_);
+        std::cerr << program.getBuildInfo<CL_PROGRAM_BUILD_LOG>(device);
         throw e;
     } 
 

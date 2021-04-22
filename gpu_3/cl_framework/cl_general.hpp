@@ -32,8 +32,8 @@ protected:
 
 private:
 
-    cl::Program build_program(cl::Context context);
-    void init(cl::Device device);
+    static cl::Program build_program(cl::Context context, cl::Device device);
+    static void init(cl::Device device);
     static bool init_;
 };
 

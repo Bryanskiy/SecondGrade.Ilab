@@ -10,10 +10,20 @@ namespace clf {
 class cl_fvector_t final : public cl_iclass_t {
 public:
 
+    cl_fvector_t(const std::vector<float>& data) : data_(data) {}
+    cl_fvector_t(std::vector<float>&& data) : data_(data) {}
+
     std::size_t size() const { return data_.size(); }
 
     cl_fvector_t& operator+=(const cl_fvector_t& rhs);
     float& operator[](std::size_t idx) {return data_[idx];}
+    bool operator<(const cl_fvector_t& lhs);
+    bool operator>(const cl_fvector_t& lhs);
+    bool operator==(const cl_fvector_t& lhs);
+    bool operator!=(const cl_fvector_t& lhs);
+
+
+    ~cl_fvector_t() = default;
 private:
     std::vector<float> data_;
 };

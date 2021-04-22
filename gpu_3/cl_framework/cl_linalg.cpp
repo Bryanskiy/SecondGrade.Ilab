@@ -33,9 +33,26 @@ cl_fvector_t& cl_fvector_t::operator+=(const cl_fvector_t& rhs) {
     return *this;
 }
 
-const cl_fvector_t::cl_fvector_t operator+(const cl_fvector_t& rhs, const cl_fvector_t& lhs) {
+bool cl_fvector_t::operator<(const cl_fvector_t& rhs) {
+    return data_ < rhs.data_;
+}
+
+bool cl_fvector_t::operator>(const cl_fvector_t& rhs) {
+    return data_ > rhs.data_;
+}
+
+bool cl_fvector_t::operator==(const cl_fvector_t& rhs) {
+    return data_ == rhs.data_;
+}
+
+bool cl_fvector_t::operator!=(const cl_fvector_t& rhs) {
+    return data_ != rhs.data_;
+}
+
+const cl_fvector_t operator+(const cl_fvector_t& rhs, const cl_fvector_t& lhs) {
     cl_fvector_t tmp = rhs;
-    return tmp += lhs;
+    tmp += lhs;
+    return tmp;
 }
 
 } /* namespace clf */
