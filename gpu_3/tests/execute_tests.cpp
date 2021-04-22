@@ -34,6 +34,63 @@ TEST(ClLinalg, Add) {
     }
 }
 
+TEST(ClLinalg, Sub) {
+    {
+        clf::cl_fvector_t vec1({1.0, 1.0, 1.0});
+        clf::cl_fvector_t vec2({1.0, 2.0, 3.0});
+        clf::cl_fvector_t vec3 = vec1 - vec2;
+        
+        clf::cl_fvector_t ans({0.0, -1.0, -2.0}); 
+        ASSERT_TRUE(ans == vec3) << "Equal vector sizes";
+    }
+
+    {
+        clf::cl_fvector_t vec1({1.0, 1.0, 1.0});
+        clf::cl_fvector_t vec2({1.0, 2.0, 3.0, 4.0});
+        clf::cl_fvector_t vec3 = vec1 - vec2;
+        
+        clf::cl_fvector_t ans({0.0, -1.0, -2.0, -4.0}); 
+        ASSERT_TRUE(ans == vec3) << "v1.size() < v2.size()";
+    }
+
+    {
+        clf::cl_fvector_t vec1({1.0, 1.0, 1.0, 5.0, 6.0});
+        clf::cl_fvector_t vec2({1.0, 2.0, 3.0, 4.0});
+        clf::cl_fvector_t vec3 = vec1 - vec2;
+        
+        clf::cl_fvector_t ans({0.0, -1.0, -2.0, 1.0, 6.0}); 
+        ASSERT_TRUE(ans == vec3) << "v1.size() > v2.size()";
+    }
+}
+
+TEST(ClLinalg, ScalarMult) {
+    {
+        clf::cl_fvector_t vec1({1.0, 1.0, 1.0});
+        vec1.scalar_mult(5.0);
+
+        clf::cl_fvector_t ans({5.0, 5.0, 5.0});
+        ASSERT_TRUE(vec1 == ans);
+    }
+}
+
+TEST(ClLinalg, Negate) {
+    {
+        clf::cl_fvector_t vec1({1.0, 1.0, 1.0});
+        vec1.negate();
+
+        clf::cl_fvector_t ans({-1.0, -1.0, -1.0});
+        ASSERT_TRUE(vec1 == ans);
+    }
+
+    {
+        clf::cl_fvector_t vec1({0.0, 0.0, 0.0});
+        vec1.negate();
+
+        clf::cl_fvector_t ans({0.0, 0.0, 0.0});
+        ASSERT_TRUE(vec1 == ans);
+    }
+}
+
 int main(int argc, char *argv[]) {
     testing::InitGoogleTest(&argc, argv);
     return RUN_ALL_TESTS();

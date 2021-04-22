@@ -15,7 +15,10 @@ public:
 
     std::size_t size() const { return data_.size(); }
 
+    cl_fvector_t& negate() &;
+    cl_fvector_t& scalar_mult(float value);
     cl_fvector_t& operator+=(const cl_fvector_t& rhs);
+    cl_fvector_t& operator-=(const cl_fvector_t& rhs);
     float& operator[](std::size_t idx) {return data_[idx];}
     bool operator<(const cl_fvector_t& lhs);
     bool operator>(const cl_fvector_t& lhs);
@@ -29,5 +32,6 @@ private:
 };
 
 const cl_fvector_t operator+(const cl_fvector_t& rhs, const cl_fvector_t& lhs);
+const cl_fvector_t operator-(const cl_fvector_t& rhs, const cl_fvector_t& lhs);
 
 } /* namespace clf */
