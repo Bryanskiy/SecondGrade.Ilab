@@ -1,7 +1,5 @@
 #include "dirichlet.hpp"
 
-#include "../cl_framework/cl_linalg.hpp"
-
 namespace {
 
 matrix::matrix_t<float> create_system(std::size_t matrix_size) {
@@ -50,10 +48,10 @@ matrix::matrix_t<float> CPU_square_dirichlet_problem(float step, point_t upper_a
 
     matrix::matrix_t<float> right(system_size, 1);
     for(std::size_t i = 0, maxi = matrix_size; i < maxi; ++i) {
-        right[i][0] += border_values[i + matrix_size * 4];
+        right[i][0] += border_values[i + matrix_size * 3 + 4];
         right[matrix_size * (i + 1) - 1][0] += border_values[i + 1];
-        right[matrix_size * 4 - i - 1][0] += border_values[matrix_size + i + 2];
-        right[i * matrix_size][0] += border_values[matrix_size * 4 - 2 - i];
+        right[std::pow(matrix_size, 2) - i - 1][0] += border_values[matrix_size + i + 2];
+        right[i * matrix_size][0] += border_values[matrix_size * 3 + 2 - i];
     }
 
     auto&& ans = matrix::solve_linear_system(system, right);
@@ -96,23 +94,25 @@ matrix::matrix_t<float> GPU_square_dirichlet_problem(float step, point_t upper_a
 
     clf::cl_fvector_t b(system_size);
     for(std::size_t i = 0, maxi = matrix_size; i < maxi; ++i) {
-        b[i] += border_values[i + matrix_size * 4];
+        b[i] += border_values[i + matrix_size * 3 + 4];
         b[matrix_size * (i + 1) - 1] += border_values[i + 1];
-        b[matrix_size * 4 - i - 1] += border_values[matrix_size + i + 2];
-        b[i * matrix_size] += border_values[matrix_size * 4 - 2 - i];
+        b[std::pow(matrix_size, 2) - i - 1] += border_values[matrix_size + i + 2];
+        b[i * matrix_size] += border_values[matrix_size * 3 + 2 - i];
     }
 
-    constexpr float accuracy = 0.5;
+    constexpr float accuracy = 0.0001;
     clf::cl_fvector_t x(system_size);
-    clf::cl_fvector_t r = b;
-    clf::cl_fvector_t z = r;
+    clf::cl_fvector_t r = b - A * x;
+    clf::cl_fvector_t p = r;
 
-    while(r.norm_square() > accuracy) {
-        float alpha = r.scalar_mult(r) / (A * z).scalar_mult(z);
-        x += (z * alpha);
-        clf::cl_fvector_t next_r = r - alpha * (A * z);
-        float betta = r.scalar_mult(r) / next_r.scalar_mult(next_r);
-        z = next_r + betta * z;
+    while(r.scalar_mult(r) > accuracy) {
+        clf::cl_fvector_t tmp = A * p;
+
+        float alpha = r.scalar_mult(r) / tmp.scalar_mult(p);
+        x += (p * alpha);
+        clf::cl_fvector_t next_r = r - alpha * tmp;
+        float betta = next_r.scalar_mult(next_r) / r.scalar_mult(r);
+        p = next_r + betta * p;
         r = next_r;
     }
 

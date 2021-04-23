@@ -257,7 +257,8 @@ cl_fvector_t cl_bandet_sparce_fmatrix_t::operator*(cl_fvector_t& rhs) {
     cl_fvector_t ret(vector_size);
 
     for(auto& diagonal : diagonals_) {
-        ret += diagonal.byelement_mult(rhs);
+        cl_fvector_t tmp = diagonal;
+        ret += tmp.byelement_mult(rhs);
     }
 
     return ret;

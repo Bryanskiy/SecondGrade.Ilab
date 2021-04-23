@@ -3,6 +3,7 @@
 #include <algorithm>
 
 #include "../support/matrix/matrix.hpp"
+#include "../cl_framework/cl_linalg.hpp"
 
 struct point_t {
     float x_;

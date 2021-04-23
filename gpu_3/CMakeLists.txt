@@ -18,8 +18,8 @@ add_subdirectory(cl_framework)
 add_executable(main main.cpp)
 target_link_libraries(
     main
-    cl_framework
     dirichlet
+    cl_framework
     ${OpenCL_LIBRARY}
 )
 

@@ -107,6 +107,22 @@ TEST(ClLinalg, ScalarMult2) {
     }
 
     {
+        matrix::matrix_t<float> m = { {1.0, 1.0, 0.0, 0.0, 0.0}, 
+                                      {1.0, 1.0, 1.0, 0.0, 0.0}, 
+                                      {0.0, 1.0, 1.0, 1.0, 0.0},
+                                      {0.0, 0.0, 1.0, 1.0, 1.0},
+                                      {0.0, 0.0, 0.0, 1.0, 1.0} };
+
+        clf::cl_bandet_sparce_fmatrix_t bandet_m(m);
+        clf::cl_fvector_t vec({3.0, 3.0, 3.0, 3.0, 3.0});
+        clf::cl_fvector_t expected = bandet_m * vec;
+
+        clf::cl_fvector_t ans({6.0, 9.0, 9.0, 9.0, 6.0});
+
+        ASSERT_TRUE(expected == ans) << "rows == cols";
+    }
+
+    {
         matrix::matrix_t<float> m = { {1.0, 2.0, 3.0, 1.0, 2.0}, 
                                       {4.0, 5.0, 6.0, 1.0, 2.0}, 
                                       {7.0, 8.0, 9.0, 1.0, 2.0} };
