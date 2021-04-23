@@ -6,7 +6,7 @@ namespace clf {
                             cl_iclass_t REALIZATION 
 ---------------------------------------------------------------------------------------------*/
 
-/* definition of static value */
+/* definition of static values */
 bool cl_iclass_t::init_ = false;
 cl::Device cl_iclass_t::device_;
 cl::Context cl_iclass_t::context_;

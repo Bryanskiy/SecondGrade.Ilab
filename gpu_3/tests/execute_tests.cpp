@@ -66,7 +66,7 @@ TEST(ClLinalg, Sub) {
 TEST(ClLinalg, ScalarMult) {
     {
         clf::cl_fvector_t vec1({1.0, 1.0, 1.0});
-        vec1.scalar_mult(5.0);
+        vec1 *= 5.0;
 
         clf::cl_fvector_t ans({5.0, 5.0, 5.0});
         ASSERT_TRUE(vec1 == ans);
@@ -99,11 +99,42 @@ TEST(ClLinalg, ScalarMult2) {
 
         clf::cl_bandet_sparce_fmatrix_t bandet_m(m);
         clf::cl_fvector_t vec({1.0, 1.0, 1.0});
-        clf::cl_fvector_t expected = bandet_m.vector_mult(vec);
+        clf::cl_fvector_t expected = bandet_m * vec;
 
         clf::cl_fvector_t ans({12.0, 15.0, 18.0});
 
-        ASSERT_TRUE(expected == ans);
+        ASSERT_TRUE(expected == ans) << "rows == cols";
+    }
+
+    {
+        matrix::matrix_t<float> m = { {1.0, 2.0, 3.0, 1.0, 2.0}, 
+                                      {4.0, 5.0, 6.0, 1.0, 2.0}, 
+                                      {7.0, 8.0, 9.0, 1.0, 2.0} };
+
+        clf::cl_bandet_sparce_fmatrix_t bandet_m(m);
+        clf::cl_fvector_t vec({1.0, 1.0, 1.0, 1.0, 1.0});
+        clf::cl_fvector_t expected = bandet_m * vec;
+
+        clf::cl_fvector_t ans({12.0, 15.0, 18.0, 3.0, 6.0});
+
+        ASSERT_TRUE(expected == ans) << "cols > rows";                              
+    }
+
+
+    {
+        matrix::matrix_t<float> m = { {1.0, 2.0, 3.0}, 
+                                      {4.0, 5.0, 6.0}, 
+                                      {7.0, 8.0, 9.0},
+                                      {1.0, 1.0, 1.0},
+                                      {1.0, 1.0, 1.0} };
+
+        clf::cl_bandet_sparce_fmatrix_t bandet_m(m);
+        clf::cl_fvector_t vec({1.0, 1.0, 1.0});
+        clf::cl_fvector_t expected = bandet_m * vec;
+
+        clf::cl_fvector_t ans({14.0, 17.0, 20.0});
+
+        ASSERT_TRUE(expected == ans) << "rows > cols";                              
     }
 }
 

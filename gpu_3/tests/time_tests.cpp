@@ -1,7 +1,7 @@
 #include <iostream>
 #include <vector>
 
-#include "dirichlet/dirichlet.hpp"
+#include "../dirichlet/dirichlet.hpp"
 
 int main() {
     float step; std::cin >> step;
@@ -16,6 +16,6 @@ int main() {
         board_values.push_back(value);
     }
 
-    auto&& ans = CPU_square_dirichlet_problem(step, upper_angle, lower_angle, board_values);
+    auto&& ans = GPU_square_dirichlet_problem(step, upper_angle, lower_angle, board_values);
     std::cout << ans << std::endl;
 }

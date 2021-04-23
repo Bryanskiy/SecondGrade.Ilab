@@ -5,7 +5,7 @@ if(NOT CMAKE_BUILD_TYPE)
     set(CMAKE_BUILD_TYPE Release)
 endif()
 
-set(CMAKE_CXX_STANDARD 17)
+set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_FLAGS_DEBUG "-g -O0")
 set(CMAKE_CXX_FLAGS_RELEASE "-O2")
 
@@ -31,4 +31,12 @@ target_link_libraries(
     ${OpenCL_LIBRARY}
     GTest::GTest 
     GTest::Main
+)
+
+add_executable(time_tests tests/time_tests.cpp)
+target_link_libraries(
+    time_tests
+    dirichlet
+    cl_framework
+    ${OpenCL_LIBRARY}
 )

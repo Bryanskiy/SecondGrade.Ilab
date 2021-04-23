@@ -1,5 +1,7 @@
 #include "dirichlet.hpp"
 
+#include "../cl_framework/cl_linalg.hpp"
+
 namespace {
 
 matrix::matrix_t<float> create_system(std::size_t matrix_size) {
@@ -90,6 +92,45 @@ matrix::matrix_t<float> GPU_square_dirichlet_problem(float step, point_t upper_a
     std::size_t matrix_size = grid_size - 2;
     std::size_t system_size = std::pow(matrix_size, 2);
     matrix::matrix_t<float> system = create_system(matrix_size);
+    clf::cl_bandet_sparce_fmatrix_t A(system);
 
-    
+    clf::cl_fvector_t b(system_size);
+    for(std::size_t i = 0, maxi = matrix_size; i < maxi; ++i) {
+        b[i] += border_values[i + matrix_size * 4];
+        b[matrix_size * (i + 1) - 1] += border_values[i + 1];
+        b[matrix_size * 4 - i - 1] += border_values[matrix_size + i + 2];
+        b[i * matrix_size] += border_values[matrix_size * 4 - 2 - i];
+    }
+
+    constexpr float accuracy = 0.5;
+    clf::cl_fvector_t x(system_size);
+    clf::cl_fvector_t r = b;
+    clf::cl_fvector_t z = r;
+
+    while(r.norm_square() > accuracy) {
+        float alpha = r.scalar_mult(r) / (A * z).scalar_mult(z);
+        x += (z * alpha);
+        clf::cl_fvector_t next_r = r - alpha * (A * z);
+        float betta = r.scalar_mult(r) / next_r.scalar_mult(next_r);
+        z = next_r + betta * z;
+        r = next_r;
+    }
+
+    matrix::matrix_t<float> ret(grid_size, grid_size);
+    int k = 0;
+    for(int j = 1; j < grid_size - 1; ++j) {
+        for(int i = matrix_size; i > 0; --i) {
+            ret[i][j] = -x[k];
+            ++k;
+        }
+    }
+
+    for(std::size_t i = 0; i < grid_size - 1; ++i) {
+        ret[0][i] = border_values[i];
+        ret[grid_size - 1 - i][0] = border_values[i + (grid_size - 1) * 3];
+        ret[grid_size - 1][grid_size - 1 - i] = border_values[i + (grid_size - 1) * 2];
+        ret[i][grid_size - 1] = border_values[i + grid_size - 1];  
+    }
+
+    return ret;
 }

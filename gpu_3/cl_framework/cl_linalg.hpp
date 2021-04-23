@@ -20,14 +20,19 @@ public:
     cl_fvector_t(std::vector<float>&& data) : data_(data) {}
 
     std::size_t size() const { return data_.size(); }
+    void resize(std::size_t size) {data_.resize(size); }
+    float norm_square() const;
 
     cl_fvector_t& negate() &;
-    cl_fvector_t& scalar_mult(float value);
-    cl_fvector_t& scalar_mult(cl_fvector_t& value);
+    float scalar_mult(cl_fvector_t& value);
+    cl_fvector_t byelement_mult(cl_fvector_t& rhs);
+
     cl_fvector_t& operator+=(const cl_fvector_t& rhs);
     cl_fvector_t& operator-=(const cl_fvector_t& rhs);
-    cl_fvector_t& operator*=(const cl_fvector_t& rhs);
+    cl_fvector_t& operator*=(float constant);
+
     float& operator[](std::size_t idx) {return data_[idx];}
+
     bool operator<(const cl_fvector_t& lhs);
     bool operator>(const cl_fvector_t& lhs);
     bool operator==(const cl_fvector_t& lhs);
@@ -41,6 +46,8 @@ private:
 
 const cl_fvector_t operator+(const cl_fvector_t& rhs, const cl_fvector_t& lhs);
 const cl_fvector_t operator-(const cl_fvector_t& rhs, const cl_fvector_t& lhs);
+const cl_fvector_t operator*(const cl_fvector_t& rhs, float constant);
+const cl_fvector_t operator*(float constant, const cl_fvector_t& rhs);
 
 
 /*-------------------------------------------------------------------------
@@ -69,7 +76,7 @@ public:
 
     cl_bandet_sparce_fmatrix_t(matrix::matrix_t<float>& matrix);
 
-    cl_fvector_t vector_mult(cl_fvector_t& rhs);
+    cl_fvector_t operator*(cl_fvector_t& rhs);
 
     ~cl_bandet_sparce_fmatrix_t() = default;    
 
