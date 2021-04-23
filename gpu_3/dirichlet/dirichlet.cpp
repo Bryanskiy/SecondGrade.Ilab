@@ -1,14 +1,9 @@
 #include "dirichlet.hpp"
 
-matrix::matrix_t<float> CPU_square_dirichlet_problem(float step, point_t upper_angle, point_t lower_angle, std::vector<float> border_values) {
-    float x_len = std::abs(lower_angle.x_ - upper_angle.x_);
-    float y_len = std::abs(lower_angle.y_ - upper_angle.y_);
-    if(x_len != y_len) {
-        throw std::runtime_error("invalid borders: area must be a square");
-    }
+namespace {
 
-    std::size_t grid_size = static_cast<float>(x_len) / step + 1;
-    std::size_t matrix_size = grid_size - 2;
+matrix::matrix_t<float> create_system(std::size_t matrix_size) {
+
     std::size_t system_size = std::pow(matrix_size, 2);
     matrix::matrix_t<float> system(system_size, system_size);
 
@@ -33,6 +28,23 @@ matrix::matrix_t<float> CPU_square_dirichlet_problem(float step, point_t upper_a
             }
         }
     }
+
+    return system;
+}
+
+}
+
+matrix::matrix_t<float> CPU_square_dirichlet_problem(float step, point_t upper_angle, point_t lower_angle, std::vector<float> border_values) {
+    float x_len = std::abs(lower_angle.x_ - upper_angle.x_);
+    float y_len = std::abs(lower_angle.y_ - upper_angle.y_);
+    if(x_len != y_len) {
+        throw std::runtime_error("invalid borders: area must be a square");
+    }
+
+    std::size_t grid_size = static_cast<float>(x_len) / step + 1;
+    std::size_t matrix_size = grid_size - 2;
+    std::size_t system_size = std::pow(matrix_size, 2);
+    matrix::matrix_t<float> system = create_system(matrix_size);
 
     matrix::matrix_t<float> right(system_size, 1);
     for(std::size_t i = 0, maxi = matrix_size; i < maxi; ++i) {
@@ -65,4 +77,19 @@ matrix::matrix_t<float> CPU_square_dirichlet_problem(float step, point_t upper_a
     }
 
     return ret;
+}
+
+matrix::matrix_t<float> GPU_square_dirichlet_problem(float step, point_t upper_angle, point_t lower_angle, std::vector<float> border_values) {
+    float x_len = std::abs(lower_angle.x_ - upper_angle.x_);
+    float y_len = std::abs(lower_angle.y_ - upper_angle.y_);
+    if(x_len != y_len) {
+        throw std::runtime_error("invalid borders: area must be a square");
+    }
+
+    std::size_t grid_size = static_cast<float>(x_len) / step + 1;
+    std::size_t matrix_size = grid_size - 2;
+    std::size_t system_size = std::pow(matrix_size, 2);
+    matrix::matrix_t<float> system = create_system(matrix_size);
+
+    
 }

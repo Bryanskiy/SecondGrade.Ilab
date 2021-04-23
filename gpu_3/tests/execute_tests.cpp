@@ -91,6 +91,22 @@ TEST(ClLinalg, Negate) {
     }
 }
 
+TEST(ClLinalg, ScalarMult2) {
+    {
+        matrix::matrix_t<float> m = { {1.0, 2.0, 3.0}, 
+                                      {4.0, 5.0, 6.0}, 
+                                      {7.0, 8.0, 9.0} };
+
+        clf::cl_bandet_sparce_fmatrix_t bandet_m(m);
+        clf::cl_fvector_t vec({1.0, 1.0, 1.0});
+        clf::cl_fvector_t expected = bandet_m.vector_mult(vec);
+
+        clf::cl_fvector_t ans({12.0, 15.0, 18.0});
+
+        ASSERT_TRUE(expected == ans);
+    }
+}
+
 int main(int argc, char *argv[]) {
     testing::InitGoogleTest(&argc, argv);
     return RUN_ALL_TESTS();

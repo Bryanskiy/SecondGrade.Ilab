@@ -13,6 +13,11 @@ __kernel void fvector_negate(__global float* vec) {
     vec[id] = -vec[id];
 }
 
+__kernel void fvector_mult(__global float* lhs, __global float* rhs) {
+    uint id = get_global_id (0);
+    lhs[id] *= rhs[id];
+}
+
 __kernel void fvector_sub(__global float* lhs, __global float* rhs) {
     uint id = get_global_id (0);
     lhs[id] -= rhs[id];
