@@ -33,41 +33,7 @@ cl_fvector_t& cl_fvector_t::operator+=(const cl_fvector_t& rhs) {
     return *this;
 }
 
-cl_fvector_t& cl_fvector_t::operator*=(float value) {
-
-    cl::Buffer lhs_buffer(context_, CL_MEM_WRITE_ONLY, data_.size() * sizeof(data_[0]));
-    queue_.enqueueWriteBuffer(lhs_buffer, CL_TRUE, 0, data_.size() * sizeof(data_[0]), data_.data());
-
-    cl::NDRange offset(0);
-    cl::NDRange global_size(data_.size());
-
-    cl::Kernel kernel (program_ , "fvector_constant_mult");
-    kernel.setArg (0 , lhs_buffer);
-    kernel.setArg (1 , value);
-
-    cl::Event event;
-    queue_.enqueueNDRangeKernel(kernel, 0, global_size, cl::NullRange, nullptr, &event);
-    event.wait();
-    queue_.enqueueReadBuffer(lhs_buffer, CL_TRUE, 0, data_.size() * sizeof(data_[0]), data_.data());
-
-    return *this;
-}
-
-float cl_fvector_t::scalar_mult(cl_fvector_t& rhs) {
-    std::size_t rhs_size = rhs.size();
-    if(size() < rhs_size) {
-        data_.resize(rhs_size);
-    }
-    
-    float ans = 0.0;
-    for(std::size_t i = 0, maxi = data_.size(); i < maxi; ++i) {
-        ans += data_[i] * rhs[i];
-    }
-
-    return ans;
-}
-
-cl_fvector_t cl_fvector_t::byelement_mult(cl_fvector_t& rhs) {
+void cl_fvector_t::byelement_mult(const cl_fvector_t& rhs) {
     std::size_t rhs_size = rhs.size();
     if(size() < rhs_size) {
         data_.resize(rhs_size);
@@ -91,7 +57,63 @@ cl_fvector_t cl_fvector_t::byelement_mult(cl_fvector_t& rhs) {
     event.wait();
     queue_.enqueueReadBuffer(lhs_buffer, CL_TRUE, 0, data_.size() * sizeof(data_[0]), data_.data());
 
+    return;
+}
+
+cl_fvector_t& cl_fvector_t::operator-=(const cl_fvector_t& rhs) {
+    std::size_t rhs_size = rhs.size();
+    if(size() < rhs_size) {
+        data_.resize(rhs_size);
+    }
+
+    cl::Buffer lhs_buffer(context_, CL_MEM_WRITE_ONLY, data_.size() * sizeof(data_[0]));
+    queue_.enqueueWriteBuffer(lhs_buffer, CL_TRUE, 0, data_.size() * sizeof(data_[0]), data_.data());
+
+    cl::Buffer rhs_buffer(context_, CL_MEM_READ_ONLY, rhs.data_.size() * sizeof(rhs.data_[0]));
+    queue_.enqueueWriteBuffer(rhs_buffer, CL_TRUE, 0, rhs.data_.size() * sizeof(rhs.data_[0]) , rhs.data_.data());
+
+    cl::NDRange offset(0);
+    cl::NDRange global_size(rhs_size);
+
+    cl::Kernel kernel (program_ , "fvector_sub");
+    kernel.setArg (0 , lhs_buffer);
+    kernel.setArg (1 , rhs_buffer);
+
+    cl::Event event;
+    queue_.enqueueNDRangeKernel(kernel, 0, global_size, cl::NullRange, nullptr, &event);
+    event.wait();
+    queue_.enqueueReadBuffer(lhs_buffer, CL_TRUE, 0, data_.size() * sizeof(data_[0]), data_.data());
+
     return *this;
+}
+
+cl_fvector_t& cl_fvector_t::operator*=(float value) {
+
+    cl::Buffer lhs_buffer(context_, CL_MEM_WRITE_ONLY, data_.size() * sizeof(data_[0]));
+    queue_.enqueueWriteBuffer(lhs_buffer, CL_TRUE, 0, data_.size() * sizeof(data_[0]), data_.data());
+
+    cl::NDRange offset(0);
+    cl::NDRange global_size(data_.size());
+
+    cl::Kernel kernel (program_ , "fvector_constant_mult");
+    kernel.setArg (0 , lhs_buffer);
+    kernel.setArg (1 , value);
+
+    cl::Event event;
+    queue_.enqueueNDRangeKernel(kernel, 0, global_size, cl::NullRange, nullptr, &event);
+    event.wait();
+    queue_.enqueueReadBuffer(lhs_buffer, CL_TRUE, 0, data_.size() * sizeof(data_[0]), data_.data());
+
+    return *this;
+}
+
+float cl_fvector_t::scalar_mult(const cl_fvector_t& rhs) const {    
+    float ans = 0.0;
+    for(std::size_t i = 0, maxi = std::min(data_.size(), rhs.size()); i < maxi; ++i) {
+        ans += data_[i] * rhs[i];
+    }
+
+    return ans;
 }
 
 bool cl_fvector_t::operator<(const cl_fvector_t& rhs) {
@@ -135,33 +157,6 @@ cl_fvector_t& cl_fvector_t::negate() & {
     return *this;
 }
 
-cl_fvector_t& cl_fvector_t::operator-=(const cl_fvector_t& rhs) {
-    std::size_t rhs_size = rhs.size();
-    if(size() < rhs_size) {
-        data_.resize(rhs_size);
-    }
-
-    cl::Buffer lhs_buffer(context_, CL_MEM_WRITE_ONLY, data_.size() * sizeof(data_[0]));
-    queue_.enqueueWriteBuffer(lhs_buffer, CL_TRUE, 0, data_.size() * sizeof(data_[0]), data_.data());
-
-    cl::Buffer rhs_buffer(context_, CL_MEM_READ_ONLY, rhs.data_.size() * sizeof(rhs.data_[0]));
-    queue_.enqueueWriteBuffer(rhs_buffer, CL_TRUE, 0, rhs.data_.size() * sizeof(rhs.data_[0]) , rhs.data_.data());
-
-    cl::NDRange offset(0);
-    cl::NDRange global_size(rhs_size);
-
-    cl::Kernel kernel (program_ , "fvector_sub");
-    kernel.setArg (0 , lhs_buffer);
-    kernel.setArg (1 , rhs_buffer);
-
-    cl::Event event;
-    queue_.enqueueNDRangeKernel(kernel, 0, global_size, cl::NullRange, nullptr, &event);
-    event.wait();
-    queue_.enqueueReadBuffer(lhs_buffer, CL_TRUE, 0, data_.size() * sizeof(data_[0]), data_.data());
-
-    return *this;
-}
-
 void cl_fvector_t::upper_shift(std::size_t size) {
     for(std::size_t i = 0, max = data_.size(); i < max; ++i) {
         if(i >= max - size) {
@@ -199,11 +194,7 @@ const cl_fvector_t operator*(float constant, const cl_fvector_t& rhs) {
 }
 
 float cl_fvector_t::norm_square() const {
-    float ans = 0.0;
-    for(auto&& elem : data_) {
-        ans += std::pow(elem, 2);
-    }
-    return ans;
+    return scalar_mult(*this);
 }
 
 /*-------------------------------------------------------------------------
@@ -217,9 +208,14 @@ cl_imatrix_t::~cl_imatrix_t() {}
 --------------------------------------------------------------------------*/
 
 cl_bandet_sparce_fmatrix_t::cl_bandet_sparce_fmatrix_t(matrix::matrix_t<float>& matrix) {
-    std::size_t rows = rows_ = matrix.get_rows_number();
-    std::size_t cols = cols_ = matrix.get_cols_number();
-    std::size_t max_size = std::max(rows, cols);
+    rows_ = matrix.get_rows_number();
+    cols_ = matrix.get_cols_number();
+
+    if(rows_ != cols_) {
+        throw std::runtime_error("cl_bandet_sparce_fmatrix_t: invalid size");
+    }
+
+    std::size_t max_size = std::max(rows_, cols_);
 
     matrix::matrix_t<float> tmp = matrix;
     tmp.resize(max_size, max_size);
@@ -259,13 +255,6 @@ cl_bandet_sparce_fmatrix_t::cl_bandet_sparce_fmatrix_t(matrix::matrix_t<float>& 
             }
         }
     }
-
-    if(cols < rows) {
-        std::size_t min = std::min(rows, cols);
-        for(auto&& diagonal : diagonals_) {
-            diagonal.resize(min);
-        }
-    }
 }
 
 cl_fvector_t cl_bandet_sparce_fmatrix_t::operator*(cl_fvector_t& rhs) {
@@ -278,8 +267,10 @@ cl_fvector_t cl_bandet_sparce_fmatrix_t::operator*(cl_fvector_t& rhs) {
 
     std::size_t max_size = std::max(rows(), cols());
     for(std::size_t i = 0, maxi = diagonals_.size(); i < maxi; ++i) {
+
         cl_fvector_t tmp = diagonals_[i];
         tmp.byelement_mult(rhs);
+        
         if(indices_[i] < max_size) {
             tmp.lower_shift(max_size - indices_[i] - 1);
         } else {

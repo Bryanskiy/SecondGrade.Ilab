@@ -15,17 +15,18 @@ namespace clf {
 class cl_fvector_t final : public cl_iclass_t {
 public:
 
-    cl_fvector_t(std::size_t size) : data_(size) {}
+    explicit cl_fvector_t(std::size_t size) : data_(size) {}
     cl_fvector_t(const std::vector<float>& data) : data_(data) {}
     cl_fvector_t(std::vector<float>&& data) : data_(data) {}
 
     std::size_t size() const { return data_.size(); }
     void resize(std::size_t size) {data_.resize(size); }
     float norm_square() const;
+    std::vector<float> unpack() const {return data_; }
 
     cl_fvector_t& negate() &;
-    float scalar_mult(cl_fvector_t& value);
-    cl_fvector_t byelement_mult(cl_fvector_t& rhs);
+    float scalar_mult(const cl_fvector_t& rhs) const;
+    void byelement_mult(const cl_fvector_t& rhs);
 
     cl_fvector_t& operator+=(const cl_fvector_t& rhs);
     cl_fvector_t& operator-=(const cl_fvector_t& rhs);
@@ -35,6 +36,7 @@ public:
     void lower_shift(std::size_t size);
 
     float& operator[](std::size_t idx) {return data_[idx];}
+    const float& operator[](std::size_t idx) const {return data_[idx];}
 
     bool operator<(const cl_fvector_t& lhs);
     bool operator>(const cl_fvector_t& lhs);
@@ -71,17 +73,17 @@ protected:
 };
 
 /*-------------------------------------------------------------------------
-                 cl_bandet_sparce_matrix_t REALIZATION
+                         cl_bandet_sparce_matrix_t
 --------------------------------------------------------------------------*/
 
+/* now, it works only for square matrices */
 class cl_bandet_sparce_fmatrix_t final : public cl_imatrix_t {
 public:
 
     cl_bandet_sparce_fmatrix_t(matrix::matrix_t<float>& matrix);
+    ~cl_bandet_sparce_fmatrix_t() = default;  
 
-    cl_fvector_t operator*(cl_fvector_t& rhs);
-
-    ~cl_bandet_sparce_fmatrix_t() = default;    
+    cl_fvector_t operator*(cl_fvector_t& rhs);  
 
 private:
     std::vector<cl_fvector_t> diagonals_;

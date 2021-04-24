@@ -110,6 +110,9 @@ matrix_t<T> multiplication(const matrix_t<T>& lhs, const matrix_t<T>& rhs);
 template<typename T>
 std::pair<matrix_t<T>, matrix_t<T>> solve_linear_system(const matrix_t<T>& left, const matrix_t<T>& right);
 
+template<typename T>
+std::pair<std::vector<T>, matrix_t<T>> solve_linear_system(const matrix_t<T>& left, std::vector<T>& right);
+
 
 template<typename T>
 void gauss_straight(matrix_t<T>& m);
@@ -468,6 +471,26 @@ std::pair<matrix_t<T>, matrix_t<T>> solve_linear_system(const matrix_t<T>& left,
     }
 
     return {partial_solution, fundamental_matrix};
+}
+
+template<typename T>
+std::pair<std::vector<T>, matrix_t<T>> solve_linear_system(const matrix_t<T>& left, std::vector<T>& right) {
+    if(left.get_cols_number() != right.size()) {
+        throw std::runtime_error("invalid sizes");
+    }
+
+    matrix_t<T> transport_right(right.size(), 1);
+    for(std::size_t i = 0, maxi = right.size(); i < maxi; ++i) {
+        transport_right[i][0] = right[i];
+    }
+
+    auto&& ans = solve_linear_system(left, transport_right);
+    std::vector<T> partial_solution(ans.first.get_rows_number());
+    for(std::size_t i = 0, maxi = ans.first.get_rows_number(); i < maxi; ++i) {
+        partial_solution[i] = ans.first[i][0];
+    }
+
+    return std::make_pair(partial_solution, ans.second);
 }
 
 template<typename T>

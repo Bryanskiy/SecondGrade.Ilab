@@ -10,5 +10,5 @@ struct point_t {
     float y_;
 };
 
-matrix::matrix_t<float> CPU_square_dirichlet_problem(float step, point_t upper_angle, point_t lower_angle, std::vector<float> border_values);
-matrix::matrix_t<float> GPU_square_dirichlet_problem(float step, point_t upper_angle, point_t lower_angle, std::vector<float> border_values);
+matrix::matrix_t<float> CPU_square_dirichlet_problem(float step, point_t upper_angle, point_t lower_angle, const std::vector<float>& border_values);
+matrix::matrix_t<float> GPU_square_dirichlet_problem(float step, point_t upper_angle, point_t lower_angle, const std::vector<float>& border_values);
