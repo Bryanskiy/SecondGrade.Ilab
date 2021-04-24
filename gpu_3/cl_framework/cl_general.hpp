@@ -9,6 +9,8 @@
 
 namespace clf {
 
+constexpr float accuracy = 0.001;
+
 using machine_t = std::pair<cl::Platform, cl::Device>;
 const char* cl_get_error_string(int error_code);
 std::vector<machine_t> get_devices();

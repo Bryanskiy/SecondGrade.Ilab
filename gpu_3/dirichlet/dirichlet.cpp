@@ -65,14 +65,14 @@ matrix::matrix_t<float> write_answer(std::size_t grid_size, const std::vector<fl
     }
 
     return ret;
-}
+} 
 
-}
+} /* namespace */
 
 matrix::matrix_t<float> CPU_square_dirichlet_problem(float step, point_t upper_angle, point_t lower_angle, const std::vector<float>& border_values) {
     float x_len = std::abs(lower_angle.x_ - upper_angle.x_);
     float y_len = std::abs(lower_angle.y_ - upper_angle.y_);
-    if(x_len != y_len) {
+    if(std::abs(x_len - y_len) > clf::accuracy) {
         throw std::runtime_error("invalid borders: area must be a square");
     }
 
@@ -94,7 +94,7 @@ matrix::matrix_t<float> CPU_square_dirichlet_problem(float step, point_t upper_a
 matrix::matrix_t<float> GPU_square_dirichlet_problem(float step, point_t upper_angle, point_t lower_angle, const std::vector<float>& border_values) {
     float x_len = std::abs(lower_angle.x_ - upper_angle.x_);
     float y_len = std::abs(lower_angle.y_ - upper_angle.y_);
-    if(x_len != y_len) {
+    if(std::abs(x_len - y_len) > clf::accuracy) {
         throw std::runtime_error("invalid borders: area must be a square");
     }
 
@@ -106,12 +106,11 @@ matrix::matrix_t<float> GPU_square_dirichlet_problem(float step, point_t upper_a
     clf::cl_bandet_sparce_fmatrix_t A(system);
     clf::cl_fvector_t b(create_right(matrix_size, border_values));
 
-    constexpr float accuracy = 0.0001;
     clf::cl_fvector_t x(system_size);
     clf::cl_fvector_t r = b - A * x;
     clf::cl_fvector_t p = r;
 
-    while(r.scalar_mult(r) > accuracy) {
+    while(r.scalar_mult(r) > clf::accuracy) {
         clf::cl_fvector_t tmp = A * p;
 
         float alpha = r.scalar_mult(r) / tmp.scalar_mult(p);

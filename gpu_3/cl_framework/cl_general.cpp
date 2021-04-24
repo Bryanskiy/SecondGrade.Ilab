@@ -1,5 +1,5 @@
 #include "cl_general.hpp"
-
+#include "wired_kernels.hpp"
 namespace clf {
 
 /*-------------------------------------------------------------------------------------------- 
@@ -47,13 +47,15 @@ cl::Program cl_iclass_t::build_program(cl::Context context, cl::Device device) {
 
     /* read kernels into string */
     std::string program_string;
+
     std::ifstream program_sources("../cl_framework/kernels.cl");
     if(!program_sources.good()) {
-        throw std::runtime_error("clf::cl_iclass_t::build_program: can't open kernel source");
-    }
-    auto&& lhs = std::istreambuf_iterator<char>{program_sources};
-    std::istreambuf_iterator<char> rhs;
-    program_string = std::move(std::string(lhs, rhs));
+        program_string = wired_kernels;
+    } else {
+        auto&& lhs = std::istreambuf_iterator<char>{program_sources};
+        std::istreambuf_iterator<char> rhs;
+        program_string = std::move(std::string(lhs, rhs));
+    }    
 
     /* build */
     cl::Program::Sources source;

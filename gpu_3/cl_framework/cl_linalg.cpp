@@ -223,7 +223,7 @@ cl_bandet_sparce_fmatrix_t::cl_bandet_sparce_fmatrix_t(matrix::matrix_t<float>& 
     /* process lower triangle */
     for(std::size_t i = 0; i < max_size; ++i) {
         for(std::size_t j = 0; j < max_size - i; ++j) {
-            if(tmp[i + j][j] != 0.0) {
+            if(std::abs(tmp[i + j][j]) > accuracy) {
                 indices_.push_back(max_size - i - 1);
 
                 std::vector<float> vector(max_size);
@@ -241,7 +241,7 @@ cl_bandet_sparce_fmatrix_t::cl_bandet_sparce_fmatrix_t(matrix::matrix_t<float>& 
     /* process upper triangle */
     for(std::size_t i = 1; i < max_size; ++i) {
         for(std::size_t j = 0; j < max_size - i; ++j) {
-            if(tmp[j][j + i] != 0.0) {
+            if(std::abs(tmp[j][j + i]) > accuracy) {
                 indices_.push_back(i + max_size);
 
                 std::vector<float> vector(max_size);
@@ -270,7 +270,7 @@ cl_fvector_t cl_bandet_sparce_fmatrix_t::operator*(cl_fvector_t& rhs) {
 
         cl_fvector_t tmp = diagonals_[i];
         tmp.byelement_mult(rhs);
-        
+
         if(indices_[i] < max_size) {
             tmp.lower_shift(max_size - indices_[i] - 1);
         } else {

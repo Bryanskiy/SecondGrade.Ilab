@@ -32,11 +32,3 @@ target_link_libraries(
     GTest::GTest 
     GTest::Main
 )
-
-add_executable(time_tests tests/time_tests.cpp)
-target_link_libraries(
-    time_tests
-    dirichlet
-    cl_framework
-    ${OpenCL_LIBRARY}
-)
