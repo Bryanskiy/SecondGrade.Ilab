@@ -31,6 +31,9 @@ public:
     cl_fvector_t& operator-=(const cl_fvector_t& rhs);
     cl_fvector_t& operator*=(float constant);
 
+    void upper_shift(std::size_t size);
+    void lower_shift(std::size_t size);
+
     float& operator[](std::size_t idx) {return data_[idx];}
 
     bool operator<(const cl_fvector_t& lhs);

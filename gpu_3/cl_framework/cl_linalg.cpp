@@ -162,6 +162,26 @@ cl_fvector_t& cl_fvector_t::operator-=(const cl_fvector_t& rhs) {
     return *this;
 }
 
+void cl_fvector_t::upper_shift(std::size_t size) {
+    for(std::size_t i = 0, max = data_.size(); i < max; ++i) {
+        if(i >= max - size) {
+            data_[i] = 0.0;
+            continue;
+        }
+        data_[i] = data_[i + size];
+    }
+}
+    
+void cl_fvector_t::lower_shift(std::size_t size) {
+    for(std::size_t i = 0, max = data_.size(); i < max; ++i) {
+        if(i >= max - size) {
+            data_[max - i - 1] = 0.0;
+            continue;
+        }
+        data_[max - i - 1] = data_[max - i - 1 - size];
+    }
+}
+
 const cl_fvector_t operator-(const cl_fvector_t& rhs, const cl_fvector_t& lhs) {
     cl_fvector_t tmp = rhs;
     tmp -= lhs;
@@ -208,7 +228,7 @@ cl_bandet_sparce_fmatrix_t::cl_bandet_sparce_fmatrix_t(matrix::matrix_t<float>& 
     for(std::size_t i = 0; i < max_size; ++i) {
         for(std::size_t j = 0; j < max_size - i; ++j) {
             if(tmp[i + j][j] != 0.0) {
-                indices_.push_back(i);
+                indices_.push_back(max_size - i - 1);
 
                 std::vector<float> vector(max_size);
 
@@ -256,9 +276,17 @@ cl_fvector_t cl_bandet_sparce_fmatrix_t::operator*(cl_fvector_t& rhs) {
     std::size_t vector_size = rhs.size();
     cl_fvector_t ret(vector_size);
 
-    for(auto& diagonal : diagonals_) {
-        cl_fvector_t tmp = diagonal;
-        ret += tmp.byelement_mult(rhs);
+    std::size_t max_size = std::max(rows(), cols());
+    for(std::size_t i = 0, maxi = diagonals_.size(); i < maxi; ++i) {
+        cl_fvector_t tmp = diagonals_[i];
+        tmp.byelement_mult(rhs);
+        if(indices_[i] < max_size) {
+            tmp.lower_shift(max_size - indices_[i] - 1);
+        } else {
+            tmp.upper_shift(indices_[i] - max_size);
+        }
+
+        ret += tmp;
     }
 
     return ret;

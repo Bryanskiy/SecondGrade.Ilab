@@ -91,7 +91,7 @@ TEST(ClLinalg, Negate) {
     }
 }
 
-TEST(ClLinalg, ScalarMult2) {
+TEST(ClLinalg, MatVecMult) {
     {
         matrix::matrix_t<float> m = { {1.0, 2.0, 3.0}, 
                                       {4.0, 5.0, 6.0}, 
@@ -101,9 +101,9 @@ TEST(ClLinalg, ScalarMult2) {
         clf::cl_fvector_t vec({1.0, 1.0, 1.0});
         clf::cl_fvector_t expected = bandet_m * vec;
 
-        clf::cl_fvector_t ans({12.0, 15.0, 18.0});
+        clf::cl_fvector_t ans({6.0, 15.0, 24.0});
 
-        ASSERT_TRUE(expected == ans) << "rows == cols";
+        ASSERT_TRUE(expected == ans) << "rows == cols == 3";
     }
 
     {
@@ -119,38 +119,21 @@ TEST(ClLinalg, ScalarMult2) {
 
         clf::cl_fvector_t ans({6.0, 9.0, 9.0, 9.0, 6.0});
 
-        ASSERT_TRUE(expected == ans) << "rows == cols";
+        ASSERT_TRUE(expected == ans) << "rows == cols == 5";
     }
 
     {
-        matrix::matrix_t<float> m = { {1.0, 2.0, 3.0, 1.0, 2.0}, 
-                                      {4.0, 5.0, 6.0, 1.0, 2.0}, 
-                                      {7.0, 8.0, 9.0, 1.0, 2.0} };
+        matrix::matrix_t<float> m = { {-4.0, 1.0, 1.0, 0.0}, 
+                                       {1.0, -4.0, 0.0, 1.0}, 
+                                       {1.0, 0.0, -4.0, 1.0},
+                                       {0.0, 1.0, 1.0, -4.0}};
 
         clf::cl_bandet_sparce_fmatrix_t bandet_m(m);
-        clf::cl_fvector_t vec({1.0, 1.0, 1.0, 1.0, 1.0});
+        clf::cl_fvector_t vec({2.0, 6.0, 6.0, 10.0});
         clf::cl_fvector_t expected = bandet_m * vec;
 
-        clf::cl_fvector_t ans({12.0, 15.0, 18.0, 3.0, 6.0});
-
-        ASSERT_TRUE(expected == ans) << "cols > rows";                              
-    }
-
-
-    {
-        matrix::matrix_t<float> m = { {1.0, 2.0, 3.0}, 
-                                      {4.0, 5.0, 6.0}, 
-                                      {7.0, 8.0, 9.0},
-                                      {1.0, 1.0, 1.0},
-                                      {1.0, 1.0, 1.0} };
-
-        clf::cl_bandet_sparce_fmatrix_t bandet_m(m);
-        clf::cl_fvector_t vec({1.0, 1.0, 1.0});
-        clf::cl_fvector_t expected = bandet_m * vec;
-
-        clf::cl_fvector_t ans({14.0, 17.0, 20.0});
-
-        ASSERT_TRUE(expected == ans) << "rows > cols";                              
+        clf::cl_fvector_t ans({4.0, -12.0, -12.0, -28.0});                              
+        ASSERT_TRUE(expected == ans) << "rows == cols == 4";
     }
 }
 
