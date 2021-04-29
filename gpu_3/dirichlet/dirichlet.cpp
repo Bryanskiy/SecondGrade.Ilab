@@ -42,8 +42,7 @@ std::vector<float> dirichlet_solver_t::create_right(std::size_t matrix_size) {
     return right;
 }
 
-matrix::matrix_t<float> dirichlet_solver_t::write_answer(std::size_t grid_size, const std::vector<float>& right) {
-    std::size_t matrix_size = grid_size - 2;
+matrix::matrix_t<float> dirichlet_solver_t::write_answer(std::size_t matrix_size, const std::vector<float>& right) {
     matrix::matrix_t<float> ret(matrix_size, matrix_size);
     int k = 0;
     for(int j = 0; j < matrix_size; ++j) {
@@ -63,11 +62,11 @@ void dirichlet_solver_t::init(point_t upper_angle, point_t lower_angle, const st
 
 matrix::matrix_t<float> dirichlet_solver_t::solve(execution_mode mode /* = GPU */) {
     switch (mode) {
-    case CPU:
-        return solve_CPU();
-    
-    case GPU:
-        return solve_GPU();
+        case GPU:
+            return solve_GPU();
+
+        case CPU:
+            return solve_CPU();
     }
 
     return {};
@@ -88,7 +87,7 @@ matrix::matrix_t<float> dirichlet_solver_t::solve_CPU() {
         throw std::runtime_error("CPU_square_dirichlet_problem: can't solve linear system");
     }
 
-    return write_answer(grid_size, ans.first);
+    return write_answer(matrix_size, ans.first);
 }
 
 matrix::matrix_t<float> dirichlet_solver_t::solve_GPU() {
@@ -117,5 +116,5 @@ matrix::matrix_t<float> dirichlet_solver_t::solve_GPU() {
         r = next_r;
     }
 
-    return write_answer(grid_size, x.unpack());
+    return write_answer(matrix_size, x.unpack());
 }

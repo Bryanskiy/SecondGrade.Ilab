@@ -25,9 +25,11 @@ private:
 
     matrix::matrix_t<float> solve_GPU();
     matrix::matrix_t<float> solve_CPU();
+
     matrix::matrix_t<float> create_system(std::size_t matrix_size);
+
     std::vector<float> create_right(std::size_t matrix_size); 
-    matrix::matrix_t<float> write_answer(std::size_t grid_size, const std::vector<float>& right);
+    matrix::matrix_t<float> write_answer(std::size_t matrix_size, const std::vector<float>& right);
 
 private:
 
