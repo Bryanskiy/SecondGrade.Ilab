@@ -6,17 +6,29 @@
 
 int main() {
     float step; std::cin >> step;
-    point_t upper_angle; std::cin >> upper_angle.x_ >> upper_angle.y_;
-    point_t lower_angle; std::cin >> lower_angle.x_ >> lower_angle.y_;
+    dirichlet_solver_t::point_t upper_angle; std::cin >> upper_angle.x >> upper_angle.y;
+    dirichlet_solver_t::point_t lower_angle; std::cin >> lower_angle.x >> lower_angle.y;
     
-    std::vector<float> board_values;
-    for(;;) {
-        float value; std::cin >> value;
-        if(!std::cin) {break;}
+    float x_len = std::abs(lower_angle.x - upper_angle.x);
+    float y_len = std::abs(lower_angle.y - upper_angle.y);
 
+    if(std::abs(x_len - y_len) > clf::accuracy) {
+        std::cerr << "border isn't a square";
+        return 1;
+    }
+
+    std::size_t values_count = 4 * x_len / step;
+
+    std::vector<float> board_values;
+    board_values.reserve(values_count);
+
+    for(std::size_t i = 0; i < values_count; ++i) {
+        float value; std::cin >> value;
         board_values.push_back(value);
     }
 
-    auto&& ans = GPU_square_dirichlet_problem(step, upper_angle, lower_angle, board_values);
-    std::cout << ans << std::endl;
+    dirichlet_solver_t solver;
+    solver.init(upper_angle, lower_angle, board_values);
+    auto&& ans = solver.solve();
+    std::cout << ans;
 }

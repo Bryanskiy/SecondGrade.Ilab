@@ -1,8 +1,6 @@
 #include "dirichlet.hpp"
 
-namespace {
-
-matrix::matrix_t<float> create_system(std::size_t matrix_size) {
+matrix::matrix_t<float> dirichlet_solver_t::create_system(std::size_t matrix_size) {
 
     std::size_t system_size = std::pow(matrix_size, 2);
     matrix::matrix_t<float> system(system_size, system_size);
@@ -21,9 +19,7 @@ matrix::matrix_t<float> create_system(std::size_t matrix_size) {
                     system[i][j + 1] = 1.0;
                 }
 
-            } else if((i + matrix_size) == j) {
-                system[i][j] = 1.0;
-            } else if((j + matrix_size) == i) {
+            } else if(((i + matrix_size) == j) || ((j + matrix_size) == i)) {
                 system[i][j] = 1.0;
             }
         }
@@ -32,79 +28,79 @@ matrix::matrix_t<float> create_system(std::size_t matrix_size) {
     return system;
 }
 
-std::vector<float> create_right(std::size_t matrix_size, const std::vector<float>& border_values) {
+std::vector<float> dirichlet_solver_t::create_right(std::size_t matrix_size) {
     std::size_t system_size = std::pow(matrix_size, 2);
 
     std::vector<float> right(system_size);
     for(std::size_t i = 0, maxi = matrix_size; i < maxi; ++i) {
-        right[i] += border_values[i + matrix_size * 3 + 4];
-        right[matrix_size * (i + 1) - 1] += border_values[i + 1];
-        right[matrix_size * matrix_size - i - 1] += border_values[matrix_size + i + 2];
-        right[i * matrix_size] += border_values[matrix_size * 3 + 2 - i];
+        right[i] += border_values_[i + matrix_size * 3 + 4];
+        right[matrix_size * (i + 1) - 1] += border_values_[i + 1];
+        right[matrix_size * matrix_size - i - 1] += border_values_[matrix_size + i + 2];
+        right[i * matrix_size] += border_values_[matrix_size * 3 + 2 - i];
     }
 
     return right;
 }
 
-matrix::matrix_t<float> write_answer(std::size_t grid_size, const std::vector<float>& right, const std::vector<float>& border_values) {
+matrix::matrix_t<float> dirichlet_solver_t::write_answer(std::size_t grid_size, const std::vector<float>& right) {
     std::size_t matrix_size = grid_size - 2;
-    matrix::matrix_t<float> ret(grid_size, grid_size);
+    matrix::matrix_t<float> ret(matrix_size, matrix_size);
     int k = 0;
-    for(int j = 1; j < grid_size - 1; ++j) {
-        for(int i = matrix_size; i > 0; --i) {
+    for(int j = 0; j < matrix_size; ++j) {
+        for(int i = matrix_size - 1; i >= 0; --i) {
             ret[i][j] = -right[k];
             ++k;
         }
     }
 
-    for(std::size_t i = 0; i < grid_size - 1; ++i) {
-        ret[0][i] = border_values[i];
-        ret[grid_size - 1 - i][0] = border_values[i + (grid_size - 1) * 3];
-        ret[grid_size - 1][grid_size - 1 - i] = border_values[i + (grid_size - 1) * 2];
-        ret[i][grid_size - 1] = border_values[i + grid_size - 1];  
-    }
-
     return ret;
 } 
+void dirichlet_solver_t::init(point_t upper_angle, point_t lower_angle, const std::vector<float>& border_values) {
+    upper_angle_ = upper_angle;
+    lower_angle_ = lower_angle;
+    border_values_ = border_values;
+}
 
-} /* namespace */
-
-matrix::matrix_t<float> CPU_square_dirichlet_problem(float step, point_t upper_angle, point_t lower_angle, const std::vector<float>& border_values) {
-    float x_len = std::abs(lower_angle.x_ - upper_angle.x_);
-    float y_len = std::abs(lower_angle.y_ - upper_angle.y_);
-    if(std::abs(x_len - y_len) > clf::accuracy) {
-        throw std::runtime_error("invalid borders: area must be a square");
+matrix::matrix_t<float> dirichlet_solver_t::solve(execution_mode mode /* = GPU */) {
+    switch (mode) {
+    case CPU:
+        return solve_CPU();
+    
+    case GPU:
+        return solve_GPU();
     }
 
-    std::size_t grid_size = static_cast<float>(x_len) / step + 1;
+    return {};
+}
+
+matrix::matrix_t<float> dirichlet_solver_t::solve_CPU() {
+    float len = std::abs(lower_angle_.x - upper_angle_.x);
+    float step = len / border_values_.size() * 4.0;
+    std::size_t grid_size = len / step + 1;
     std::size_t matrix_size = grid_size - 2;
     std::size_t system_size = std::pow(matrix_size, 2);
 
     matrix::matrix_t<float> system = create_system(matrix_size);
-    auto&& right = create_right(matrix_size, border_values);
+    auto&& right = create_right(matrix_size);
 
     auto&& ans = matrix::solve_linear_system(system, right);
     if(ans.second.get_elements_number()) {
         throw std::runtime_error("CPU_square_dirichlet_problem: can't solve linear system");
     }
 
-    return write_answer(grid_size, ans.first, border_values);
+    return write_answer(grid_size, ans.first);
 }
 
-matrix::matrix_t<float> GPU_square_dirichlet_problem(float step, point_t upper_angle, point_t lower_angle, const std::vector<float>& border_values) {
-    float x_len = std::abs(lower_angle.x_ - upper_angle.x_);
-    float y_len = std::abs(lower_angle.y_ - upper_angle.y_);
-    if(std::abs(x_len - y_len) > clf::accuracy) {
-        throw std::runtime_error("invalid borders: area must be a square");
-    }
-
-    std::size_t grid_size = static_cast<float>(x_len) / step + 1;
+matrix::matrix_t<float> dirichlet_solver_t::solve_GPU() {
+    float len = std::abs(lower_angle_.x - upper_angle_.x);
+    float step = len / border_values_.size() * 4.0;
+    std::size_t grid_size = len / step + 1;
     std::size_t matrix_size = grid_size - 2;
     std::size_t system_size = std::pow(matrix_size, 2);
 
     matrix::matrix_t<float> system = create_system(matrix_size);
     clf::cl_bandet_sparce_fmatrix_t A(system);
-    clf::cl_fvector_t b(create_right(matrix_size, border_values));
+    clf::cl_fvector_t b(create_right(matrix_size));
 
     clf::cl_fvector_t x(system_size);
     clf::cl_fvector_t r = b - A * x;
@@ -121,5 +117,5 @@ matrix::matrix_t<float> GPU_square_dirichlet_problem(float step, point_t upper_a
         r = next_r;
     }
 
-    return write_answer(grid_size, x.unpack(), border_values);
+    return write_answer(grid_size, x.unpack());
 }
