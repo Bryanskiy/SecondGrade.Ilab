@@ -12,22 +12,19 @@ set(CMAKE_CXX_FLAGS_RELEASE "-O2")
 find_package(OpenCL REQUIRED)
 find_package(GTest REQUIRED)
 
-add_subdirectory(dirichlet)
-add_subdirectory(cl_framework)
+add_subdirectory(CLFramework)
 
 add_executable(main main.cpp)
 target_link_libraries(
     main
-    dirichlet
-    cl_framework
+    CLFramework
     ${OpenCL_LIBRARY}
 )
 
 add_executable(execute_tests tests/execute_tests.cpp)
 target_link_libraries(
     execute_tests
-    dirichlet
-    cl_framework
+    CLFramework
     ${OpenCL_LIBRARY}
     GTest::GTest 
     GTest::Main
